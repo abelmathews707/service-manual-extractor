@@ -2,13 +2,18 @@
 
 Formerly `abelmathews707/ford-service-disc`. This fork is expanding toward
 multiple service-manual formats and vehicle makes. **Ford support is implemented;
-GM HTML and PDF inputs have been inspected, but no GM importer is implemented
-yet.**
+GM HTML and PDF inputs have been inspected, and the shared v1 extraction
+contract is now frozen, but no GM importer is implemented yet.**
 
 Start the GM work from [the current handoff](docs/CURRENT_HANDOFF.md), then use
 the [staged implementation plan](docs/GM_HTML_PLAN.md) and
 [test plan](docs/GM_HTML_TEST_PLAN.md). The existing `python -m fsd` commands
 remain compatible. Existing local checkouts do not need to be renamed.
+
+The manufacturer-neutral contract is documented in
+[docs/SERVICE_MANUAL_CONTRACT_V1.md](docs/SERVICE_MANUAL_CONTRACT_V1.md). Step 2
+adds `python3 -m sme contract` and `validate-manifest` for contract inspection;
+real neutral `probe` and `extract` readers are intentionally deferred to Step 3.
 
 **Read your Ford service manual DVD without the original Windows software.**
 Extracts the workshop manual, wiring diagrams and PCED off a Ford Technical

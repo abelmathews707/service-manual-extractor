@@ -1,7 +1,7 @@
 # GM manual inputs and multi-format extractor plan
 
-Date: 2026-09-18
-Status: Inspection and design only. Implement one selected step per task.
+Date: 2026-09-21
+Status: Steps 0–2 complete. Implement one later selected step per task.
 
 ## Outcome
 
@@ -134,7 +134,7 @@ open. The user need not spend repeated agent runs rediscovering the same damage.
 Pass: source/copy integrity and per-member results are reproducible, with known
 coverage and any unrecoverable gaps explicitly resolved or blocked.
 
-### Step 2 — Common contract and synthetic fixtures
+### Step 2 — Common contract and synthetic fixtures (complete 2026-09-21)
 
 Define format detection, exact book selection, machine-readable probe/extract
 results, manifest schema, neutral command names, stable IDs, path handling and
@@ -151,6 +151,17 @@ rewrite the original tagged `v0.1.0` release or silently update consumers.
 
 Pass: synthetic contracts and existing Ford tests pass; the output contract is
 documented enough for the Repair Buddy adapter to consume independently.
+
+Implemented result: `service-manual-manifest/v1` and
+`service-manual-operation/v1` are frozen in
+[`SERVICE_MANUAL_CONTRACT_V1.md`](SERVICE_MANUAL_CONTRACT_V1.md), the JSON
+Schema and dependency-free validator. The contract covers Ford v1/v2, HTML
+exports and PDF collections, including stable IDs, exact paths, partial-source
+failures, qualifiers, citations, assets and native/OCR text provenance. Authored
+HTML/SVG/raster examples and a generated PDF exercise the rules. Existing
+`fsd` command names, probe JSON/exit behavior and exact duplicate-archive
+selection remain unchanged. The neutral CLI exposes contract inspection and
+manifest validation only; real neutral source readers remain Step 3 work.
 
 ### Step 3 — source containers and extracted-folder reader
 

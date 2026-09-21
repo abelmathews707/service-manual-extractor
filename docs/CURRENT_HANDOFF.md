@@ -1,18 +1,20 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-18
-Current checkpoint: two GM inputs inspected; the seller PDF set is verified,
-while the original USB HTML exports remain incomplete. Production GM
-extraction/import support has not been implemented.
+Updated: 2026-09-21
+Current checkpoint: the shared v1 extraction contract and synthetic acceptance
+examples are complete. Two GM inputs were previously inspected; the seller PDF
+set is verified, while the original USB HTML exports remain incomplete.
+Production GM extraction/import support has not been implemented.
 
 ## Start here
 
 1. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
 2. Read the [GM HTML USB inspection](GM_HTML_INSPECTION.md), especially the
    unresolved source-integrity findings.
-3. Select one step from the [GM manual-input implementation plan](GM_HTML_PLAN.md).
-4. Read that step's [test gate](GM_HTML_TEST_PLAN.md).
-5. Verify branches, working-tree changes and exact input identities before acting.
+3. Read the frozen [shared extraction contract](SERVICE_MANUAL_CONTRACT_V1.md).
+4. Select one remaining step from the [GM manual-input implementation plan](GM_HTML_PLAN.md).
+5. Read that step's [test gate](GM_HTML_TEST_PLAN.md).
+6. Verify branches, working-tree changes and exact input identities before acting.
 
 The user wants the same Repair Buddy experience across makes, with the manuals
 providing the content. Work is intentionally split into small sequential tasks
@@ -29,6 +31,7 @@ to manage Codex usage. Do not implement all steps on a generic “continue.”
 | Branch baseline | `f1bdc8d`, main and `v0.1.0` foundation |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
+| Neutral contract command | `python -m sme` (contract/validation only; no readers yet) |
 | Repair Buddy | `/Users/asokmathews/Documents/repair-buddy`, main `d59c8c8` |
 | Workshop toolkit | `/Users/asokmathews/Documents/workshop-manual-toolkit-main`, main `d150e7d` |
 
@@ -58,6 +61,22 @@ No data was added to Repair Buddy's live database. Tests must synthesize small
 inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 
 ## Important findings
+
+### Step 2 shared contract: complete
+
+- `service-manual-manifest/v1` records exact source identity, completeness,
+  publications, documents, qualifiers, citations, links, assets and text provenance.
+- `service-manual-operation/v1` freezes future neutral probe/extract JSON and
+  reserves `sme probe` and `sme extract` for Step 3.
+- Stable IDs are derived from immutable source identity and canonical
+  source-relative paths. Duplicate short codes or filenames are not selectors.
+- Unknown formats are rejected. Partial inputs require exact failure records;
+  OCR text remains derived from and cited back to the original page.
+- Authored HTML/SVG/raster examples and an in-memory generated PDF cover
+  qualifiers, diagnostic tables, repeated wording with separate context,
+  missing content, page citations and native/OCR provenance.
+- The working Ford `fsd` interface is unchanged. Neutral source readers,
+  normalization and Repair Buddy integration remain later steps.
 
 ### USB HTML exports: unresolved source integrity
 
@@ -98,9 +117,9 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 - Inspected source pages, scripts/styles, navigation, procedures, tables,
   diagrams and source warnings in the HTML set. This was not a full
   browser/diagnostic acceptance test.
-- Existing extractor suite: 59 tests passed; CLI help/version passed at the
-  prior `f1bdc8d` baseline. New production adapter and integration tests remain
-  planned.
+- Step 2 extractor suite: 75 tests passed, including the previous Ford tests,
+  neutral contract tests and frozen Ford command/JSON/exit behavior. New
+  production reader, parser and integration tests remain planned.
 
 ## Next task
 
@@ -108,11 +127,18 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 download replacement before claiming real-source acceptance for those HTML
 manuals. Do not repeat unbounded repair attempts against the unstable USB.
 
-**The shared next implementation milestone may now be Step 2: freeze the common
-contract.** Use synthetic fixtures plus the verified PDF inventory to define
-both `workshop_manuals_html_v1` and provisional `pdf_collection_v1`. Preserve
-Ford CLI behavior and provenance. Do not build a GM parser, reader or Repair
-Buddy integration in that step.
+**The next implementation milestone is Step 3: source containers and the
+extracted-folder reader.** Add explicit detection for ZIPs and already-unpacked
+folders, safe staged extraction, collision/path/resource checks, deterministic
+inventories and exact publication selection. For PDF collections, record file
+hashes and page counts without inferring vehicle coverage from folder names.
+Implement against synthetic inputs first, then perform local acceptance against
+the verified seller files and readable HTML material without committing any
+manual files.
+
+Do not begin Step 4 HTML/PDF content normalization or Repair Buddy integration
+as part of Step 3. Keep the original incomplete USB HTML state visible; a
+successful partial read must not become a complete-source claim.
 
 The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf

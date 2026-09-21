@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/service-manual-operation-v1.schema.json",
+  "title": "Service Manual Probe/Extract Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "operation", "ok", "source", "publications", "output", "diagnostics"
+  ],
+  "properties": {
+    "contract": {"const": "service-manual-operation/v1"},
+    "operation": {"enum": ["probe", "extract"]},
+    "ok": {"type": "boolean"},
+    "source": {
+      "$ref": "service-manual-manifest-v1.schema.json#/$defs/source"
+    },
+    "publications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "source_path", "title", "kind"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^pub_[0-9a-f]{32}$"},
+          "source_path": {
+            "$ref": "service-manual-manifest-v1.schema.json#/$defs/relativePath"
+          },
+          "title": {"type": "string", "minLength": 1},
+          "kind": {
+            "enum": [
+              "workshop", "wiring", "diagnostics", "owner", "reference", "unknown"
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "type": ["object", "null"]
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "code", "message"],
+        "properties": {
+          "level": {"enum": ["warning", "error"]},
+          "code": {"type": "string", "minLength": 1},
+          "message": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"operation": {"const": "probe"}}},
+      "then": {"properties": {"output": {"type": "null"}}},
+      "else": {
+        "properties": {
+          "output": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["manifest_path", "files_written", "bytes_written"],
+            "properties": {
+              "manifest_path": {
+                "$ref": "service-manual-manifest-v1.schema.json#/$defs/relativePath"
+              },
+              "files_written": {"type": "integer", "minimum": 0},
+              "bytes_written": {"type": "integer", "minimum": 0}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

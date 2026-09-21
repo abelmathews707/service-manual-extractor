@@ -1,8 +1,8 @@
 # GM source support — test and acceptance plan
 
-Date: 2026-09-18
-Status: Planned tests; only the Step 0 checks recorded in the inspection and
-handoff have been run. Do not mistake this matrix for implemented coverage.
+Date: 2026-09-21
+Status: Step 2 synthetic contract gate implemented; later implementation gates
+remain planned. Do not mistake contract examples for working HTML/PDF readers.
 
 ## Two levels of evidence
 
@@ -33,6 +33,12 @@ handoff have been run. Do not mistake this matrix for implemented coverage.
 | 6: applicability | 2001–2005 vs 2006, engine/fuel/cab/transmission/drivetrain unknowns, page disagrees with book, source-claimed equivalents | No silent universal applicability; mismatches visible/excluded as appropriate; qualifiers retained |
 | 7: static viewer | Both brands, multiple books, nested pages, search, backlinks, diagrams, keyboard/narrow screen, offline requests | Same viewer interactions; no Ford-only parser dependency for GM; all required assets local |
 | 8: checkpoint | Full regression gates, clean content boundary, dependency pin, setup from fresh clone | Reproducible build/tests; no manuals, ZIPs, local indexes, credentials or large derived outputs committed |
+
+Step 2 passed on 2026-09-21: 75 synthetic/regression tests cover the committed
+contract, authored HTML/SVG/raster examples, generated PDF pages, Ford v1/v2
+records, qualifiers, citations, missing content, native/OCR provenance,
+unsupported formats and frozen Ford CLI behavior. Step 3 and later rows are not
+implemented by that result.
 
 Use tiny constructed adversarial archives; do not actually decompress an
 unbounded archive to test resource limits. Generate ZIPs during tests so a
