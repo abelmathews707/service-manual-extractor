@@ -1,10 +1,11 @@
-"""Contract-only neutral command line introduced in implementation Step 2."""
+"""Manufacturer-neutral command line for source inspection and extraction."""
 import argparse
 import json
 import sys
 
 from . import __version__
 from .contract import ContractError, contract_summary, load_manifest
+from .source import SourceError, extract_source, inspect_source
 
 
 def cmd_contract(args):
@@ -15,8 +16,59 @@ def cmd_contract(args):
         print(f'Manifest contract: {value["manifest_contract"]}')
         print(f'Operation contract: {value["operation_contract"]}')
         print('Declared formats: ' + ', '.join(value['formats']))
-        print('Neutral readers: none (Step 2 defines contracts only)')
+        print('Neutral readers: ' + ', '.join(value['neutral_readers']))
     return 0
+
+
+def _print_operation(value):
+    source = value['source']
+    print(f'Format: {source["format"]}')
+    print(f'Container: {source["container"]}')
+    print(f'Status: {source["status"]}')
+    print(f'Source ID: {source["id"]}')
+    print(f'Publications: {len(value["publications"])}')
+    for publication in value['publications']:
+        print(f'  {publication["id"]}  {publication["source_path"]}')
+    for diagnostic in value['diagnostics']:
+        print(f'{diagnostic["level"]}: {diagnostic["message"]}', file=sys.stderr)
+    if value['operation'] == 'extract' and value['output']:
+        output = value['output']
+        print(f'Files written: {output["files_written"]}')
+        print(f'Bytes written: {output["bytes_written"]}')
+
+
+def _source_error(args, error):
+    if args.json:
+        print(json.dumps({'ok': False, 'error': str(error)}, indent=2))
+    else:
+        print(f'error: {error}', file=sys.stderr)
+    return 2
+
+
+def cmd_probe(args):
+    try:
+        value = inspect_source(args.source).operation()
+    except (OSError, SourceError) as ex:
+        return _source_error(args, ex)
+    if args.json:
+        print(json.dumps(value, indent=2, ensure_ascii=False))
+    else:
+        _print_operation(value)
+    return 0 if value['ok'] else 1
+
+
+def cmd_extract(args):
+    try:
+        value = extract_source(
+            args.source, args.out, publication_ids=args.publication,
+        )
+    except (OSError, SourceError) as ex:
+        return _source_error(args, ex)
+    if args.json:
+        print(json.dumps(value, indent=2, ensure_ascii=False))
+    else:
+        _print_operation(value)
+    return 0 if value['ok'] else 1
 
 
 def cmd_validate(args):
@@ -45,9 +97,9 @@ def cmd_validate(args):
 def make_parser():
     parser = argparse.ArgumentParser(
         prog='sme',
-        description='Inspect the versioned, manufacturer-neutral extraction contract.',
-        epilog=('Step 2 defines contracts only. Source probe and extraction readers '
-                'arrive in Step 3.'),
+        description='Safely inspect and extract supported service-manual sources.',
+        epilog=('HTML/PDF source reading is implemented. Procedure and page-content '
+                'normalization remains a later step.'),
     )
     parser.add_argument('--version', action='version', version=f'sme {__version__}')
     commands = parser.add_subparsers(dest='command', required=True, metavar='COMMAND')
@@ -60,6 +112,25 @@ def make_parser():
     command.add_argument('manifest')
     command.add_argument('--json', action='store_true', help='machine-readable output')
     command.set_defaults(function=cmd_validate)
+
+    command = commands.add_parser(
+        'probe', help='inspect a ZIP, folder or PDF without writing output',
+    )
+    command.add_argument('source')
+    command.add_argument('--json', action='store_true', help='machine-readable output')
+    command.set_defaults(function=cmd_probe)
+
+    command = commands.add_parser(
+        'extract', help='verify and atomically copy selected original files',
+    )
+    command.add_argument('source')
+    command.add_argument('-o', '--out', required=True)
+    command.add_argument(
+        '--publication', action='append',
+        help='exact publication ID to extract (repeatable; default: all)',
+    )
+    command.add_argument('--json', action='store_true', help='machine-readable output')
+    command.set_defaults(function=cmd_extract)
     return parser
 
 

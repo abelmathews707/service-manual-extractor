@@ -1,9 +1,9 @@
-"""Shared contracts for service-manual extraction.
+"""Shared contracts and neutral source readers for service-manual extraction.
 
 The existing :mod:`fsd` package remains the production Ford extractor.  This
-package is deliberately small in contract version 1: it defines the neutral
-records that future source readers will produce without pretending those
-readers already exist.
+package defines the neutral records and safely inventories/stages supported
+HTML and PDF sources.  Procedure and page-content normalization remains a
+separate implementation step.
 """
 
 __version__ = '0.1.0'

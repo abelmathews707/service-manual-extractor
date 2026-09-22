@@ -1,7 +1,7 @@
 # GM manual inputs and multi-format extractor plan
 
-Date: 2026-09-21
-Status: Steps 0–2 complete. Implement one later selected step per task.
+Date: 2026-09-22
+Status: Steps 0–3 complete. Implement one later selected step per task.
 
 ## Outcome
 
@@ -160,10 +160,10 @@ exports and PDF collections, including stable IDs, exact paths, partial-source
 failures, qualifiers, citations, assets and native/OCR text provenance. Authored
 HTML/SVG/raster examples and a generated PDF exercise the rules. Existing
 `fsd` command names, probe JSON/exit behavior and exact duplicate-archive
-selection remain unchanged. The neutral CLI exposes contract inspection and
-manifest validation only; real neutral source readers remain Step 3 work.
+selection remain unchanged. At this checkpoint the neutral CLI exposed contract
+inspection and manifest validation only; the source readers were added in Step 3 below.
 
-### Step 3 — source containers and extracted-folder reader
+### Step 3 — source containers and extracted-folder reader (complete 2026-09-22)
 
 Add explicit format probing for ZIPs and already-unpacked roots. Preserve
 relative paths; detect unsafe names, symbolic links, case/Unicode collisions,
@@ -176,6 +176,15 @@ with a separate output/status.
 Pass: test cases in the test plan pass; a valid ZIP and its unpacked equivalent
 describe the same content, with distinct container provenance. No silent skips
 or successful completion status after unreadable required files.
+
+Implemented result: [`SOURCE_READER_V1.md`](SOURCE_READER_V1.md) documents the
+neutral ZIP/folder/PDF reader, exact publication selection, limits, failure
+states and atomic staging behavior. A versioned raw-file inventory lets later
+steps compare ZIP and folder content without interpreting procedures early.
+Synthetic tests cover the Step 3 safety/repeatability matrix. Read-only local
+acceptance reproduced the complete 113-PDF/12,324-page seller set and the exact
+known failure counts for both damaged readable HTML ZIPs; the corrupt 6.0L ZIP
+is rejected before publication.
 
 ### Step 4 — HTML structure, PDF pages, context and assets
 

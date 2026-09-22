@@ -1,10 +1,10 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-21
-Current checkpoint: the shared v1 extraction contract and synthetic acceptance
-examples are complete. Two GM inputs were previously inspected; the seller PDF
-set is verified, while the original USB HTML exports remain incomplete.
-Production GM extraction/import support has not been implemented.
+Updated: 2026-09-22
+Current checkpoint: Step 3 safe ZIP/folder/PDF source reading and staged
+extraction are complete. The seller PDF set passes the new reader; the original
+USB HTML exports are correctly rejected or marked partial. Procedure/page
+normalization and application import have not been implemented.
 
 ## Start here
 
@@ -31,8 +31,8 @@ to manage Codex usage. Do not implement all steps on a generic “continue.”
 | Branch baseline | `f1bdc8d`, main and `v0.1.0` foundation |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
-| Neutral contract command | `python -m sme` (contract/validation only; no readers yet) |
-| Repair Buddy | `/Users/asokmathews/Documents/repair-buddy`, main `d59c8c8` |
+| Neutral source command | `python -m sme` (`probe`, staged `extract`, contract validation) |
+| Repair Buddy | `/Users/asokmathews/Documents/repair-buddy`, main `57eba8f` |
 | Workshop toolkit | `/Users/asokmathews/Documents/workshop-manual-toolkit-main`, main `d150e7d` |
 
 GitHub was renamed with the user's chosen name. The local `origin` URL was
@@ -66,8 +66,8 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 
 - `service-manual-manifest/v1` records exact source identity, completeness,
   publications, documents, qualifiers, citations, links, assets and text provenance.
-- `service-manual-operation/v1` freezes future neutral probe/extract JSON and
-  reserves `sme probe` and `sme extract` for Step 3.
+- `service-manual-operation/v1` defines the neutral probe/extract JSON now used
+  by `sme probe` and `sme extract`.
 - Stable IDs are derived from immutable source identity and canonical
   source-relative paths. Duplicate short codes or filenames are not selectors.
 - Unknown formats are rejected. Partial inputs require exact failure records;
@@ -75,8 +75,26 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 - Authored HTML/SVG/raster examples and an in-memory generated PDF cover
   qualifiers, diagnostic tables, repeated wording with separate context,
   missing content, page citations and native/OCR provenance.
-- The working Ford `fsd` interface is unchanged. Neutral source readers,
-  normalization and Repair Buddy integration remain later steps.
+- The working Ford `fsd` interface is unchanged. Content normalization and
+  Repair Buddy integration remain later steps.
+
+### Step 3 source reader: complete
+
+- `sme probe` fully reads and hashes supported ZIPs, unpacked folders and PDFs,
+  verifies PDF page counts and returns exact selectable publication IDs.
+- Archive guards cover traversal/absolute/drive/backslash/control paths,
+  symlinks, encryption, compression types, duplicate/case/Unicode collisions,
+  corruption and configured expansion limits.
+- ZIP and folder inputs retain different container provenance while a canonical
+  file inventory proves whether their content is identical.
+- `sme extract` copies exact selections into a fresh sibling staging directory,
+  verifies bytes/hashes, writes the common manifest plus raw-file inventory and
+  atomically publishes. Partial sources and interrupted runs never publish.
+- The preserved seller ZIP and its matching unpacked root each report 113 PDFs,
+  12,324 pages and content SHA-256
+  `b88d90f9675e18fd241eb8653d3b24de2d6232d749aacc1a999ccd80eb105a4a`.
+- The original 6.6L and 8.1L ZIPs reproduce 760 and 5,483 exact failures. The
+  6.0L ZIP is rejected for corrupt directory/extra-field structure.
 
 ### USB HTML exports: unresolved source integrity
 
@@ -117,9 +135,9 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 - Inspected source pages, scripts/styles, navigation, procedures, tables,
   diagrams and source warnings in the HTML set. This was not a full
   browser/diagnostic acceptance test.
-- Step 2 extractor suite: 75 tests passed, including the previous Ford tests,
-  neutral contract tests and frozen Ford command/JSON/exit behavior. New
-  production reader, parser and integration tests remain planned.
+- Step 3 extractor suite: 100 tests passed, including all previous Ford/contract
+  tests plus source safety, repeatability, page-count, staging, selection and
+  neutral CLI tests. Parser and integration tests remain planned.
 
 ## Next task
 
@@ -127,18 +145,15 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 download replacement before claiming real-source acceptance for those HTML
 manuals. Do not repeat unbounded repair attempts against the unstable USB.
 
-**The next implementation milestone is Step 3: source containers and the
-extracted-folder reader.** Add explicit detection for ZIPs and already-unpacked
-folders, safe staged extraction, collision/path/resource checks, deterministic
-inventories and exact publication selection. For PDF collections, record file
-hashes and page counts without inferring vehicle coverage from folder names.
-Implement against synthetic inputs first, then perform local acceptance against
-the verified seller files and readable HTML material without committing any
-manual files.
+**The next implementation milestone is Step 4: HTML structure, PDF pages,
+context and assets.** Normalize only fully verified synthetic sources first.
+Implement hierarchy, navigation aliases, diagnostic tables, qualifiers,
+captions, references, safe SVG/assets and page citations. PDF native/OCR text
+must retain its original-file/page identity and provenance.
 
-Do not begin Step 4 HTML/PDF content normalization or Repair Buddy integration
-as part of Step 3. Keep the original incomplete USB HTML state visible; a
-successful partial read must not become a complete-source claim.
+Do not treat folder names as vehicle coverage, flatten tables into ambiguous
+text or parse the damaged HTML ZIPs as complete inputs. Repair Buddy integration
+remains Step 5 and must use a separate branch in that repository.
 
 The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf

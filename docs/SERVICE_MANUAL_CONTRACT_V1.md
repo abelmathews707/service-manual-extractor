@@ -1,7 +1,7 @@
 # Service manual extraction contract v1
 
-Status: frozen by implementation Step 2. This document defines records and
-command behavior; it does not claim that the neutral HTML/PDF readers exist.
+Status: manifest and operation contracts frozen by implementation Step 2;
+neutral HTML/PDF source readers implemented in Step 3.
 
 ## Purpose and boundary
 
@@ -14,15 +14,19 @@ Contract v1 has two machine-readable records:
 
 - `service-manual-manifest/v1`: the durable source, publication, document,
   asset, applicability and citation record.
-- `service-manual-operation/v1`: the JSON response reserved for neutral
-  `probe` and `extract` commands.
+- `service-manual-operation/v1`: the JSON response used by neutral `probe` and
+  `extract` commands.
 
 The public JSON Schemas are
 [`schemas/service-manual-manifest-v1.schema.json`](../schemas/service-manual-manifest-v1.schema.json)
 and
 [`schemas/service-manual-operation-v1.schema.json`](../schemas/service-manual-operation-v1.schema.json).
+Step 3 adds a separately versioned raw-file inventory schema at
+[`schemas/service-manual-source-inventory-v1.schema.json`](../schemas/service-manual-source-inventory-v1.schema.json).
 [`sme/contract.py`](../sme/contract.py) is the dependency-free validator and ID
-implementation used by this repository's Python tests. All are frozen together.
+implementation used by this repository's Python tests. The manifest and
+operation records remain frozen; future inventory changes require a new
+inventory contract version.
 
 The existing `python3 -m fsd` command remains the working Ford extractor. Step
 2 does not change its commands, JSON, selection rules or exit behavior, and it
@@ -74,8 +78,8 @@ their canonical source-relative path. The exact algorithm lives in
 
 Paths always use `/`, are relative to the selected source root, and may not
 contain parent traversal, drive prefixes, UNC/absolute roots, NUL bytes or
-control characters. Step 3 will add archive extraction defenses and collision
-checks; this contract does not extract containers.
+control characters. Step 3 implements the archive defenses, collision checks
+and staged copying described in [`SOURCE_READER_V1.md`](SOURCE_READER_V1.md).
 
 Exact selection uses stable IDs. A short display code or duplicate filename is
 never sufficient to choose one publication. This preserves the current Ford
@@ -131,20 +135,20 @@ the safe rendering policy.
 
 ## Neutral command contract
 
-The neutral entry point is `python3 -m sme`. Step 2 exposes only contract
-discovery and validation:
+The neutral entry point is `python3 -m sme`. Contract discovery and validation
+remain available:
 
 ```sh
 python3 -m sme contract --json
 python3 -m sme validate-manifest MANIFEST.json --json
 ```
 
-`contract` returns the exact format/status vocabulary and an empty
-`neutral_readers` list so it cannot imply that Step 3 is already implemented.
+`contract` returns the exact format/status vocabulary and the implemented
+HTML/PDF readers.
 `validate-manifest` exits 0 for a valid manifest and 1 for invalid JSON or an
 invalid contract record.
 
-The following neutral command names are reserved for Step 3:
+Step 3 implements the neutral source commands:
 
 ```sh
 python3 -m sme probe SOURCE --json
@@ -162,7 +166,7 @@ Their JSON output is `service-manual-operation/v1` with these required fields:
 | `output` | `null` for probe; manifest path and byte/file counts for extract |
 | `diagnostics` | Structured warning/error code and message records |
 
-Reserved `probe`/`extract` exit behavior is 0 for success, 1 for a completed
+`probe`/`extract` exit behavior is 0 for success, 1 for a completed
 operation that found integrity/extraction failures, and 2 for invocation,
 unreadable-input or unsupported-format errors. The JSON record must still name
 an exact supported format; an unknown input cannot masquerade as a supported
@@ -179,4 +183,5 @@ one records OCR-derived text.
 
 `tests/test_contracts.py` also validates Ford v1/v2 records, freezes existing
 Ford command names and probe JSON/exit behavior, and rejects unsupported formats
-and unsafe paths. These are contract tests, not working HTML/PDF readers.
+and unsafe paths. Reader behavior is covered separately by
+`tests/test_sources.py`.

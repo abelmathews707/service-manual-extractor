@@ -27,6 +27,8 @@ jobs:
         run: |
           python -m fsd --version
           python -m fsd --help
+          python -m sme --version
+          python -m sme --help
 
   lint:
     runs-on: ubuntu-latest

@@ -2,8 +2,9 @@
 
 Formerly `abelmathews707/ford-service-disc`. This fork is expanding toward
 multiple service-manual formats and vehicle makes. **Ford support is implemented;
-GM HTML and PDF inputs have been inspected, and the shared v1 extraction
-contract is now frozen, but no GM importer is implemented yet.**
+GM HTML and PDF inputs have been inspected, the shared v1 extraction contract
+is frozen, and safe ZIP/folder/PDF source reading is implemented. Manual-content
+normalization and application import are not implemented yet.**
 
 Start the GM work from [the current handoff](docs/CURRENT_HANDOFF.md), then use
 the [staged implementation plan](docs/GM_HTML_PLAN.md) and
@@ -13,7 +14,8 @@ remain compatible. Existing local checkouts do not need to be renamed.
 The manufacturer-neutral contract is documented in
 [docs/SERVICE_MANUAL_CONTRACT_V1.md](docs/SERVICE_MANUAL_CONTRACT_V1.md). Step 2
 adds `python3 -m sme contract` and `validate-manifest` for contract inspection;
-real neutral `probe` and `extract` readers are intentionally deferred to Step 3.
+Step 3 adds neutral `probe` and staged `extract` readers. See the
+[source reader guide](docs/SOURCE_READER_V1.md).
 
 **Read your Ford service manual DVD without the original Windows software.**
 Extracts the workshop manual, wiring diagrams and PCED off a Ford Technical
@@ -143,6 +145,21 @@ python3 -m fsd all IMAGE.img -o site
 of one, or an image file (`.iso`, `.img`, `.bin`).
 
 Run `python3 -m fsd COMMAND --help` for the options.
+
+### Neutral source inspection
+
+The new neutral reader verifies supported HTML/PDF ZIPs, unpacked folders and
+standalone PDFs without changing the established Ford commands:
+
+```bash
+python3 -m sme probe /path/to/manual-source --json
+python3 -m sme extract /path/to/manual-source -o verified-source
+```
+
+Extraction requires a fresh output path and publishes only after every selected
+file is copied and hash-verified. It does not yet parse procedures or build the
+viewer. See [the source reader guide](docs/SOURCE_READER_V1.md) for exact
+selection, safety rules and partial-source behavior.
 
 ### Select an exact archive
 

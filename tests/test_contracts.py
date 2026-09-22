@@ -365,14 +365,15 @@ class TestNeutralManifest(unittest.TestCase):
 
 
 class TestNeutralCli(unittest.TestCase):
-    def test_contract_discovery_is_machine_readable_and_has_no_readers_yet(self):
+    def test_contract_discovery_is_machine_readable(self):
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
             code = neutral_cli.main(['contract', '--json'])
         self.assertEqual(code, 0)
         value = json.loads(output.getvalue())
         self.assertEqual(value['manifest_contract'], MANIFEST_CONTRACT)
-        self.assertEqual(value['neutral_readers'], [])
+        self.assertEqual(value['neutral_readers'],
+                         ['workshop_manuals_html_v1', 'pdf_collection_v1'])
         self.assertEqual(value['legacy_entry_points'], ['python3 -m fsd'])
 
     def test_validate_manifest_exit_codes(self):

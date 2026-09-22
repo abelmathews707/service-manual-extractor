@@ -1,8 +1,8 @@
 # GM source support — test and acceptance plan
 
-Date: 2026-09-21
-Status: Step 2 synthetic contract gate implemented; later implementation gates
-remain planned. Do not mistake contract examples for working HTML/PDF readers.
+Date: 2026-09-22
+Status: Step 2 contract and Step 3 source-reader gates implemented; content
+normalization and later application gates remain planned.
 
 ## Two levels of evidence
 
@@ -37,8 +37,15 @@ remain planned. Do not mistake contract examples for working HTML/PDF readers.
 Step 2 passed on 2026-09-21: 75 synthetic/regression tests cover the committed
 contract, authored HTML/SVG/raster examples, generated PDF pages, Ford v1/v2
 records, qualifiers, citations, missing content, native/OCR provenance,
-unsupported formats and frozen Ford CLI behavior. Step 3 and later rows are not
-implemented by that result.
+unsupported formats and frozen Ford CLI behavior.
+
+Step 3 passed on 2026-09-22: 100 total tests cover ZIP/folder equivalence,
+original path preservation, empty files/directories, same-sized changes,
+interrupt/re-run behavior, exact selection, unsafe paths, symlinks,
+case/Unicode collisions, duplicates, encryption, corruption and resource limits.
+Local read-only acceptance found 113 PDFs/12,324 pages with no failures in both
+seller forms and reproduced 760/5,483 failures in the damaged 6.6L/8.1L ZIPs.
+Step 4 and later rows remain unimplemented.
 
 Use tiny constructed adversarial archives; do not actually decompress an
 unbounded archive to test resource limits. Generate ZIPs during tests so a

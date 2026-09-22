@@ -345,7 +345,7 @@ def validate_manifest(value):
 
 
 def validate_operation(value):
-    """Validate the JSON envelope reserved for future probe/extract commands."""
+    """Validate the JSON envelope used by neutral probe/extract commands."""
     required = ('contract', 'operation', 'ok', 'source', 'publications', 'output',
                 'diagnostics')
     _object(value, 'result', required)
@@ -393,7 +393,7 @@ def validate_operation(value):
 
 
 def contract_summary():
-    """Machine-readable discovery data for the contract-only Step 2 CLI."""
+    """Machine-readable discovery data for the neutral CLI."""
     return {
         'manifest_contract': MANIFEST_CONTRACT,
         'operation_contract': OPERATION_CONTRACT,
@@ -401,7 +401,7 @@ def contract_summary():
         'containers': list(CONTAINERS),
         'source_statuses': list(SOURCE_STATUSES),
         'text_provenance': list(TEXT_PROVENANCE),
-        'neutral_readers': [],
+        'neutral_readers': ['workshop_manuals_html_v1', 'pdf_collection_v1'],
         'legacy_entry_points': ['python3 -m fsd'],
     }
 
