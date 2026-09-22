@@ -17,10 +17,10 @@ from fsd.disc import DiscError
 from fsd.probe import as_json
 from sme import cli as neutral_cli
 from sme.contract import (
-    ContractError,
     FORMATS,
     MANIFEST_CONTRACT,
     OPERATION_CONTRACT,
+    ContractError,
     asset_id,
     canonical_path,
     document_id,
@@ -29,7 +29,6 @@ from sme.contract import (
     validate_manifest,
     validate_operation,
 )
-
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HTML = os.path.join(ROOT, 'tests', 'fixtures', 'html_manual')

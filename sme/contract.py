@@ -3,7 +3,6 @@ import hashlib
 import json
 import re
 
-
 MANIFEST_CONTRACT = 'service-manual-manifest/v1'
 OPERATION_CONTRACT = 'service-manual-operation/v1'
 
