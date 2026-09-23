@@ -73,7 +73,7 @@ def title_and_kind(first_page):
     lines = [line.strip() for line in first_page.splitlines() if line.strip()]
     title = ' / '.join(lines[:4])[:500] or 'Untitled PDF publication'
     sample = '\n'.join(lines[:30]).casefold()
-    if 'owner' in sample and ('manual' in sample or 'chevrolet' in sample):
+    if re.search(r"\bowner(?:'s)?\s+(?:manual|guide)\b", sample):
         kind = 'owner'
     elif 'generic' in sample and ('code' in sample or 'obd' in sample):
         kind = 'reference'

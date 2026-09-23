@@ -15,7 +15,7 @@ from sme import cli
 from sme.contract import validate_manifest
 from sme.html_content import local_url, parse_html, safe_svg
 from sme.normalize import CONTENT_NAME, digest, normalize_source, validate_content
-from sme.pdf_content import pdf_text_pages
+from sme.pdf_content import pdf_text_pages, title_and_kind
 from sme.source import INVENTORY_NAME, MANIFEST_NAME, SourceError, extract_source, inspect_source
 
 FIXTURES = os.path.join(os.path.dirname(__file__), 'fixtures', 'html_manual')
@@ -24,6 +24,23 @@ FIXTURES = os.path.join(os.path.dirname(__file__), 'fixtures', 'html_manual')
 def read_json(folder, name):
     with open(os.path.join(folder, name), encoding='utf-8') as stream:
         return json.load(stream)
+
+
+class PdfClassificationTests(unittest.TestCase):
+    def test_owner_manual_requires_an_owner_document_phrase(self):
+        _, kind = title_and_kind(
+            "2004 Chevrolet Silverado Owner Manual M\nSeats and Restraints"
+        )
+        self.assertEqual(kind, "owner")
+
+    def test_service_warning_and_manual_system_reference_are_not_owner_information(self):
+        _, kind = title_and_kind(
+            """2002 Chevrolet Silverado 1500
+            2002 HEATER SYSTEMS Sierra & Silverado
+            Obtain radio anti-theft protection code from owner prior to servicing.
+            See the article in MANUAL A/C-HEATER SYSTEMS."""
+        )
+        self.assertEqual(kind, "unknown")
 
 
 class HtmlMeaningTests(unittest.TestCase):
