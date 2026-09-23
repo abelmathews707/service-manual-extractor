@@ -2,7 +2,8 @@
 
 Status: implemented by Step 3 on 2026-09-22. This reader verifies and stages
 original files; it does not yet interpret procedures, navigation, tables,
-qualifiers, diagrams or searchable page text.
+qualifiers, diagrams or searchable page text. The separate Step 4
+[`normalize` command](CONTENT_NORMALIZATION_V1.md) now performs that work.
 
 ## Supported inputs
 
@@ -16,8 +17,8 @@ qualifiers, diagrams or searchable page text.
 An HTML export must contain an `index.html` and at least one HTML file below its
 matching `pages/` directory. A folder containing arbitrary HTML does not qualify.
 A PDF folder name is never treated as evidence of vehicle, year, engine or
-manual coverage. Until Step 4 reads source title evidence, PDF publication titles
-are only their filenames and their kind is `unknown`.
+manual coverage. In the source-reading stage, PDF publication titles are only
+their filenames and their kind is `unknown`; normalization reads title evidence.
 
 Unknown inputs return exit code 2. A recognized but incomplete or unsafe input
 returns exit code 1 and a structured `partial` result. A complete input returns
@@ -102,7 +103,7 @@ reported but never published. Recovery of damaged input must be a separate
 operation with its own source identity and incomplete status.
 
 The common manifest intentionally contains empty document arrays at this step.
-Step 4 will normalize verified original files into cited documents without
+Step 4 normalizes verified original files into cited documents without
 changing their recorded source identity.
 
 ## Local acceptance results

@@ -1,7 +1,8 @@
 # GM manual inputs and multi-format extractor plan
 
-Date: 2026-09-22
-Status: Steps 0–3 complete. Implement one later selected step per task.
+Date: 2026-09-23
+Status: Steps 0–4 implemented. Step 4 HTML visual/complete-source acceptance
+remains limited; see its result below. Implement one selected step per task.
 
 ## Outcome
 
@@ -186,7 +187,7 @@ acceptance reproduced the complete 113-PDF/12,324-page seller set and the exact
 known failure counts for both damaged readable HTML ZIPs; the corrupt 6.0L ZIP
 is rejected before publication.
 
-### Step 4 — HTML structure, PDF pages, context and assets
+### Step 4 — HTML structure, PDF pages, context and assets (implemented 2026-09-23)
 
 Use `.main`, page headings and breadcrumb hierarchy rather than indexing the
 entire website shell. Detect structural navigation, root/index duplicates,
@@ -210,6 +211,16 @@ page-based searchable text, title/applicability evidence and page assets without
 inventing a document hierarchy. Route native text and OCR-derived text through
 the same search contract while recording the provenance difference. A page-level
 citation must resolve to the correct original file and page.
+
+Implemented result: `sme normalize` and separately versioned content/OCR-map
+schemas preserve structured HTML, qualifiers, references, safe SVG derivatives
+and per-page PDF provenance. All 113 seller PDFs produced 12,324 cited searchable
+pages (7,606 native, 4,718 OCR), with original hashes unchanged. Synthetic gates
+pass; eleven hash-checked HTML samples and one rendered static SVG were reviewed.
+Full HTML visual/browser acceptance remains open because browser policy blocked
+the local preview, and the HTML originals remain damaged. See
+[CONTENT_NORMALIZATION_V1.md](CONTENT_NORMALIZATION_V1.md) for exact behavior,
+limits and evidence. This checkpoint does not authorize complete HTML coverage.
 
 ### Step 5 — Repair Buddy integration
 

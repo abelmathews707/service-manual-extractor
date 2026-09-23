@@ -5,6 +5,7 @@ import sys
 
 from . import __version__
 from .contract import ContractError, contract_summary, load_manifest
+from .normalize import normalize_source
 from .source import SourceError, extract_source, inspect_source
 
 
@@ -94,12 +95,27 @@ def cmd_validate(args):
     return 0
 
 
+def cmd_normalize(args):
+    try:
+        result = normalize_source(args.source, args.out, args.ocr_manifest, args.source_inventory)
+    except (OSError, SourceError, ContractError, json.JSONDecodeError) as ex:
+        return _source_error(args, ex)
+    if args.json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        print(f'Normalization: {result["status"]}')
+        print(f'Documents: {result["documents"]}; searchable: {result["searchable_documents"]}')
+        print(f'Output: {result["output"]}')
+        for failure in result['failures']:
+            print(f'{failure["path"]}: {failure["message"]}', file=sys.stderr)
+    return 0 if result['ok'] else 1
+
+
 def make_parser():
     parser = argparse.ArgumentParser(
         prog='sme',
         description='Safely inspect and extract supported service-manual sources.',
-        epilog=('HTML/PDF source reading is implemented. Procedure and page-content '
-                'normalization remains a later step.'),
+        epilog='Normalize a verified extraction to preserve HTML structure and cited PDF pages.',
     )
     parser.add_argument('--version', action='version', version=f'sme {__version__}')
     commands = parser.add_subparsers(dest='command', required=True, metavar='COMMAND')
@@ -131,6 +147,14 @@ def make_parser():
     )
     command.add_argument('--json', action='store_true', help='machine-readable output')
     command.set_defaults(function=cmd_extract)
+
+    command = commands.add_parser('normalize', help='normalize a verified Step 3 extraction')
+    command.add_argument('source')
+    command.add_argument('-o', '--out', required=True)
+    command.add_argument('--ocr-manifest', help='hash-bound service-manual-ocr-map/v1 JSON')
+    command.add_argument('--source-inventory', help='full same-source inventory for excluded links')
+    command.add_argument('--json', action='store_true', help='machine-readable output')
+    command.set_defaults(function=cmd_normalize)
     return parser
 
 

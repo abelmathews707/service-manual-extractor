@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/service-manual-content-v1.schema.json",
+  "title": "Service Manual Content v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "source_id", "status", "failures", "documents"],
+  "properties": {
+    "contract": {"const": "service-manual-content/v1"},
+    "source_id": {"type": "string", "pattern": "^src_[0-9a-f]{32}$"},
+    "status": {"enum": ["complete", "partial"]},
+    "failures": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "code", "message"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "code": {"type": "string", "minLength": 1},
+        "message": {"type": "string", "minLength": 1}
+      }
+    }},
+    "documents": {"type": "array", "items": {"$ref": "#/$defs/document"}}
+  },
+  "$defs": {
+    "node": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "object", "additionalProperties": false,
+          "required": ["tag", "attrs", "children"],
+          "properties": {
+            "tag": {"enum": ["p", "div", "section", "article", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "table", "tr", "th", "td", "br", "hr", "pre", "blockquote", "thead", "tbody", "tfoot", "caption", "strong", "b", "em", "i", "span", "sub", "sup", "code", "dl", "dt", "dd", "a", "img"]},
+            "attrs": {"type": "object", "additionalProperties": false, "properties": {
+              "colspan": {"type": "integer", "minimum": 1, "maximum": 1000},
+              "rowspan": {"type": "integer", "minimum": 1, "maximum": 1000},
+              "reference": {"type": "integer", "minimum": 0},
+              "figure": {"type": "integer", "minimum": 0}
+            }},
+            "children": {"type": "array", "items": {"$ref": "#/$defs/node"}}
+          }
+        }
+      ]
+    },
+    "document": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "publication_id", "original_path", "role", "text", "search_eligible", "structure", "references", "figures", "anchors", "navigation", "same_text_ids", "context_alias_ids", "warnings"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^doc_[0-9a-f]{32}$"},
+        "publication_id": {"type": "string", "pattern": "^pub_[0-9a-f]{32}$"},
+        "original_path": {"type": "string", "minLength": 1},
+        "role": {"enum": ["procedure", "landing", "navigation", "unavailable", "pdf_page"]},
+        "text": {"type": "string"}, "search_eligible": {"type": "boolean"},
+        "structure": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+        "references": {"type": "array", "items": {"$ref": "#/$defs/reference"}},
+        "figures": {"type": "array", "items": {"$ref": "#/$defs/figure"}},
+        "anchors": {"type": "array", "items": {"type": "string"}},
+        "navigation": {"type": "array", "items": {"type": "object"}},
+        "navigation_routes": {"type": "array", "items": {"type": "object"}},
+        "same_text_ids": {"type": "array", "items": {"type": "string"}},
+        "context_alias_ids": {"type": "array", "items": {"type": "string"}},
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "page": {"type": "integer", "minimum": 1},
+        "encoding": {"type": "string"},
+        "visible_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "ocr": {"type": "object", "required": ["source_sha256", "derived_sha256", "page_count", "tool"]}
+      }
+    },
+    "reference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["href", "label", "path", "fragment", "context", "status", "reason"],
+      "properties": {
+        "href": {"type": "string"}, "label": {"type": "string"},
+        "path": {"type": ["string", "null"]}, "fragment": {"type": "string"},
+        "source_fragment": {"type": "string"}, "target_fragment": {"type": "string"},
+        "context": {"enum": ["content", "navigation", "shell"]},
+        "status": {"enum": ["resolved", "missing", "outside_selection", "unavailable_by_source", "blocked", "unsupported"]},
+        "reason": {"type": ["string", "null"]},
+        "target_id": {"type": "string", "pattern": "^doc_[0-9a-f]{32}$"}
+      }
+    },
+    "figure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "caption", "status"],
+      "properties": {
+        "href": {"type": "string"}, "path": {"type": ["string", "null"]},
+        "caption": {"type": "string"},
+        "status": {"enum": ["blocked", "missing", "unsupported", "safe_svg", "raster", "original_pdf_page"]},
+        "reason": {"type": ["string", "null"]},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "render_path": {"type": "string"},
+        "render_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "page": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

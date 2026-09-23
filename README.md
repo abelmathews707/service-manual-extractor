@@ -3,8 +3,8 @@
 Formerly `abelmathews707/ford-service-disc`. This fork is expanding toward
 multiple service-manual formats and vehicle makes. **Ford support is implemented;
 GM HTML and PDF inputs have been inspected, the shared v1 extraction contract
-is frozen, and safe ZIP/folder/PDF source reading is implemented. Manual-content
-normalization and application import are not implemented yet.**
+is frozen, and safe ZIP/folder/PDF source reading plus HTML/PDF content
+normalization are implemented. Application import remains a later step.**
 
 Start the GM work from [the current handoff](docs/CURRENT_HANDOFF.md), then use
 the [staged implementation plan](docs/GM_HTML_PLAN.md) and
@@ -16,6 +16,9 @@ The manufacturer-neutral contract is documented in
 adds `python3 -m sme contract` and `validate-manifest` for contract inspection;
 Step 3 adds neutral `probe` and staged `extract` readers. See the
 [source reader guide](docs/SOURCE_READER_V1.md).
+Step 4 adds `sme normalize`; see the
+[content normalization guide](docs/CONTENT_NORMALIZATION_V1.md) for requirements
+and remaining HTML acceptance limits.
 
 **Read your Ford service manual DVD without the original Windows software.**
 Extracts the workshop manual, wiring diagrams and PCED off a Ford Technical
@@ -154,11 +157,13 @@ standalone PDFs without changing the established Ford commands:
 ```bash
 python3 -m sme probe /path/to/manual-source --json
 python3 -m sme extract /path/to/manual-source -o verified-source
+python3 -m sme normalize verified-source -o normalized-source --json
 ```
 
 Extraction requires a fresh output path and publishes only after every selected
-file is copied and hash-verified. It does not yet parse procedures or build the
-viewer. See [the source reader guide](docs/SOURCE_READER_V1.md) for exact
+file is copied and hash-verified. Normalization preserves HTML structure and
+cited PDF pages; PDF text reading requires Poppler. See
+[the source reader guide](docs/SOURCE_READER_V1.md) for exact
 selection, safety rules and partial-source behavior.
 
 ### Select an exact archive

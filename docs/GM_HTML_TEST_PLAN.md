@@ -1,8 +1,9 @@
 # GM source support — test and acceptance plan
 
-Date: 2026-09-22
-Status: Step 2 contract and Step 3 source-reader gates implemented; content
-normalization and later application gates remain planned.
+Date: 2026-09-23
+Status: Step 2 contract, Step 3 source reader and Step 4 normalization implemented.
+Step 4 HTML browser/complete-source acceptance remains open; application gates
+remain planned.
 
 ## Two levels of evidence
 
@@ -45,7 +46,14 @@ interrupt/re-run behavior, exact selection, unsafe paths, symlinks,
 case/Unicode collisions, duplicates, encryption, corruption and resource limits.
 Local read-only acceptance found 113 PDFs/12,324 pages with no failures in both
 seller forms and reproduced 760/5,483 failures in the damaged 6.6L/8.1L ZIPs.
-Step 4 and later rows remain unimplemented.
+Step 4 implementation passed 128 tests (including the optional Poppler/schema
+checks in the isolated development environment). The full PDF set produced
+12,324 searchable, original-page-cited records with zero processing failures;
+all 113 original hashes remain unchanged. Eleven verified surviving HTML samples
+and one offline-rendered sanitized SVG were checked. Browser policy blocked the
+HTML preview; that visual acceptance gate and the damaged-source gate remain
+open. See [CONTENT_NORMALIZATION_V1.md](CONTENT_NORMALIZATION_V1.md).
+Step 5 and later rows remain unimplemented.
 
 Use tiny constructed adversarial archives; do not actually decompress an
 unbounded archive to test resource limits. Generate ZIPs during tests so a

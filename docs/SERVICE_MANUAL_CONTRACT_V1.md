@@ -1,7 +1,8 @@
 # Service manual extraction contract v1
 
 Status: manifest and operation contracts frozen by implementation Step 2;
-neutral HTML/PDF source readers implemented in Step 3.
+neutral HTML/PDF source readers implemented in Step 3, content normalization
+implemented in Step 4.
 
 ## Purpose and boundary
 
@@ -130,8 +131,10 @@ Searchable text provenance is exact:
 
 OCR never replaces or relabels the original PDF. Page citations continue to
 resolve to that original file. Assets retain path, media type, hash, owning
-document and caption. SVG is only declared here; Step 4 must implement and test
-the safe rendering policy.
+document and caption. Step 4 implements the static SVG policy and page-content
+sidecar described in [CONTENT_NORMALIZATION_V1.md](CONTENT_NORMALIZATION_V1.md).
+For PDFs, a per-page document has a logical `.sme-derived/pages/...` record path
+and cites its original PDF path/page. The logical path is not a reader file.
 
 ## Neutral command contract
 

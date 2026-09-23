@@ -1,10 +1,10 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-22
-Current checkpoint: Step 3 safe ZIP/folder/PDF source reading and staged
-extraction are complete. The seller PDF set passes the new reader; the original
-USB HTML exports are correctly rejected or marked partial. Procedure/page
-normalization and application import have not been implemented.
+Updated: 2026-09-23
+Current checkpoint: Step 4 content normalization is implemented. The seller PDF
+set produced 12,324 cited searchable pages. Synthetic HTML gates and sampled
+source checks pass; full HTML browser/visual acceptance and complete-source
+acceptance remain open. Application integration has not started.
 
 ## Start here
 
@@ -12,6 +12,7 @@ normalization and application import have not been implemented.
 2. Read the [GM HTML USB inspection](GM_HTML_INSPECTION.md), especially the
    unresolved source-integrity findings.
 3. Read the frozen [shared extraction contract](SERVICE_MANUAL_CONTRACT_V1.md).
+   Read the [Step 4 behavior and limitations](CONTENT_NORMALIZATION_V1.md).
 4. Select one remaining step from the [GM manual-input implementation plan](GM_HTML_PLAN.md).
 5. Read that step's [test gate](GM_HTML_TEST_PLAN.md).
 6. Verify branches, working-tree changes and exact input identities before acting.
@@ -31,7 +32,7 @@ to manage Codex usage. Do not implement all steps on a generic “continue.”
 | Branch baseline | `f1bdc8d`, main and `v0.1.0` foundation |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
-| Neutral source command | `python -m sme` (`probe`, staged `extract`, contract validation) |
+| Neutral source command | `python -m sme` (`probe`, staged `extract`, `normalize`, contract validation) |
 | Repair Buddy | `/Users/asokmathews/Documents/repair-buddy`, main `57eba8f` |
 | Workshop toolkit | `/Users/asokmathews/Documents/workshop-manual-toolkit-main`, main `d150e7d` |
 
@@ -75,8 +76,8 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 - Authored HTML/SVG/raster examples and an in-memory generated PDF cover
   qualifiers, diagnostic tables, repeated wording with separate context,
   missing content, page citations and native/OCR provenance.
-- The working Ford `fsd` interface is unchanged. Content normalization and
-  Repair Buddy integration remain later steps.
+- The working Ford `fsd` interface is unchanged. Repair Buddy integration
+  remains a later step.
 
 ### Step 3 source reader: complete
 
@@ -95,6 +96,26 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
   `b88d90f9675e18fd241eb8653d3b24de2d6232d749aacc1a999ccd80eb105a4a`.
 - The original 6.6L and 8.1L ZIPs reproduce 760 and 5,483 exact failures. The
   6.0L ZIP is rejected for corrupt directory/extra-field structure.
+
+### Step 4 content normalization: implemented; HTML acceptance limited
+
+- `sme normalize` verifies a Step 3 extraction and publishes original files,
+  the populated v1 manifest, the original inventory and a versioned content file.
+- HTML records retain content roles, breadcrumbs, navigation routes, tables,
+  warnings, qualifiers, references, captions and static SVG derivatives.
+- Every PDF page has its own document ID and exact original-file/page citation.
+  Original text takes precedence; OCR is accepted only with matching original
+  and derived hashes, page counts and recorded tool/version.
+- Local acceptance: 113 PDFs, 12,324 searchable pages (7,606 native, 4,718 OCR),
+  zero processing failures, unchanged original hashes. Detailed output remains
+  under `gm-seller-download-2026-09-17/step4-acceptance/`, outside Git.
+- 128 tests pass with Poppler/schema checks enabled. Eleven hash-checked HTML
+  samples and one offline-rendered sanitized SVG were reviewed. Browser policy
+  blocked the HTML preview, so full HTML visual/browser acceptance remains open.
+- PDF pages are retained whole for layout/diagrams; PDF table inference and
+  embedded-image extraction are not claimed. OCR correctness still needs review.
+- See [CONTENT_NORMALIZATION_V1.md](CONTENT_NORMALIZATION_V1.md) for commands,
+  schemas, source/status distinctions and remaining limitations.
 
 ### USB HTML exports: unresolved source integrity
 
@@ -137,7 +158,8 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
   browser/diagnostic acceptance test.
 - Step 3 extractor suite: 100 tests passed, including all previous Ford/contract
   tests plus source safety, repeatability, page-count, staging, selection and
-  neutral CLI tests. Parser and integration tests remain planned.
+  neutral CLI tests. Step 4 expands the suite to 128 tests; integration tests
+  remain planned.
 
 ## Next task
 
@@ -145,11 +167,13 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 download replacement before claiming real-source acceptance for those HTML
 manuals. Do not repeat unbounded repair attempts against the unstable USB.
 
-**The next implementation milestone is Step 4: HTML structure, PDF pages,
-context and assets.** Normalize only fully verified synthetic sources first.
-Implement hierarchy, navigation aliases, diagnostic tables, qualifiers,
-captions, references, safe SVG/assets and page citations. PDF native/OCR text
-must retain its original-file/page identity and provenance.
+**The next implementation milestone is Step 5: Repair Buddy integration.**
+Read the Step 4 content guide before consuming the package. Start a separate
+Repair Buddy branch from its then-current main and preserve local edits. Use a
+disposable test database, keep native/OCR provenance and original citations, and
+honor content-processing status, search eligibility and unavailable assets/links.
+Complete the outstanding HTML visual/browser acceptance when an allowed browser
+environment is available; do not treat sampled structural checks as that gate.
 
 Do not treat folder names as vehicle coverage, flatten tables into ambiguous
 text or parse the damaged HTML ZIPs as complete inputs. Repair Buddy integration
