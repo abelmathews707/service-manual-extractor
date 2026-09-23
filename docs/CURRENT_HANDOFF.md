@@ -21,6 +21,10 @@ The user wants the same Repair Buddy experience across makes, with the manuals
 providing the content. Work is intentionally split into small sequential tasks
 to manage Codex usage. Do not implement all steps on a generic “continue.”
 
+User preference recorded 2026-09-23: push new commits to the corresponding
+remote branch after committing. Report any push failure; this does not authorize
+force-pushing, merging, tagging or releasing.
+
 ## Repository state and compatibility
 
 | Item | State at this checkpoint |
