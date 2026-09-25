@@ -2,7 +2,7 @@
 
 Status: design only; implementation has not started.
 Date: 2026-09-25.
-Planning branch: `codex/vehicle-manual-applicability-plan`, based on merged
+Planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
 Repair Buddy baseline: merged `main` at
 `310ce810f9129576d5f0f72b37a27f35cac699a8`.

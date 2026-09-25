@@ -14,7 +14,7 @@ The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
 Phase B adds structured extraction. It is design only, on
-`codex/vehicle-manual-applicability-plan`. The next implementation task is **A1**,
+`codex/vehicle-manual-library-plan`. The next implementation task is **A1**,
 not another step from the completed GM sequence.
 
 ## Start here
@@ -48,7 +48,7 @@ force-pushing, merging, tagging or releasing.
 | GitHub fork | `https://github.com/abelmathews707/service-manual-extractor` |
 | Previous fork name | `abelmathews707/ford-service-disc` |
 | Existing local checkout | `/Users/asokmathews/Documents/ford-service-disc` |
-| Planning branch | `codex/vehicle-manual-applicability-plan` |
+| Planning branch | `codex/vehicle-manual-library-plan` |
 | Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
