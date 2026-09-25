@@ -6,21 +6,31 @@ Current checkpoint: Steps 0–8 are implemented. The seller PDF set produced
 the extractor now builds the shared offline viewer directly from neutral
 records. The user reports that replacement GM HTML files have been obtained;
 their integrity and coverage have not yet been checked in this repository.
-Step 8 is a reviewable engineering release checkpoint, not a merge or public
-release. See [the release record](STEP8_RELEASE_CHECKPOINT.md). The next
-feature request is make/model/year/engine pre-search filtering and matching
-modes; it is not part of the completed eight-step plan.
+The completed code was merged into extractor `main` at `9341637` and Repair
+Buddy `main` at `310ce81`; no public release was created. See
+[the release record](STEP8_RELEASE_CHECKPOINT.md).
+
+The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
+covers all available formats, shared vehicle mapping/review, pre-search filters,
+Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
+Phase B adds structured extraction. It is design only, on
+`codex/vehicle-manual-applicability-plan`. The next implementation task is **A1**,
+not another step from the completed GM sequence.
 
 ## Start here
 
-1. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
-2. Read the [GM HTML USB inspection](GM_HTML_INSPECTION.md), especially the
-   unresolved source-integrity findings.
+1. Read the [current vehicle mapping plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
+   and select one A/B step. Do not implement several steps on a generic continue.
+2. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
+   The [GM HTML USB inspection](GM_HTML_INSPECTION.md) is historical; the user
+   has obtained replacements and the old damage is not a project blocker.
 3. Read the frozen [shared extraction contract](SERVICE_MANUAL_CONTRACT_V1.md).
    Read the [Step 4 behavior and limitations](CONTENT_NORMALIZATION_V1.md).
 4. Read the [shared viewer behavior](SHARED_VIEWER_V1.md).
-5. Select one remaining step from the [GM manual-input implementation plan](GM_HTML_PLAN.md).
-6. Read that step's [test gate](GM_HTML_TEST_PLAN.md).
+5. Use the completed [GM manual-input implementation plan](GM_HTML_PLAN.md)
+   for background only.
+6. Read the selected A/B step's pass gate and shared acceptance matrix in the
+   new plan; retain existing [regression gates](GM_HTML_TEST_PLAN.md).
 7. Verify branches, working-tree changes and exact input identities before acting.
 
 The user wants the same Repair Buddy experience across makes, with the manuals
@@ -38,12 +48,12 @@ force-pushing, merging, tagging or releasing.
 | GitHub fork | `https://github.com/abelmathews707/service-manual-extractor` |
 | Previous fork name | `abelmathews707/ford-service-disc` |
 | Existing local checkout | `/Users/asokmathews/Documents/ford-service-disc` |
-| Feature branch | `codex/gm-html-manuals` |
-| Branch baseline | `f1bdc8d`, main and `v0.1.0` foundation |
+| Planning branch | `codex/vehicle-manual-applicability-plan` |
+| Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
 | Neutral source command | `python -m sme` (`probe`, staged `extract`, `normalize`, `build-viewer`, contract validation) |
-| Repair Buddy integration checkout | `/Users/asokmathews/Documents/repair-buddy-step5`, `codex/gm-applicability-parity` at `f062b90` |
+| Repair Buddy integration checkout | `/Users/asokmathews/Documents/repair-buddy-step5`, merged feature tip `4076bec`; remote main `310ce81` |
 | Workshop toolkit | `/Users/asokmathews/Documents/workshop-manual-toolkit-main`, main `d150e7d` |
 
 GitHub was renamed with the user's chosen name. The local `origin` URL was
@@ -207,9 +217,11 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 
 ## Next task
 
-Step 8 passed its fresh-checkout tests and release checks. The user has now
-authorized merging the current feature branches into `main`. The next feature
-request is make/model/year/engine filtering and matching modes before search.
+Step 8 passed its fresh-checkout tests and release checks, and both feature
+branches were merged. Execute **A1: reconcile inventory and acceptance examples**
+from [the new plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md) when requested. The plan
+records the owner's choices: full app/viewer experience, shared-part suggestions
+requiring review, and ordinary manual content before expanded structured data.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
@@ -221,5 +233,5 @@ The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf
 warnings are review metadata, not automatic source rejection.
 
-The next search/filter feature spans metadata, querying and UI. GPT-6 Sol High
-is an appropriate starting point for its implementation and tests.
+Recommended for A1: GPT-6 Luna Medium. Later contract, matching and integration
+steps generally use GPT-6 Sol High; each step and its rationale are in the plan.
