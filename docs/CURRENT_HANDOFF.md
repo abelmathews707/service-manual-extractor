@@ -81,7 +81,7 @@ The replacement GM HTML source path remains to be recorded when available.
 | Input | Local root | State |
 | --- | --- | --- |
 | Original GM USB HTML exports | `/Users/asokmathews/Documents/service-manual-data/gm-usb-2026-09-15` | Earlier copies were damaged; user reports replacement files are now available, but their path and integrity have not yet been recorded here |
-| Seller GM PDFs | `/Users/asokmathews/Documents/service-manual-data/gm-seller-download-2026-09-17` | Original folder and ZIP preserved; independent archive extraction and file parity verified |
+| Seller GM PDFs | `/Users/asokmathews/Documents/service-manual-data/gm-seller-download-2026-09-17` | Original folder and ZIP preserved; the 113-PDF folder moved from Downloads is under `from-downloads/` and matches `from-archive/` exactly; it contains no HTML/HTM |
 
 No data was added to Repair Buddy's live database. Tests must synthesize small
 inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.

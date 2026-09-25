@@ -10,13 +10,16 @@ targeted citation examples. No manuals were re-extracted, OCRed or imported.
 | Ford service-disc media | 4 source folders; 64 archive occurrences; 44 unique archive hashes; 41 unique English publications extracted | Repair Buddy has 33 indexed + 8 indexed-partial publications, 18,292 documents and 64,906 fragments; 23 entries are catalog-only | 484 applicability rows all omit make, engine, transmission and drivetrain. Catalog names include Ford, Lincoln and Mercury vehicles. |
 | Ford owner guide PDF | One separate legacy PDF | 280 pages; all 280 contain text; tracked through the older manuals/pages tables | Owner material; not in the 18,292 document count. |
 | GM PDF set | 113 publications / 12,324 original pages | All 113 are normalized and in the local offline viewer. The disposable Repair Buddy acceptance DB indexed 3 publications / 107 pages and cataloged 110 without documents. Ordinary local Repair Buddy remains Ford-only. | Seller folder names and broad article titles do not prove exact vehicle coverage. |
-| GM HTML replacement | User reports replacement files obtained | No replacement HTML path or fingerprint found in the known Downloads and service-manual-data folders searched on this machine | Pending source identity and integrity record. The earlier USB damage is historical, not a project blocker. |
+| GM HTML replacement | User reports replacement files obtained | No replacement HTML path or fingerprint found in the known local paths. The Silverado/Sierra folder below contains PDFs only. | Pending source identity and integrity record. The earlier USB damage is historical, not a project blocker. |
 
 The GM PDF set contains 7,606 native-text pages and 4,718 OCR-derived pages.
-The ZIP visible in Downloads hashes to the same SHA-256 as the preserved
-original: 52ccd0e43acef9f71dd05befdce5d5d20a61e02f172300b6f42ca8c8c8d79816.
-It is the known PDF package, not replacement HTML. Its normalized source ID is
-src_241ae321543b966629942d2b1977d6eb.
+The seller's extracted Silverado/Sierra folder is now stored at
+`/Users/asokmathews/Documents/service-manual-data/gm-seller-download-2026-09-17/from-downloads/Chevrolet Silverado GMC sierra 1998-2007`.
+It contains 113 PDFs, no HTML/HTM, and was verified with `diff -qr` to match
+the preserved `from-archive` folder exactly. The preserved source ZIP has
+SHA-256 `52ccd0e43acef9f71dd05befdce5d5d20a61e02f172300b6f42ca8c8c8d79816`.
+This is the known PDF package, not the replacement HTML. Its normalized source
+ID is `src_241ae321543b966629942d2b1977d6eb`.
 
 ## Acceptance examples selected
 
@@ -37,7 +40,8 @@ They cover:
 
 Tests for exact but unavailable variants will use synthetic fixtures. Direct
 OCR evidence remains subject to original-page review. The replacement HTML is
-not part of this sample set because its local path has not been identified.
+not part of this sample set because its local path has not been identified;
+the moved GM PDF folder was checked and contains no HTML/HTM files.
 
 ## Performance/software baseline
 
