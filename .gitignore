@@ -1,11 +1,15 @@
 # ---------------------------------------------------------------------------
-# This repository contains NO Ford content and must stay that way.
+# This repository contains NO manufacturer manual content and must stay that way.
 # Everything a disc produces is ignored here. If you are adding a file and
 # git is fighting you about it, that is this file doing its job — check
 # whether what you are committing came off a disc before you use -f.
 # ---------------------------------------------------------------------------
 
 # Disc images
+*.zip
+*.ZIP
+*.pdf
+*.PDF
 *.iso
 *.img
 *.bin
@@ -29,6 +33,7 @@ DATA?.HDR
 *.INX
 
 # Build inputs and outputs
+manual-data/
 extracted/
 site/
 out/

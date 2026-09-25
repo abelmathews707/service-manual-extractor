@@ -1,6 +1,5 @@
-/* Ford service disc viewer — vanilla SPA, no dependencies.
-   Nothing here is specific to one disc: the title, the books present and the
-   filename prefixes they use all come from data/manifest.json at runtime. */
+/* Offline service-manual viewer — vanilla SPA, no dependencies.
+   The same shell reads legacy Ford build data or manufacturer-neutral records. */
 'use strict';
 
 const $  = (s, r = document) => r.querySelector(s);
@@ -11,6 +10,7 @@ const esc = s => String(s === null || s === undefined ? '' : s).replace(/[&<>"']
 const main = $('#main'), side = $('#sideInner');
 const D = {};                      // lazily loaded json
 const cache = new Map();           // fetched html fragments
+let MANIFEST = null;
 
 async function data(name) {
   if (!D[name]) {
@@ -55,6 +55,9 @@ function parseHash() {
 async function route() {
   const { parts, q } = parseHash();
   const [a, b, c] = parts;
+  const manifest = MANIFEST || await data('manifest');
+  MANIFEST = manifest;
+  if (manifest.viewerMode === 'neutral') return await neutralRoute(parts, q, manifest);
   const tab = (a === 'conn') ? 'elb' : a;
   $$('#bookTabs a').forEach(el => el.classList.toggle('on', el.dataset.book === tab));
   document.body.classList.remove('nav-open');
@@ -105,6 +108,156 @@ const notFound = () => {
     <a class="card" href="#/" style="max-width:280px"><h3>← Back to start</h3></a></div>`;
 };
 
+/* ---------------------------------------- manufacturer-neutral library mode */
+const bookById = (manifest, id) => (manifest.books || []).find(book => book.id === id);
+const neutralRouteOf = (publication, document, returnHash) => {
+  const suffix = returnHash ? '?return=' + encodeURIComponent(returnHash) : '';
+  return `#/manual/${publication}/${document}${suffix}`;
+};
+const safeReturn = value => (value && value.startsWith('#/search?')) ? value : '';
+
+async function neutralRoute(parts, q, manifest) {
+  const [a, b, c] = parts;
+  const tab = a === 'manual' ? 'library' : a;
+  $$('#bookTabs a').forEach(el => el.classList.toggle('on', el.dataset.book === tab));
+  document.body.classList.remove('nav-open');
+  main.scrollTop = 0;
+  try {
+    if (!a || a === 'library') return await neutralHome(manifest);
+    if (a === 'search') return await search(q.get('q') || '', q.get('book') || '');
+    if (a === 'manual' && safeId(b)) {
+      if (!c) return await neutralPublication(b, manifest);
+      if (safeId(c)) return await neutralPage(b, c, safeReturn(q.get('return') || ''), manifest);
+    }
+    return notFound();
+  } catch (e) {
+    side.innerHTML = '';
+    main.innerHTML = `<div class="wrap"><h1 class="title">Something went wrong</h1>
+      <p class="subtitle">${esc(e.message)}</p>
+      <a class="card" href="#/" style="max-width:280px;margin-top:14px"><h3>← Back to start</h3></a>
+      </div>`;
+  }
+}
+
+function neutralHome(manifest) {
+  side.innerHTML = '';
+  const counts = manifest.counts || {};
+  const warning = manifest.contentStatus === 'complete' ? '' : `<div class="note">
+    <b>Partial manual material.</b> Some source pages could not be prepared. Missing items remain
+    labeled in the viewer instead of being treated as complete.</div>`;
+  main.innerHTML = `<div class="wrap"><div class="hero">
+    <h1>${esc(manifest.title)}</h1>
+    <p>${esc(manifest.sourceLabel || 'Offline service-manual library')} —
+      ${counts.books || 0} publication${counts.books === 1 ? '' : 's'},
+      ${counts.documents || 0} pages, and ${counts.searchable || 0} searchable records.</p>
+    ${warning}</div><div class="grid">${(manifest.books || []).map(book => `
+      <a class="card" href="#/manual/${book.id}"><h3>${esc(book.name)}</h3>
+        <p>${esc(book.kind || 'manual')} · ${book.documents} page${book.documents === 1 ? '' : 's'} ·
+          ${book.searchable} searchable</p>
+        <p style="margin-top:9px"><span class="count">${esc(book.source_path)}</span></p></a>`).join('')}
+      </div><p class="subtitle" style="margin-top:26px">Tip: press <kbd>/</kbd> to search every selected manual.</p>
+    </div>`;
+}
+
+const navContains = (node, active) => node.document_id === active ||
+  (node.children || []).some(child => navContains(child, active));
+
+function neutralNav(nodes, publication, active, prefix) {
+  let result = '';
+  (nodes || []).forEach((node, index) => {
+    const key = `n-${prefix}-${index}`;
+    const children = node.children || [];
+    const open = navContains(node, active);
+    if (children.length) {
+      result += `<button class="s-row${open ? ' open' : ''}" data-t="${key}">
+        <svg class="caret" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+        <span>${esc(node.label)}</span></button><div class="s-kids${open ? ' open' : ''}" id="${key}">`;
+      if (node.document_id)
+        result += `<a class="s-link${node.document_id === active ? ' on' : ''}"
+          href="#/manual/${publication}/${node.document_id}">Overview</a>`;
+      result += neutralNav(children, publication, active, key) + '</div>';
+    } else if (node.document_id) {
+      result += `<a class="s-link${node.document_id === active ? ' on' : ''}"
+        href="#/manual/${publication}/${node.document_id}">${esc(node.label)}</a>`;
+    }
+  });
+  return result;
+}
+
+function neutralSidebar(book, active) {
+  side.innerHTML = `<div class="s-head"><a href="#/manual/${book.id}">${esc(book.name)}</a></div>` +
+    neutralNav(book.navigation, book.id, active, book.id.slice(-6));
+  const current = $('.s-link.on', side);
+  if (current) current.scrollIntoView({ block: 'center' });
+}
+
+async function neutralPublication(publication, manifest) {
+  const book = bookById(manifest, publication);
+  if (!book) return notFound();
+  neutralSidebar(book, null);
+  const first = book.landing_id ? `<a class="card" href="#/manual/${book.id}/${book.landing_id}">
+    <h3>Open manual</h3><p>Start at the publication landing page.</p></a>` : '';
+  const evidence = (book.applicability || []).map(item => esc(item.statement)).join(' · ');
+  main.innerHTML = `<div class="wrap"><div class="crumbs"><a href="#/">Manual library</a></div>
+    <div class="hero"><h1>${esc(book.name)}</h1>
+      <p>${esc(book.kind || 'manual')} · ${book.documents} pages · ${book.searchable} searchable</p>
+      ${evidence ? `<div class="note"><b>Source applicability:</b> ${evidence}</div>` : ''}</div>
+    <div class="grid">${first}<a class="card" href="#/search?book=${book.id}&q=diagnostic">
+      <h3>Search this manual</h3><p>Search only this publication first; edit the query after opening.</p></a></div>
+    <p class="subtitle" style="margin-top:24px">Source path: ${esc(book.source_path)}</p></div>`;
+}
+
+async function neutralBacklinks(documentId, manifest, returnHash) {
+  const [backlinks, library] = await Promise.all([data('backlinks'), data('library')]);
+  const sources = (backlinks.pages || {})[documentId] || [];
+  if (!sources.length) return '';
+  return `<h2 style="font-size:15px;margin:28px 0 10px">Referenced by
+      <span class="pill">${sources.length}</span></h2><div class="backs">${sources.slice(0, 20).map(id => {
+        const document = library.documents[id];
+        return `<a class="res" href="${neutralRouteOf(document.publication_id, id, returnHash)}">
+          <div class="rt">${esc(document.title)}</div><div class="rb">${esc(document.path)}</div></a>`;
+      }).join('')}</div>`;
+}
+
+function carryReturn(returnHash) {
+  if (!returnHash) return;
+  $$('.paper a[href^="#/manual/"]').forEach(link => {
+    link.href += (link.href.includes('?') ? '&' : '?') + 'return=' + encodeURIComponent(returnHash);
+  });
+}
+
+async function neutralPage(publication, documentId, returnHash, manifest) {
+  const book = bookById(manifest, publication);
+  const library = await data('library');
+  const document = library.documents[documentId];
+  if (!book || !document || document.publication_id !== publication) return notFound();
+  neutralSidebar(book, documentId);
+  let body;
+  try { body = await frag('manual', documentId); } catch { return notFound(); }
+  const context = (document.applicability || []).map(item => esc(item.statement)).join(' · ');
+  const warnings = (document.warnings || []).concat(
+    document.unavailable_references ? [`${document.unavailable_references} unavailable reference(s)`] : [],
+    document.unavailable_figures ? [`${document.unavailable_figures} unavailable diagram(s)`] : []);
+  const source = document.source_url ? `<a class="chip" href="${esc(document.source_url)}" target="_blank"
+      rel="noopener">Open original PDF at page ${document.page}</a>` : '';
+  main.innerHTML = `<div class="wrap"><div class="crumbs"><a href="#/">Manual library</a>
+      <span class="sep">/</span><a href="#/manual/${book.id}">${esc(book.name)}</a>
+      ${(document.breadcrumbs || []).map(value => `<span class="sep">/</span><span>${esc(value)}</span>`).join('')}</div>
+    ${returnHash ? `<a class="chip" href="${esc(returnHash)}">← Return to search results</a>` : ''}
+    <h1 class="title">${esc(document.title)}</h1>
+    <div class="subtitle">${esc(document.path)} · ${esc(document.text_provenance)} text</div>
+    ${context ? `<div class="note"><b>Applicability evidence:</b> ${context}</div>` : ''}
+    ${warnings.length ? `<div class="note"><b>Unavailable or review-needed material:</b> ${warnings.map(esc).join(' · ')}</div>` : ''}
+    ${source ? `<div class="chips">${source}</div>` : ''}
+    ${body ? `<article class="paper">${body}</article>` : '<p class="empty">No prepared page body is available. The original citation is retained above.</p>'}
+    <div id="backs"></div></div>`;
+  carryReturn(returnHash);
+  wireImages();
+  neutralBacklinks(documentId, manifest, returnHash).then(value => {
+    const element = $('#backs'); if (element) element.innerHTML = value;
+  });
+}
+
 /* -------------------------------------------------------------------- home */
 async function home() {
   const m = await data('manifest');
@@ -113,8 +266,8 @@ async function home() {
   main.innerHTML = `<div class="wrap">
     <div class="hero">
       <h1>${esc(m.title)}</h1>
-      <p>The Ford service disc — ${esc((m.books || []).map(b => b.name.toLowerCase()).join(', '))}
-         — rebuilt as a browsable site.</p>
+      <p>${esc(m.sourceLabel || 'Service manual source')} —
+         ${esc((m.books || []).map(b => b.name.toLowerCase()).join(', '))} — rebuilt as a browsable site.</p>
     </div>
     <div class="grid">
       <a class="card" href="#/wsm"><h3>Workshop Manual</h3>
@@ -174,7 +327,7 @@ async function wsmHome() {
   await wsmSidebar(null);
   const w = await data('wsm');
   let h = `<div class="wrap"><div class="hero"><h1>Workshop Manual</h1>
-    <p>Pick a group, or use search. Sections follow Ford’s standard numbering.</p></div>`;
+    <p>Pick a group, or use search. Sections follow the publication’s numbering.</p></div>`;
   for (const top of w.tree) {
     h += `<h2 style="font-size:15px;margin:22px 0 10px;color:var(--dim)">${esc(top.title)}</h2><div class="grid">`;
     for (const g of top.groups)
@@ -282,7 +435,7 @@ async function pcedHome() {
   main.innerHTML = `<div class="wrap"><div class="hero"><h1>Powertrain Control / Emissions Diagnosis</h1>
     <p>${esc(scope || 'Powertrain diagnostics')}. Pinpoint tests, DTC charts, reference values
        and diagnostic methods.</p>
-    ${veh.length > 1 ? `<div class="note"><b>Shared volume.</b> Ford ships this book across
+    ${veh.length > 1 ? `<div class="note"><b>Shared volume.</b> ${esc(man.manufacturer || 'The publisher')} supplies this book for
       ${veh.length} models, not just this one: ${esc(veh.join(', '))}.
       Check the applicability of a procedure before following it.</div>` : ''}</div>
     <div class="grid">${p.map(s => `<a class="card" href="#/pced/${s.pages[0].id}">
@@ -315,7 +468,7 @@ async function pcedPage(id) {
   try { body = await frag('pced', id); } catch { return notFound(); }
   main.innerHTML = `<div class="wrap">
     <div class="crumbs"><a href="#/pced">PCED</a><span class="sep">/</span><span>${esc(sec)}</span>
-      <span class="sep">·</span><span title="This volume covers several Ford models">shared volume</span></div>
+      <span class="sep">·</span><span title="This volume covers several vehicle models">shared volume</span></div>
     <h1 class="title">${esc(title)}</h1>
     <div class="subtitle">${esc(id.toUpperCase())}</div>
     <article class="paper">${body}</article>
@@ -553,6 +706,7 @@ const routeOf = d => d[0] === 'conn' ? `#/conn/${d[1]}`
   : d[0] === 'elb' ? `#/elb/${d[1]}`
   : d[0] === 'ix'  ? `#/elb/index/${d[1]}`
   : d[0] === 'cell' ? `#/elb/cell/${d[1]}`
+  : d[0] === 'manual' ? `#/manual/${d[4]}/${d[1]}`
   : `#/${d[0]}/${d[1]}`;
 
 function rank(q) {
@@ -609,7 +763,54 @@ function rank(q) {
   return { out, used };
 }
 
+async function neutralSearch(q, book, manifest) {
+  side.innerHTML = '';
+  const box = $('#q');
+  if (document.activeElement !== box) box.value = q;
+  if (!q.trim()) {
+    main.innerHTML = `<div class="wrap"><h1 class="title">Search</h1>
+      <p class="subtitle">Type at least two characters.</p></div>`;
+    return;
+  }
+  main.innerHTML = `<div class="wrap"><h1 class="title">Searching…</h1></div>`;
+  if (!SIDX) {
+    [SIDX, SDOC] = await Promise.all([data('search-index'), data('search-docs')]);
+    AVGDL = SDOC.length ? SDOC.reduce((total, document) => total + (document[3] || 1), 0) /
+      SDOC.length : 1;
+  }
+  const ranked = rank(q);
+  const selected = bookById(manifest, book) ? book : '';
+  const counts = {};
+  for (const [id] of ranked.out) {
+    const publication = SDOC[id][4];
+    counts[publication] = (counts[publication] || 0) + 1;
+  }
+  const matches = selected
+    ? ranked.out.filter(([id]) => SDOC[id][4] === selected)
+    : ranked.out;
+  const list = matches.slice(0, 150);
+  const returnHash = `#/search?q=${encodeURIComponent(q)}${selected ? '&book=' + selected : ''}`;
+  const chip = (id, name, count) => `<a class="chip${selected === id ? ' on' : ''}"
+    href="#/search?q=${encodeURIComponent(q)}${id ? '&book=' + id : ''}">${esc(name)} <b>${count}</b></a>`;
+  const chips = [chip('', 'All manuals', ranked.out.length)].concat((manifest.books || [])
+    .filter(item => counts[item.id])
+    .map(item => chip(item.id, item.name, counts[item.id]))).join('');
+  main.innerHTML = `<div class="wrap"><h1 class="title">${matches.length || 'No'} result${matches.length === 1 ? '' : 's'}</h1>
+    <div class="subtitle">for “${esc(q)}”${selected ? ' in ' + esc(bookById(manifest, selected).name) : ''}${
+      matches.length > list.length ? ` · showing first ${list.length}` : ''}</div>
+    <div class="chips">${chips}</div>${list.map(([id]) => {
+      const document = SDOC[id];
+      const publication = bookById(manifest, document[4]);
+      return `<a class="res" href="${neutralRouteOf(document[4], document[1], returnHash)}">
+        <div class="rt"><span class="tagline tag-manual">${esc(publication.kind || 'manual')}</span>${esc(document[2])}</div>
+        <div class="rb">${esc(publication.name)}</div></a>`;
+    }).join('') || `<p class="empty">Nothing matched${ranked.used ? '' : ' — try fewer or shorter words'}.</p>`}</div>`;
+}
+
 async function search(q, book) {
+  const manifest = MANIFEST || await data('manifest');
+  MANIFEST = manifest;
+  if (manifest.viewerMode === 'neutral') return neutralSearch(q, book, manifest);
   side.innerHTML = '';
   const box = $('#q');
   if (document.activeElement !== box) box.value = q;   // don't fight live typing
@@ -880,9 +1081,6 @@ function wireImages() {
 }
 
 /* ------------------------------------------------------------------- chrome */
-$('#bookTabs').innerHTML = BOOKS.map(([id, n]) =>
-  `<a href="#/${id}" data-book="${id}">${n}</a>`).join('');
-
 $('#searchForm').addEventListener('submit', e => {
   e.preventDefault();
   location.hash = '#/search?q=' + encodeURIComponent($('#q').value.trim());
@@ -912,4 +1110,18 @@ document.addEventListener('keydown', e => {
 });
 
 window.addEventListener('hashchange', route);
-route();
+
+async function bootstrap() {
+  MANIFEST = await data('manifest');
+  $('#bookTabs').innerHTML = MANIFEST.viewerMode === 'neutral'
+    ? '<a href="#/" data-book="library">Manual library</a>'
+    : BOOKS.filter(([id]) => (MANIFEST.books || []).some(book => book.id === id))
+      .map(([id, name]) => `<a href="#/${id}" data-book="${id}">${name}</a>`).join('');
+  await route();
+}
+
+bootstrap().catch(error => {
+  side.innerHTML = '';
+  main.innerHTML = `<div class="wrap"><h1 class="title">Viewer could not start</h1>
+    <p class="subtitle">${esc(error.message)}</p></div>`;
+});

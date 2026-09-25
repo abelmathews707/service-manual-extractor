@@ -1,4 +1,27 @@
-# ford-service-disc
+# service-manual-extractor
+
+Formerly `abelmathews707/ford-service-disc`. This fork is expanding toward
+multiple service-manual formats and vehicle makes. **Ford support is implemented;
+GM HTML and PDF inputs have been inspected, the shared v1 extraction contract
+is frozen, and safe ZIP/folder/PDF source reading plus HTML/PDF content
+normalization, Repair Buddy integration and the shared offline viewer are
+implemented.**
+
+Start the GM work from [the current handoff](docs/CURRENT_HANDOFF.md), then use
+the [staged implementation plan](docs/GM_HTML_PLAN.md) and
+[test plan](docs/GM_HTML_TEST_PLAN.md). The existing `python -m fsd` commands
+remain compatible. Existing local checkouts do not need to be renamed.
+
+The manufacturer-neutral contract is documented in
+[docs/SERVICE_MANUAL_CONTRACT_V1.md](docs/SERVICE_MANUAL_CONTRACT_V1.md). Step 2
+adds `python3 -m sme contract` and `validate-manifest` for contract inspection;
+Step 3 adds neutral `probe` and staged `extract` readers. See the
+[source reader guide](docs/SOURCE_READER_V1.md).
+Step 4 adds `sme normalize`; see the
+[content normalization guide](docs/CONTENT_NORMALIZATION_V1.md) for requirements
+and remaining HTML acceptance limits.
+Step 7 adds `sme build-viewer`; see the
+[shared viewer guide](docs/SHARED_VIEWER_V1.md).
 
 **Read your Ford service manual DVD without the original Windows software.**
 Extracts the workshop manual, wiring diagrams and PCED off a Ford Technical
@@ -9,8 +32,8 @@ Works on macOS, Linux and Windows. Python 3.9+, no dependencies.
 **Ships no Ford content — bring your own disc.**
 
 ```bash
-git clone https://github.com/abelmathews707/ford-service-disc
-cd ford-service-disc
+git clone https://github.com/abelmathews707/service-manual-extractor
+cd service-manual-extractor
 python3 -m fsd all /Volumes/20SLB -o site --serve
 ```
 
@@ -123,11 +146,36 @@ python3 -m fsd all IMAGE.img -o site
 | `fsd all DISC -o site` | Extract and build in one step. |
 | `fsd serve site` | Serve a built site over HTTP. |
 | `fsd iso IMAGE out.iso` | Convert a raw dump to a plain ISO, if you want to mount it. |
+| `sme build-viewer normalized -o site` | Build the shared viewer from neutral records. |
 
 `DISC` can be a mount point (`/Volumes/20SLB`, `D:\`), a folder holding a copy
 of one, or an image file (`.iso`, `.img`, `.bin`).
 
 Run `python3 -m fsd COMMAND --help` for the options.
+
+### Neutral source inspection
+
+The new neutral reader verifies supported HTML/PDF ZIPs, unpacked folders and
+standalone PDFs without changing the established Ford commands:
+
+```bash
+python3 -m sme probe /path/to/manual-source --json
+python3 -m sme extract /path/to/manual-source -o verified-source
+python3 -m sme normalize verified-source -o normalized-source --json
+python3 -m sme build-viewer normalized-source -o site --json
+```
+
+Extraction requires a fresh output path and publishes only after every selected
+file is copied and hash-verified. Normalization preserves HTML structure and
+cited PDF pages; PDF text reading requires Poppler. See
+[the source reader guide](docs/SOURCE_READER_V1.md) for exact
+selection, safety rules and partial-source behavior.
+
+The neutral viewer lists every selected publication, searches across them,
+preserves nested navigation and backlinks, opens cited local PDF pages, and
+shows unavailable links or diagrams explicitly. It uses the same offline viewer
+shell as the Ford builder without passing non-Ford inputs through Ford `.EPL`
+parsing.
 
 ### Select an exact archive
 
@@ -150,9 +198,10 @@ either option.
 Unique codes still extract to `<CODE>/`. Duplicate codes use distinct
 directories, such as `V22--USENI4/` and `V22--CNFRI4/`, so their files stay
 separate. Start with a fresh extraction directory when upgrading from an
-older version that may have combined duplicate codes. The viewer currently
-uses only one book per role (SERVICE, EVTM, or PCED); select the desired
-archives before building when your disc contains several books of one role.
+older version that may have combined duplicate codes. The legacy `fsd build`
+path currently uses only one book per role (SERVICE, EVTM, or PCED); select
+the desired archives before building when your disc contains several books of
+one role. The neutral `sme build-viewer` path keeps every selected publication.
 
 ## What you get
 

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Service Manual OCR Map v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract", "entries"],
+  "properties": {
+    "contract": {"const": "service-manual-ocr-map/v1"},
+    "entries": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_path", "source_sha256", "derived_path", "derived_sha256", "page_count", "tool"],
+      "properties": {
+        "source_path": {"type": "string", "minLength": 1},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "derived_path": {"type": "string", "minLength": 1},
+        "derived_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "page_count": {"type": "integer", "minimum": 1},
+        "tool": {"type": "object", "additionalProperties": false,
+          "required": ["name", "version"], "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "version": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }}
+  }
+}

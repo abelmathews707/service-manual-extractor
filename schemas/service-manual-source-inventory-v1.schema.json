@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/service-manual-source-inventory-v1.schema.json",
+  "title": "Service Manual Source Inventory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "source_id",
+    "source_content_sha256",
+    "selected_content_sha256",
+    "members",
+    "empty_directories",
+    "ignored",
+    "publications"
+  ],
+  "properties": {
+    "contract": {"const": "service-manual-source-inventory/v1"},
+    "source_id": {"type": "string", "pattern": "^src_[0-9a-f]{32}$"},
+    "source_content_sha256": {"$ref": "service-manual-manifest-v1.schema.json#/$defs/sha256"},
+    "selected_content_sha256": {"$ref": "service-manual-manifest-v1.schema.json#/$defs/sha256"},
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "size", "sha256", "media_type"],
+        "properties": {
+          "path": {"$ref": "service-manual-manifest-v1.schema.json#/$defs/relativePath"},
+          "size": {"type": "integer", "minimum": 0},
+          "sha256": {"$ref": "service-manual-manifest-v1.schema.json#/$defs/sha256"},
+          "media_type": {"type": "string", "minLength": 1},
+          "page_count": {"type": "integer", "minimum": 1},
+          "page_count_method": {"type": "string", "minLength": 1}
+        },
+        "dependentRequired": {
+          "page_count": ["page_count_method"],
+          "page_count_method": ["page_count"]
+        }
+      }
+    },
+    "empty_directories": {
+      "type": "array",
+      "items": {"$ref": "service-manual-manifest-v1.schema.json#/$defs/relativePath"}
+    },
+    "ignored": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "publications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "source_path", "member_paths"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^pub_[0-9a-f]{32}$"},
+          "source_path": {"$ref": "service-manual-manifest-v1.schema.json#/$defs/relativePath"},
+          "member_paths": {
+            "type": "array",
+            "items": {"$ref": "service-manual-manifest-v1.schema.json#/$defs/relativePath"}
+          }
+        }
+      }
+    }
+  }
+}
