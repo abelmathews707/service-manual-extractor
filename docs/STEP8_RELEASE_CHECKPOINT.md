@@ -63,9 +63,10 @@ generated sites. A user needs their own legitimately held input and must
 review applicability and OCR before using results for vehicle-specific work.
 The Ford legacy builder still has its historical first-book-per-role limit;
 use the neutral viewer for multiple publications. PDF tables remain original
-page images, not inferred structured tables. Damaged HTML files cannot be
-declared complete; replacement sources and full real-HTML browser acceptance
-remain open. Make/model/year/engine pre-search filters and matching modes are
+page images, not inferred structured tables. The earlier USB copies were
+damaged; the user reports replacements are available, but this checkpoint did
+not verify their integrity or complete real-HTML browsing. That is separate
+follow-up acceptance, not a blocker to merging this code. Make/model/year/engine pre-search filters and matching modes are
 not implemented. AI diagnosis, public distribution and commercial release
 planning are separate later work.
 

@@ -4,7 +4,8 @@ Updated: 2026-09-25
 Current checkpoint: Steps 0–8 are implemented. The seller PDF set produced
 12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
 the extractor now builds the shared offline viewer directly from neutral
-records. The damaged HTML originals still prevent a complete-source claim.
+records. The user reports that replacement GM HTML files have been obtained;
+their integrity and coverage have not yet been checked in this repository.
 Step 8 is a reviewable engineering release checkpoint, not a merge or public
 release. See [the release record](STEP8_RELEASE_CHECKPOINT.md). The next
 feature request is make/model/year/engine pre-search filtering and matching
@@ -64,7 +65,7 @@ All source files and detailed reports are outside Git.
 
 | Input | Local root | State |
 | --- | --- | --- |
-| Original GM USB HTML exports | `/Users/asokmathews/Documents/service-manual-data/gm-usb-2026-09-15` | Copied and inspected; damage/instability documented; replacement still needed for real-source acceptance |
+| Original GM USB HTML exports | `/Users/asokmathews/Documents/service-manual-data/gm-usb-2026-09-15` | Earlier copies were damaged; user reports replacement files are now available, but their path and integrity have not yet been recorded here |
 | Seller GM PDFs | `/Users/asokmathews/Documents/service-manual-data/gm-seller-download-2026-09-17` | Original folder and ZIP preserved; independent archive extraction and file parity verified |
 
 No data was added to Repair Buddy's live database. Tests must synthesize small
@@ -206,22 +207,19 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 
 ## Next task
 
-**Step 8 is the next implementation milestone: release checkpoint.** Re-run the
-full extractor gate from a fresh checkout/environment, verify the shared viewer
-setup from documented commands, record supported and partial formats, pin the
-Repair Buddy dependency revision, prepare release notes and assemble a
-reviewable release candidate. Review the result before any merge, tag or public
-release; Step 8 does not authorize those actions.
+Step 8 passed its fresh-checkout tests and release checks. The user has now
+authorized merging the current feature branches into `main`. The next feature
+request is make/model/year/engine filtering and matching modes before search.
 
-**The original HTML USB Step 1 blocker remains:** obtain a reliable seller or
-download replacement before claiming complete-source acceptance for those HTML
-manuals. Do not repeat unbounded repair attempts against the unstable USB or
-describe the recovered folders as diagnosis-ready.
+The old USB failure record remains historical evidence, not a blocker to this
+code merge: the user reports that replacement GM HTML files are available.
+Before claiming complete HTML coverage, record the replacement path, verify
+its source hashes and every file, and run a separate real-source acceptance.
+Do not describe the old recovered folders as diagnosis-ready.
 
 The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf
 warnings are review metadata, not automatic source rejection.
 
-For Step 8, use GPT-6 Luna Low for routine documentation and reproducibility
-checks, or GPT-6 Sol Medium if the release review uncovers code or packaging
-failures. Use Astra only for a genuinely unresolved architecture or safety issue.
+The next search/filter feature spans metadata, querying and UI. GPT-6 Sol High
+is an appropriate starting point for its implementation and tests.

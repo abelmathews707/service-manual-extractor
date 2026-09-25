@@ -1,9 +1,10 @@
 # GM manual inputs and multi-format extractor plan
 
 Date: 2026-09-23
-Status: Steps 0–7 implemented. Step 4 HTML complete-source acceptance remains
-limited by the damaged originals; see its result below. Implement one selected
-step per task.
+Status: Steps 0–8 implemented. The earlier USB copies were damaged; the user
+reports replacements are now available, but they have not been verified in
+this plan. Historical findings below describe the earlier copies. Implement
+one selected follow-on task at a time.
 
 ## Outcome
 
