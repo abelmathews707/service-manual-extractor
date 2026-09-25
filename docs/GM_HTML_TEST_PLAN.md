@@ -1,7 +1,7 @@
 # GM source support — test and acceptance plan
 
 Date: 2026-09-25
-Status: Steps 2–7 implemented. The damaged HTML originals still prevent a
+Status: Steps 2–8 implemented. The damaged HTML originals still prevent a
 complete-source claim; the verified PDF set and synthetic HTML inputs cover the
 implemented application and viewer gates.
 
@@ -63,7 +63,13 @@ The existing Ford regression suite continues to exercise the same viewer assets.
 The reviewed GM package built 113 publications and 12,324 searchable pages;
 browser checks covered library/search/page flows and the phone-width drawer.
 Every generated PDF/diagram target existed and matched its hash, and no fragment
-or runtime asset required a network URL. Step 8 remains unimplemented.
+or runtime asset required a network URL. Step 8 passed on 2026-09-25 in fresh
+extractor and Repair Buddy checkouts: 134 extractor tests with the optional
+schema test enabled, 234 Repair Buddy tests, Ruff in both, and the documented
+tiny HTML input through probe/extract/normalize/build-viewer. A fresh
+extractor checkout also built the reviewed 113-publication, 12,324-page GM
+package. The Repair Buddy release dependency is locked and independently
+checked. See [`STEP8_RELEASE_CHECKPOINT.md`](STEP8_RELEASE_CHECKPOINT.md).
 
 Use tiny constructed adversarial archives; do not actually decompress an
 unbounded archive to test resource limits. Generate ZIPs during tests so a

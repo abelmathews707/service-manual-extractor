@@ -1,11 +1,14 @@
 # Service Manual Extractor — current handoff
 
 Updated: 2026-09-25
-Current checkpoint: Steps 0–7 are implemented. The seller PDF set produced
+Current checkpoint: Steps 0–8 are implemented. The seller PDF set produced
 12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
 the extractor now builds the shared offline viewer directly from neutral
 records. The damaged HTML originals still prevent a complete-source claim.
-Step 8, the reviewable release checkpoint, is next.
+Step 8 is a reviewable engineering release checkpoint, not a merge or public
+release. See [the release record](STEP8_RELEASE_CHECKPOINT.md). The next
+feature request is make/model/year/engine pre-search filtering and matching
+modes; it is not part of the completed eight-step plan.
 
 ## Start here
 

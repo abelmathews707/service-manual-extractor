@@ -283,8 +283,10 @@ diagrams, keyboard search, narrow-screen CSS, fresh-output safety and CLI
 behavior. Full real-source acceptance remains bounded by the known damaged HTML
 originals; the verified seller PDF package is the valid GM acceptance source.
 
-Step 8 remains the next milestone. It is documentation, reproducibility and
-release-candidate preparation only; do not merge, tag or publish automatically.
+Step 8 completed on 2026-09-25 as a reproducibility and release-candidate
+checkpoint. See [`STEP8_RELEASE_CHECKPOINT.md`](STEP8_RELEASE_CHECKPOINT.md).
+This does not authorize an automatic merge, tag or publication. The requested
+vehicle filters and matching modes are a separate follow-on feature.
 
 ## How to resume with limited credits
 
