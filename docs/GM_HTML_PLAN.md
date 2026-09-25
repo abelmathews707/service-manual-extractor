@@ -1,8 +1,9 @@
 # GM manual inputs and multi-format extractor plan
 
 Date: 2026-09-23
-Status: Steps 0–4 implemented. Step 4 HTML visual/complete-source acceptance
-remains limited; see its result below. Implement one selected step per task.
+Status: Steps 0–7 implemented. Step 4 HTML complete-source acceptance remains
+limited by the damaged originals; see its result below. Implement one selected
+step per task.
 
 ## Outcome
 
@@ -113,7 +114,7 @@ tokens. [OpenAI model guidance](https://learn.chatgpt.com/docs/models).
 | 5 — Repair Buddy integration | Common import dispatch, selected publications, normalization/search, citations, reader and diagram flow | Sol Medium or High |
 | 6 — Ford/GM acceptance | Run the same user tasks and applicability checks on both; resolve regressions and document limitations | Sol High; Astra High for an unresolved cross-layer review |
 | 7 — Standalone viewer parity | Feed the extractor's static viewer from neutral records; verify both brands with the same viewer interactions | Terra Medium; Sol High if the viewer boundary needs redesign |
-| 8 — Release checkpoint | Document supported formats/verified coverage, dependency revisions and setup; prepare a reviewable release candidate | Luna Low for docs/checks; Terra Medium for fixes |
+| 8 — Release checkpoint | Document supported formats/verified coverage, dependency revisions and setup; prepare a reviewable release candidate | GPT-6 Luna Low for docs/checks; GPT-6 Sol Medium if fixes are needed |
 
 Step 8 is an engineering checkpoint. Public commercialization remains a
 separate deferred Repair Buddy milestone. Do not bundle manuals with a release.
@@ -266,6 +267,24 @@ current first-book-per-role limitation. Verify links, search and offline assets.
 Prepare release notes naming supported formats, verified vehicles/years,
 partial/unsupported features, reproducible test commands and both repositories'
 dependency revisions. Review commits before any merge/tag/public release.
+
+Step 7 implemented result: `sme build-viewer` verifies a normalized neutral
+package and atomically creates the shared static viewer without invoking the
+Ford `.EPL` parser. It retains every selected publication, source-derived
+nested navigation, library-wide and per-publication search, resolved links,
+backlinks, search-return state, safe captioned diagrams, exact local PDF page
+links and explicit unavailable-material states. The legacy Ford builder and the
+neutral builder now copy the same generalized viewer shell. See
+[`SHARED_VIEWER_V1.md`](SHARED_VIEWER_V1.md).
+
+Committed Step 7 tests cover two publications, both source labels, nested
+navigation, cross-publication search, links/backlinks, local and unavailable
+diagrams, keyboard search, narrow-screen CSS, fresh-output safety and CLI
+behavior. Full real-source acceptance remains bounded by the known damaged HTML
+originals; the verified seller PDF package is the valid GM acceptance source.
+
+Step 8 remains the next milestone. It is documentation, reproducibility and
+release-candidate preparation only; do not merge, tag or publish automatically.
 
 ## How to resume with limited credits
 

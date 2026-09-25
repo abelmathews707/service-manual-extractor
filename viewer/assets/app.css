@@ -1,4 +1,4 @@
-/* Ford service disc viewer */
+/* Shared offline service-manual viewer */
 :root{
   --bg:#0e1319; --bg2:#141b24; --bg3:#1b2430; --line:#26313f;
   --fg:#e6edf5; --dim:#8fa2b7; --accent:#3aa0ff; --accent2:#1d7fe0;
@@ -139,6 +139,7 @@ h1.title{font-size:23px;font-weight:700;margin:0 0 4px;letter-spacing:-.01em}
 .tag-elb{background:rgba(255,180,84,.18);color:var(--warn)}
 .tag-pced{background:rgba(78,201,165,.18);color:var(--ok)}
 .tag-conn{background:rgba(157,124,255,.18);color:#b9a3ff}
+.tag-manual{background:rgba(157,124,255,.18);color:#c8b7ff}
 .empty{color:var(--dim);padding:30px 0}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 16px}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;
@@ -150,6 +151,12 @@ h1.title{font-size:23px;font-weight:700;margin:0 0 4px;letter-spacing:-.01em}
   padding:11px 14px;color:var(--dim);font-size:13.5px;line-height:1.5;max-width:75ch}
 .note b{color:var(--warn)}
 .backs .res{padding:10px 13px}
+.manual-figure{margin:18px 0;text-align:center}
+.manual-figure img{display:block;margin:0 auto;max-width:100%;height:auto}
+.manual-figure figcaption{margin-top:7px;color:#4c5b69;font-size:12.5px}
+.missing-content,.unavailable-link{display:inline-block;border:1px dashed #a66f2f;border-radius:7px;
+  padding:6px 9px;background:#fff8eb;color:#6e4a1f}
+.unavailable-link .pill{margin-left:5px}
 
 /* ---------- lightbox ---------- */
 .lightbox{position:fixed;top:0;right:0;bottom:0;left:0;z-index:80;background:rgba(6,9,13,.96);

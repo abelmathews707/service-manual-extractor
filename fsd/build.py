@@ -703,7 +703,10 @@ def build(src, out, title=None, log=print, clean=True):
 
     pced_book = by_role.get('pced')
     manifest = {
+        'viewerMode': 'ford-legacy',
         'title': title,
+        'manufacturer': 'Ford',
+        'sourceLabel': 'Ford service disc',
         'books': [{'id': r, 'code': by_role[r].code, 'name': BOOKMETA[r][0],
                    'desc': BOOKMETA[r][1]}
                   for r in ('wsm', 'elb', 'pced') if r in by_role],

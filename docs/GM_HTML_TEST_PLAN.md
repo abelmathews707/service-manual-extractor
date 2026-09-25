@@ -1,9 +1,9 @@
 # GM source support — test and acceptance plan
 
-Date: 2026-09-23
-Status: Step 2 contract, Step 3 source reader and Step 4 normalization implemented.
-Step 4 HTML browser/complete-source acceptance remains open; application gates
-remain planned.
+Date: 2026-09-25
+Status: Steps 2–7 implemented. The damaged HTML originals still prevent a
+complete-source claim; the verified PDF set and synthetic HTML inputs cover the
+implemented application and viewer gates.
 
 ## Two levels of evidence
 
@@ -53,7 +53,17 @@ all 113 original hashes remain unchanged. Eleven verified surviving HTML samples
 and one offline-rendered sanitized SVG were checked. Browser policy blocked the
 HTML preview; that visual acceptance gate and the damaged-source gate remain
 open. See [CONTENT_NORMALIZATION_V1.md](CONTENT_NORMALIZATION_V1.md).
-Step 5 and later rows remain unimplemented.
+Step 5 and Step 6 passed in Repair Buddy on 2026-09-23. Step 7 passed on
+2026-09-25: 134 extractor tests passed with one optional schema test skipped.
+The new shared-viewer tests cover differently titled Ford and Chevrolet
+publications, multiple-publication selection, nested navigation, search,
+resolved links/backlinks, safe and unavailable diagrams, return state, keyboard
+use, narrow-screen CSS, offline-only assets, atomic output and the neutral CLI.
+The existing Ford regression suite continues to exercise the same viewer assets.
+The reviewed GM package built 113 publications and 12,324 searchable pages;
+browser checks covered library/search/page flows and the phone-width drawer.
+Every generated PDF/diagram target existed and matched its hash, and no fragment
+or runtime asset required a network URL. Step 8 remains unimplemented.
 
 Use tiny constructed adversarial archives; do not actually decompress an
 unbounded archive to test resource limits. Generate ZIPs during tests so a

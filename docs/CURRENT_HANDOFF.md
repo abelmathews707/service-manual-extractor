@@ -1,10 +1,11 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-23
-Current checkpoint: Step 4 content normalization is implemented. The seller PDF
-set produced 12,324 cited searchable pages. Synthetic HTML gates and sampled
-source checks pass; full HTML browser/visual acceptance and complete-source
-acceptance remain open. Application integration has not started.
+Updated: 2026-09-25
+Current checkpoint: Steps 0–7 are implemented. The seller PDF set produced
+12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
+the extractor now builds the shared offline viewer directly from neutral
+records. The damaged HTML originals still prevent a complete-source claim.
+Step 8, the reviewable release checkpoint, is next.
 
 ## Start here
 
@@ -13,9 +14,10 @@ acceptance remain open. Application integration has not started.
    unresolved source-integrity findings.
 3. Read the frozen [shared extraction contract](SERVICE_MANUAL_CONTRACT_V1.md).
    Read the [Step 4 behavior and limitations](CONTENT_NORMALIZATION_V1.md).
-4. Select one remaining step from the [GM manual-input implementation plan](GM_HTML_PLAN.md).
-5. Read that step's [test gate](GM_HTML_TEST_PLAN.md).
-6. Verify branches, working-tree changes and exact input identities before acting.
+4. Read the [shared viewer behavior](SHARED_VIEWER_V1.md).
+5. Select one remaining step from the [GM manual-input implementation plan](GM_HTML_PLAN.md).
+6. Read that step's [test gate](GM_HTML_TEST_PLAN.md).
+7. Verify branches, working-tree changes and exact input identities before acting.
 
 The user wants the same Repair Buddy experience across makes, with the manuals
 providing the content. Work is intentionally split into small sequential tasks
@@ -36,8 +38,8 @@ force-pushing, merging, tagging or releasing.
 | Branch baseline | `f1bdc8d`, main and `v0.1.0` foundation |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
-| Neutral source command | `python -m sme` (`probe`, staged `extract`, `normalize`, contract validation) |
-| Repair Buddy | `/Users/asokmathews/Documents/repair-buddy`, main `57eba8f` |
+| Neutral source command | `python -m sme` (`probe`, staged `extract`, `normalize`, `build-viewer`, contract validation) |
+| Repair Buddy integration checkout | `/Users/asokmathews/Documents/repair-buddy-step5`, `codex/gm-applicability-parity` at `f062b90` |
 | Workshop toolkit | `/Users/asokmathews/Documents/workshop-manual-toolkit-main`, main `d150e7d` |
 
 GitHub was renamed with the user's chosen name. The local `origin` URL was
@@ -80,8 +82,8 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 - Authored HTML/SVG/raster examples and an in-memory generated PDF cover
   qualifiers, diagnostic tables, repeated wording with separate context,
   missing content, page citations and native/OCR provenance.
-- The working Ford `fsd` interface is unchanged. Repair Buddy integration
-  remains a later step.
+- The working Ford `fsd` interface is unchanged. Repair Buddy integration was
+  added later in Steps 5–6 without routing neutral input through Ford parsing.
 
 ### Step 3 source reader: complete
 
@@ -120,6 +122,38 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
   embedded-image extraction are not claimed. OCR correctness still needs review.
 - See [CONTENT_NORMALIZATION_V1.md](CONTENT_NORMALIZATION_V1.md) for commands,
   schemas, source/status distinctions and remaining limitations.
+
+### Steps 5–6 application integration and acceptance: complete
+
+- Repair Buddy consumes neutral HTML/PDF records through its existing source,
+  search, citation and reader interfaces without changing historical Ford IDs.
+- Vehicle-selected search distinguishes confirmed, candidate, reference and
+  conflict states; free-form GM labels never become confirmed coverage.
+- The acceptance checkout passed 234 tests and Ruff. The extractor correction
+  for an owner-manual false positive passed 130 tests with one optional skip and
+  Ruff at `ad550c5d`.
+- Detailed acceptance data remains outside Git under
+  `/Users/asokmathews/Documents/service-manual-data/step6-acceptance-2026-09-23`.
+- See Repair Buddy's `docs/applicability-parity-acceptance.md` in the integration
+  checkout for the exact known-answer and browser results.
+
+### Step 7 shared offline viewer: complete
+
+- `sme build-viewer NORMALIZED -o SITE` validates the normalized package and
+  atomically publishes a static site.
+- The neutral path does not invoke the Ford `.EPL` parser. Both the existing
+  Ford builder and neutral builder copy the same generalized viewer shell.
+- All selected publications remain independently selectable and searchable.
+  Nested routes, resolved links, backlinks, search-return state, captions,
+  diagrams, exact local PDF page links and text provenance are retained.
+- Missing, unsupported and blocked references/diagrams are visible. Source HTML
+  and scripts are not copied into executable viewer pages.
+- Real-data acceptance built all 113 reviewed GM publications and 12,324
+  searchable pages with zero reported failures. Browser checks covered the
+  library, a 179-result search (with its 150-row display cap labeled), a PDF
+  page, return-to-search state and the phone-width navigation drawer.
+- See [SHARED_VIEWER_V1.md](SHARED_VIEWER_V1.md) for commands, boundaries and
+  verification.
 
 ### USB HTML exports: unresolved source integrity
 
@@ -162,31 +196,29 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
   browser/diagnostic acceptance test.
 - Step 3 extractor suite: 100 tests passed, including all previous Ford/contract
   tests plus source safety, repeatability, page-count, staging, selection and
-  neutral CLI tests. Step 4 expands the suite to 128 tests; integration tests
-  remain planned.
+  neutral CLI tests. Step 4 expanded the suite to 128 tests. The Step 7 gate
+  passes 134 tests with one optional schema test skipped, and Ruff passes.
+- The Step 7 generated-site audit found no missing local PDF/diagram targets,
+  hash mismatches, external fragment links or remote runtime assets.
 
 ## Next task
 
+**Step 8 is the next implementation milestone: release checkpoint.** Re-run the
+full extractor gate from a fresh checkout/environment, verify the shared viewer
+setup from documented commands, record supported and partial formats, pin the
+Repair Buddy dependency revision, prepare release notes and assemble a
+reviewable release candidate. Review the result before any merge, tag or public
+release; Step 8 does not authorize those actions.
+
 **The original HTML USB Step 1 blocker remains:** obtain a reliable seller or
-download replacement before claiming real-source acceptance for those HTML
-manuals. Do not repeat unbounded repair attempts against the unstable USB.
-
-**The next implementation milestone is Step 5: Repair Buddy integration.**
-Read the Step 4 content guide before consuming the package. Start a separate
-Repair Buddy branch from its then-current main and preserve local edits. Use a
-disposable test database, keep native/OCR provenance and original citations, and
-honor content-processing status, search eligibility and unavailable assets/links.
-Complete the outstanding HTML visual/browser acceptance when an allowed browser
-environment is available; do not treat sampled structural checks as that gate.
-
-Do not treat folder names as vehicle coverage, flatten tables into ambiguous
-text or parse the damaged HTML ZIPs as complete inputs. Repair Buddy integration
-remains Step 5 and must use a separate branch in that repository.
+download replacement before claiming complete-source acceptance for those HTML
+manuals. Do not repeat unbounded repair attempts against the unstable USB or
+describe the recovered folders as diagnosis-ready.
 
 The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf
 warnings are review metadata, not automatic source rejection.
 
-Model recommendations are in the step table: Terra Medium for routine adapter
-work, Sol Medium/High for structure/integration, Luna Low for mechanical
-checks/docs, and Astra High only for difficult unresolved design/review.
+For Step 8, use GPT-6 Luna Low for routine documentation and reproducibility
+checks, or GPT-6 Sol Medium if the release review uncovers code or packaging
+failures. Use Astra only for a genuinely unresolved architecture or safety issue.

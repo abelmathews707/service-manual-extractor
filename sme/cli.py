@@ -7,6 +7,7 @@ from . import __version__
 from .contract import ContractError, contract_summary, load_manifest
 from .normalize import normalize_source
 from .source import SourceError, extract_source, inspect_source
+from .viewer import build_viewer
 
 
 def cmd_contract(args):
@@ -111,6 +112,23 @@ def cmd_normalize(args):
     return 0 if result['ok'] else 1
 
 
+def cmd_build_viewer(args):
+    try:
+        result = build_viewer(args.source, args.out, args.title)
+    except (OSError, SourceError, ContractError, json.JSONDecodeError) as ex:
+        return _source_error(args, ex)
+    if args.json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        print(f'Viewer: {result["publications"]} publications, '
+              f'{result["documents"]} documents')
+        print(f'Output: {result["output"]}')
+        if result['content_status'] != 'complete':
+            print('Warning: normalized content is partial; unavailable material is labeled.',
+                  file=sys.stderr)
+    return 0
+
+
 def make_parser():
     parser = argparse.ArgumentParser(
         prog='sme',
@@ -155,6 +173,15 @@ def make_parser():
     command.add_argument('--source-inventory', help='full same-source inventory for excluded links')
     command.add_argument('--json', action='store_true', help='machine-readable output')
     command.set_defaults(function=cmd_normalize)
+
+    command = commands.add_parser(
+        'build-viewer', help='build the shared offline viewer from a normalized package',
+    )
+    command.add_argument('source')
+    command.add_argument('-o', '--out', required=True)
+    command.add_argument('--title', help='override the library title')
+    command.add_argument('--json', action='store_true', help='machine-readable output')
+    command.set_defaults(function=cmd_build_viewer)
     return parser
 
 
