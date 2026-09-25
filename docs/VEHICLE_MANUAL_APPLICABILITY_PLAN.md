@@ -351,7 +351,7 @@ stale search projection instead of falling back to outdated eligibility.
 
 ## 5. Sequential implementation plan
 
-All steps below are **not started**. Each task must report changed files,
+Step A1 completed on 2026-09-25; A2–B4 have not started. Each task must report changed files,
 tests/evidence, remaining issues, and the next step with its model recommendation.
 Stop at that step's pass gate. A pass gate is not permission to merge or release.
 

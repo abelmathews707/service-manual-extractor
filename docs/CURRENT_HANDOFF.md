@@ -14,8 +14,8 @@ The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
 Phase B adds structured extraction. It is design only, on
-`codex/vehicle-manual-library-plan`. The next implementation task is **A1**,
-not another step from the completed GM sequence.
+`codex/vehicle-manual-library-plan`. Step A1 is complete; the next task is
+**A2**, not another step from the completed GM sequence.
 
 ## Start here
 
@@ -72,6 +72,11 @@ this repository.
 ## Local manual data
 
 All source files and detailed reports are outside Git.
+
+A1 metadata summary is in [A1_INVENTORY_SUMMARY.md](A1_INVENTORY_SUMMARY.md).
+Detailed local inventory and citation cases are under
+`/Users/asokmathews/Documents/service-manual-data/a1-inventory-2026-09-25/`.
+The replacement GM HTML source path remains to be recorded when available.
 
 | Input | Local root | State |
 | --- | --- | --- |
@@ -218,10 +223,13 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 ## Next task
 
 Step 8 passed its fresh-checkout tests and release checks, and both feature
-branches were merged. Execute **A1: reconcile inventory and acceptance examples**
-from [the new plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md) when requested. The plan
-records the owner's choices: full app/viewer experience, shared-part suggestions
-requiring review, and ordinary manual content before expanded structured data.
+branches were merged. **A1 inventory reconciliation and acceptance-case
+selection are complete**; see [the summary](A1_INVENTORY_SUMMARY.md) and
+local-only evidence folder above. The replacement GM HTML path is still pending.
+Next implement **A2: freeze the vehicle/applicability contracts** from
+[the new plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md). The owner selected the
+full app/viewer experience, possible shared-part matches requiring review, and
+ordinary manual content before expanded structured data.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
@@ -233,5 +241,4 @@ The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf
 warnings are review metadata, not automatic source rejection.
 
-Recommended for A1: GPT-6 Luna Medium. Later contract, matching and integration
-steps generally use GPT-6 Sol High; each step and its rationale are in the plan.
+Recommended for A2: GPT-6 Sol High; each step and its rationale are in the plan.
