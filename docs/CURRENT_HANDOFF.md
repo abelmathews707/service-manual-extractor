@@ -1,6 +1,6 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-25
+Updated: 2026-09-26
 Current checkpoint: Steps 0–8 are implemented. The seller PDF set produced
 12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
 the extractor now builds the shared offline viewer directly from neutral
@@ -13,8 +13,8 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. A1 and A2 are complete; A2 is on
-`codex/vehicle-applicability-a2`. The next step is **A3**.
+Phase B adds structured extraction. A1–A3 are complete; A3 is on
+`codex/ford-neutral-bridge-a3`. The next step is **A4**.
 
 ## Start here
 
@@ -49,6 +49,7 @@ force-pushing, merging, tagging or releasing.
 | Existing local checkout | `/Users/asokmathews/Documents/ford-service-disc` |
 | Planning branch | `codex/vehicle-manual-library-plan` |
 | A2 contract branch | `codex/vehicle-applicability-a2`, based on the planning branch |
+| A3 Ford bridge branch | `codex/ford-neutral-bridge-a3`, based on A2 |
 | Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
@@ -232,13 +233,21 @@ immutable sidecar IDs and 25 synthetic matching decisions. The full extractor
 suite passed 150 tests with `jsonschema` enabled, and Ruff passed. The
 replacement GM HTML path is still pending.
 
-Next implement **A3: connect supported Ford extraction to neutral packages**.
-Use the A2 contracts and preserve existing Ford commands, source-relative
-archive selections and old Repair Buddy citations. Two workshop publications
-must coexist; unsupported Ford source types need explicit capability reports.
-The pass gate is synthetic v1/v2 and selected real books producing valid
-neutral packages, identity bridge checks, assets/citations and the existing
-Ford regression suite. Recommended model: GPT-6 Sol / High.
+**A3 is complete** in [the Ford adapter and acceptance record](FORD_NEUTRAL_ADAPTER_A3.md).
+The `sme ford-import` path preserves exact archive occurrences, originals,
+navigation, diagrams, PDF pages and an old-citation identity bridge. It leaves
+legacy `fsd` commands and non-Ford readers intact. Synthetic v1/v2 gates and
+five representative real books passed; the full suite passed 154 tests and
+Ruff passed. MDB wiring remains preserved but not interpreted, with an explicit
+capability report. No Repair Buddy database or toolkit files were changed.
+
+Next implement **A4: capture applicability evidence consistently across
+inputs**. Inventory mixed folders, route recognized formats, emit source-bound
+vehicle/section evidence without turning titles or folder names into confirmed
+fitment, and selectively OCR only pages that need it. Keep unsupported files
+counted and source/derived hashes intact. The pass gate is consistent evidence
+contracts across Ford, HTML and PDF; misleading dates, OCR and mixed-page
+qualifiers must stay distinguishable. Recommended model: GPT-6 Sol / High.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.

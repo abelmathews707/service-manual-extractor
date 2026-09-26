@@ -1,7 +1,7 @@
 # One manual library, organized by vehicle
 
-Status: A1 and A2 complete; A3–A10 and Phase B have not started.
-Date: 2026-09-25.
+Status: A1–A3 complete; A4–A10 and Phase B have not started.
+Date: 2026-09-26.
 Planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
 Repair Buddy baseline: merged `main` at
@@ -9,8 +9,9 @@ Repair Buddy baseline: merged `main` at
 
 This is a new sequence, numbered **A1–A10** and **B1–B4**, separate from the
 completed GM integration Steps 0–8. A2 contracts are implemented on
-`codex/vehicle-applicability-a2`; no database has been migrated and no more
-manuals have been processed.
+`codex/vehicle-applicability-a2`; the Ford neutral bridge is on
+`codex/ford-neutral-bridge-a3`. No application database has been migrated.
+See [A3 acceptance](FORD_NEUTRAL_ADAPTER_A3.md).
 
 ## 1. Decisions agreed with the owner
 

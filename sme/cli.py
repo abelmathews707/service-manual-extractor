@@ -1,10 +1,12 @@
 """Manufacturer-neutral command line for source inspection and extraction."""
+
 import argparse
 import json
 import sys
 
 from . import __version__
 from .contract import ContractError, contract_summary, load_manifest
+from .ford_adapter import import_ford, probe_ford
 from .normalize import normalize_source
 from .source import SourceError, extract_source, inspect_source
 from .viewer import build_viewer
@@ -62,7 +64,9 @@ def cmd_probe(args):
 def cmd_extract(args):
     try:
         value = extract_source(
-            args.source, args.out, publication_ids=args.publication,
+            args.source,
+            args.out,
+            publication_ids=args.publication,
         )
     except (OSError, SourceError) as ex:
         return _source_error(args, ex)
@@ -120,13 +124,51 @@ def cmd_build_viewer(args):
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
-        print(f'Viewer: {result["publications"]} publications, '
-              f'{result["documents"]} documents')
+        print(f'Viewer: {result["publications"]} publications, {result["documents"]} documents')
         print(f'Output: {result["output"]}')
         if result['content_status'] != 'complete':
-            print('Warning: normalized content is partial; unavailable material is labeled.',
-                  file=sys.stderr)
+            print(
+                'Warning: normalized content is partial; unavailable material is labeled.',
+                file=sys.stderr,
+            )
     return 0
+
+
+def cmd_ford_probe(args):
+    try:
+        value = probe_ford(args.source)
+    except (OSError, SourceError, ValueError) as ex:
+        return _source_error(args, ex)
+    if args.json:
+        print(json.dumps(value, indent=2, ensure_ascii=False))
+    else:
+        for item in value['archives']:
+            print(
+                f'{item["identity"]}  POD v{item["version"]}  '
+                f'{item["type"] or "unknown"}  {item["title"]}'
+            )
+    return 0
+
+
+def cmd_ford_import(args):
+    try:
+        value = import_ford(args.source, args.out, args.archive)
+    except (OSError, SourceError, ValueError, ContractError) as ex:
+        return _source_error(args, ex)
+    if args.json:
+        print(json.dumps(value, indent=2, ensure_ascii=False))
+    else:
+        print(
+            f'{value["publications"]} Ford publications, '
+            f'{value["documents"]} documents: {value["output"]}'
+        )
+        if value['failures']:
+            print(
+                f'Warning: {len(value["failures"])} normalization failures; '
+                'see the capability report.',
+                file=sys.stderr,
+            )
+    return 0 if not value['failures'] else 1
 
 
 def make_parser():
@@ -148,23 +190,43 @@ def make_parser():
     command.set_defaults(function=cmd_validate)
 
     command = commands.add_parser(
-        'probe', help='inspect a ZIP, folder or PDF without writing output',
+        'probe',
+        help='inspect a ZIP, folder or PDF without writing output',
     )
     command.add_argument('source')
     command.add_argument('--json', action='store_true', help='machine-readable output')
     command.set_defaults(function=cmd_probe)
 
     command = commands.add_parser(
-        'extract', help='verify and atomically copy selected original files',
+        'extract',
+        help='verify and atomically copy selected original files',
     )
     command.add_argument('source')
     command.add_argument('-o', '--out', required=True)
     command.add_argument(
-        '--publication', action='append',
+        '--publication',
+        action='append',
         help='exact publication ID to extract (repeatable; default: all)',
     )
     command.add_argument('--json', action='store_true', help='machine-readable output')
     command.set_defaults(function=cmd_extract)
+
+    command = commands.add_parser('ford-probe', help='list exact Ford POD archive identities')
+    command.add_argument('source')
+    command.add_argument('--json', action='store_true', help='machine-readable output')
+    command.set_defaults(function=cmd_ford_probe)
+
+    command = commands.add_parser('ford-import', help='import selected Ford POD archives')
+    command.add_argument('source')
+    command.add_argument('-o', '--out', required=True)
+    command.add_argument(
+        '--archive',
+        action='append',
+        required=True,
+        help='exact source-relative archive identity (repeatable)',
+    )
+    command.add_argument('--json', action='store_true', help='machine-readable output')
+    command.set_defaults(function=cmd_ford_import)
 
     command = commands.add_parser('normalize', help='normalize a verified Step 3 extraction')
     command.add_argument('source')
@@ -175,7 +237,8 @@ def make_parser():
     command.set_defaults(function=cmd_normalize)
 
     command = commands.add_parser(
-        'build-viewer', help='build the shared offline viewer from a normalized package',
+        'build-viewer',
+        help='build the shared offline viewer from a normalized package',
     )
     command.add_argument('source')
     command.add_argument('-o', '--out', required=True)
