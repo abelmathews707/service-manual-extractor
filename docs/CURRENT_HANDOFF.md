@@ -13,9 +13,8 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. It is design only, on
-`codex/vehicle-manual-library-plan`. Step A1 is complete; the next task is
-**A2**, not another step from the completed GM sequence.
+Phase B adds structured extraction. A1 and A2 are complete; A2 is on
+`codex/vehicle-applicability-a2`. The next step is **A3**.
 
 ## Start here
 
@@ -49,6 +48,7 @@ force-pushing, merging, tagging or releasing.
 | Previous fork name | `abelmathews707/ford-service-disc` |
 | Existing local checkout | `/Users/asokmathews/Documents/ford-service-disc` |
 | Planning branch | `codex/vehicle-manual-library-plan` |
+| A2 contract branch | `codex/vehicle-applicability-a2`, based on the planning branch |
 | Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
@@ -225,11 +225,20 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 Step 8 passed its fresh-checkout tests and release checks, and both feature
 branches were merged. **A1 inventory reconciliation and acceptance-case
 selection are complete**; see [the summary](A1_INVENTORY_SUMMARY.md) and
-local-only evidence folder above. The replacement GM HTML path is still pending.
-Next implement **A2: freeze the vehicle/applicability contracts** from
-[the new plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md). The owner selected the
-full app/viewer experience, possible shared-part matches requiring review, and
-ordinary manual content before expanded structured data.
+local-only evidence folder above. **A2 vehicle/applicability contracts are
+complete** in [the sidecar contract](VEHICLE_APPLICABILITY_CONTRACT_V1.md):
+five separately versioned JSON Schemas, dependency-free semantic validators,
+immutable sidecar IDs and 25 synthetic matching decisions. The full extractor
+suite passed 150 tests with `jsonschema` enabled, and Ruff passed. The
+replacement GM HTML path is still pending.
+
+Next implement **A3: connect supported Ford extraction to neutral packages**.
+Use the A2 contracts and preserve existing Ford commands, source-relative
+archive selections and old Repair Buddy citations. Two workshop publications
+must coexist; unsupported Ford source types need explicit capability reports.
+The pass gate is synthetic v1/v2 and selected real books producing valid
+neutral packages, identity bridge checks, assets/citations and the existing
+Ford regression suite. Recommended model: GPT-6 Sol / High.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
@@ -241,4 +250,4 @@ The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf
 warnings are review metadata, not automatic source rejection.
 
-Recommended for A2: GPT-6 Sol High; each step and its rationale are in the plan.
+Recommended for A3: GPT-6 Sol High; each step and its rationale are in the plan.

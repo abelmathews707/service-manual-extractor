@@ -1,0 +1,130 @@
+{
+  "contract": "vehicle-applicability-decisions/v1",
+  "cases": [
+    {
+      "id": "exact-native-ford",
+      "given": "A native, explicit 2003 Ford F-250 6.0L diesel statement on the selected unit; the selected tuple is valid.",
+      "expected": {"state": "confirmed", "reason_code": "explicit_source", "search_eligible": true}
+    },
+    {
+      "id": "same-displacement-different-engine",
+      "given": "Ford F-250 6.0L diesel selected; candidate is GM 6.0L gasoline with no reviewed cross-make section link.",
+      "expected": {"state": "excluded", "reason_code": "excluded_by_source", "search_eligible": false}
+    },
+    {
+      "id": "ford-publisher-lincoln-vehicle",
+      "given": "A Ford-produced disc names a Lincoln vehicle; Ford make alone is selected.",
+      "expected": {"state": "excluded", "reason_code": "excluded_by_source", "search_eligible": false}
+    },
+    {
+      "id": "correlated-alternatives",
+      "given": "Source alternatives are (2003 F-250 6.0 diesel) OR (2002 F-250 7.3 diesel); query asks for 2002 F-250 6.0 diesel.",
+      "expected": {"state": "excluded", "reason_code": "excluded_by_source", "search_eligible": false}
+    },
+    {
+      "id": "unknown-engine",
+      "given": "A title names 2003 F-250 but gives no engine and no explicit all-engine statement; 6.0 diesel is selected with possible matches enabled.",
+      "expected": {"state": "possible", "reason_code": "missing_engine", "search_eligible": true}
+    },
+    {
+      "id": "unknown-engine-confirmed-mode",
+      "given": "The same title has unknown engine; 6.0 diesel is selected in confirmed-only mode.",
+      "expected": {"state": "excluded", "reason_code": "missing_engine", "search_eligible": false}
+    },
+    {
+      "id": "explicit-all-engines-bounded",
+      "given": "Native source explicitly states all engines for 2003 F-250; query selects a known 2003 F-250 engine.",
+      "expected": {"state": "confirmed", "reason_code": "explicit_source", "search_eligible": true}
+    },
+    {
+      "id": "make-only-partial-filter",
+      "given": "Only Ford make is selected; a manual has exact F-250/year/engine evidence, but no complete vehicle tuple was chosen.",
+      "expected": {"state": "possible", "reason_code": "incomplete_selection", "search_eligible": true}
+    },
+    {
+      "id": "missing-required-transmission",
+      "given": "Selected vehicle omits transmission and a page requires a specific transmission; possible matches are enabled.",
+      "expected": {"state": "possible", "reason_code": "missing_qualifier", "search_eligible": true}
+    },
+    {
+      "id": "child-excludes-parent-match",
+      "given": "Publication includes 2003 F-250, but a child table explicitly excludes its 6.0 diesel engine.",
+      "expected": {"state": "excluded", "reason_code": "conflicting_child", "search_eligible": false}
+    },
+    {
+      "id": "first-page-pdf-hint",
+      "given": "First PDF page mentions a model, with no evidence that the statement governs every page.",
+      "expected": {"state": "possible", "reason_code": "missing_qualifier", "search_eligible": true}
+    },
+    {
+      "id": "ocr-engine-qualifier-unreviewed",
+      "given": "A scanned PDF page has an OCR engine qualifier without original-page review.",
+      "expected": {"state": "possible", "reason_code": "missing_qualifier", "search_eligible": true}
+    },
+    {
+      "id": "mixed-engine-pdf-page",
+      "given": "A page contains 4.3L and 4.8L table text but no reliable isolated text for the selected engine.",
+      "expected": {"state": "excluded", "reason_code": "mixed_content", "search_eligible": false}
+    },
+    {
+      "id": "generic-dtc-opt-in",
+      "given": "Generic DTC reference is requested with the reference toggle enabled.",
+      "expected": {"state": "reference", "reason_code": "generic_reference", "search_eligible": true}
+    },
+    {
+      "id": "generic-dtc-default",
+      "given": "Generic DTC reference exists but the reference toggle is disabled.",
+      "expected": {"state": "excluded", "reason_code": "generic_reference", "search_eligible": false}
+    },
+    {
+      "id": "unknown-make-ford-filter",
+      "given": "A document has unknown vehicle make; Ford make is selected.",
+      "expected": {"state": "unmapped", "reason_code": "unknown_identity", "search_eligible": false}
+    },
+    {
+      "id": "reviewed-shared-section",
+      "given": "A specific section has accepted cited applicability to F-250 and F-350; F-350 is selected.",
+      "expected": {"state": "confirmed", "reason_code": "reviewed", "search_eligible": true}
+    },
+    {
+      "id": "shared-part-only",
+      "given": "Two manuals mention the same part; no cited section-applicability decision exists.",
+      "expected": {"state": "excluded", "reason_code": "pending_cross_make", "search_eligible": false}
+    },
+    {
+      "id": "pending-cross-make",
+      "given": "A Ford section is proposed for a Chevrolet vehicle, but the proposal has not been accepted.",
+      "expected": {"state": "excluded", "reason_code": "pending_cross_make", "search_eligible": false}
+    },
+    {
+      "id": "rejected-or-revoked-approval",
+      "given": "A prior reviewed section link has been rejected or revoked before the current scope revision.",
+      "expected": {"state": "excluded", "reason_code": "excluded_by_source", "search_eligible": false}
+    },
+    {
+      "id": "stale-evidence-review",
+      "given": "The approved section's evidence hash or policy revision changed and the approval was not revalidated.",
+      "expected": {"state": "excluded", "reason_code": "stale_review", "search_eligible": false}
+    },
+    {
+      "id": "legacy-blank-make",
+      "given": "A legacy blank make field migrated to unknown; a Ford-only query is selected.",
+      "expected": {"state": "unmapped", "reason_code": "unknown_identity", "search_eligible": false}
+    },
+    {
+      "id": "package-without-sidecar",
+      "given": "A valid v1 package has no applicability sidecar and a vehicle-specific search is selected.",
+      "expected": {"state": "unmapped", "reason_code": "unmapped_package", "search_eligible": false}
+    },
+    {
+      "id": "empty-scope",
+      "given": "No vehicle was selected and browse-all was not explicitly requested.",
+      "expected": {"state": "excluded", "reason_code": "no_eligible_units", "search_eligible": false}
+    },
+    {
+      "id": "unrelated-car-fixture",
+      "given": "An authored Example City Car vehicle is selected; Ford and GM hardcoded assumptions must not supply matches.",
+      "expected": {"state": "excluded", "reason_code": "excluded_by_source", "search_eligible": false}
+    }
+  ]
+}

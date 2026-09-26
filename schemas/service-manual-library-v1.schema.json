@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/service-manual-library-v1.schema.json",
+  "title": "Service manual library references v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract", "revision", "vocabulary_revision", "review_revision", "policy_version", "packages"],
+  "properties": {
+    "contract": {"const": "service-manual-library/v1"},
+    "revision": {"$ref": "#/$defs/sha"},
+    "vocabulary_revision": {"$ref": "#/$defs/sha"},
+    "review_revision": {"$ref": "#/$defs/sha"},
+    "policy_version": {"const": "vehicle-applicability-policy/v1"},
+    "packages": {"type": "array", "items": {"$ref": "#/$defs/package"}}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "package": {
+      "type": "object", "additionalProperties": false,
+      "required": ["occurrence_id", "root", "source_id", "manifest_sha256", "content_sha256", "status"],
+      "properties": {
+        "occurrence_id": {"type": "string", "pattern": "^occ_[0-9a-f]{32}$"},
+        "root": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"},
+        "source_id": {"type": "string", "pattern": "^src_[0-9a-f]{32}$"},
+        "manifest_sha256": {"$ref": "#/$defs/sha"}, "content_sha256": {"$ref": "#/$defs/sha"},
+        "status": {"enum": ["active", "superseded"]},
+        "superseded_by": {"type": "string", "pattern": "^occ_[0-9a-f]{32}$"}
+      },
+      "allOf": [{"if": {"properties": {"status": {"const": "superseded"}}}, "then": {"required": ["superseded_by"]}, "else": {"not": {"required": ["superseded_by"]}}}]
+    }
+  }
+}

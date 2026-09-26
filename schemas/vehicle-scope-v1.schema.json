@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/vehicle-scope-v1.schema.json",
+  "title": "Vehicle scoped search eligibility v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract", "fingerprint", "library_revision", "vocabulary_revision", "review_revision", "policy_version", "selection", "mode", "include_reference", "browse_all", "eligible"],
+  "properties": {
+    "contract": {"const": "vehicle-scope/v1"},
+    "fingerprint": {"$ref": "#/$defs/sha"},
+    "library_revision": {"$ref": "#/$defs/sha"},
+    "vocabulary_revision": {"$ref": "#/$defs/sha"},
+    "review_revision": {"$ref": "#/$defs/sha"},
+    "policy_version": {"const": "vehicle-applicability-policy/v1"},
+    "selection": {"$ref": "#/$defs/selection"},
+    "mode": {"enum": ["confirmed", "include_possible"]},
+    "include_reference": {"type": "boolean"}, "browse_all": {"type": "boolean"},
+    "eligible": {"type": "array", "items": {"$ref": "#/$defs/eligible"}}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "qualifiers": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"transmission": {"type": "string", "minLength": 1}, "drivetrain": {"type": "string", "minLength": 1}, "vin": {"type": "string", "minLength": 1}, "rpo": {"type": "string", "minLength": 1}, "production_date": {"type": "string", "minLength": 1}, "market": {"type": "string", "minLength": 1}, "cab": {"type": "string", "minLength": 1}, "chassis": {"type": "string", "minLength": 1}, "fuel": {"type": "string", "minLength": 1}}
+    },
+    "selection": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "make_id": {"type": "string", "pattern": "^make_[0-9a-f]{32}$"},
+        "model_id": {"type": "string", "pattern": "^model_[0-9a-f]{32}$"},
+        "model_year": {"type": "integer", "minimum": 1886, "maximum": 2100},
+        "engine_id": {"type": "string", "pattern": "^engine_[0-9a-f]{32}$"},
+        "qualifiers": {"$ref": "#/$defs/qualifiers"}
+      },
+      "dependentRequired": {"model_id": ["make_id"], "model_year": ["model_id"], "engine_id": ["model_year"]}
+    },
+    "eligible": {
+      "type": "object", "additionalProperties": false,
+      "required": ["unit_id", "state", "reason_codes", "evidence_ids", "review_event_ids"],
+      "properties": {
+        "unit_id": {"type": "string", "pattern": "^(pub|doc|unit)_[0-9a-f]{32}$"},
+        "state": {"enum": ["confirmed", "possible", "reference"]},
+        "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["explicit_source", "reviewed", "incomplete_selection", "missing_make", "missing_model", "missing_year", "missing_engine", "missing_qualifier", "conflicting_child", "excluded_by_source", "generic_reference", "unknown_identity", "stale_review", "mixed_content", "pending_cross_make", "unmapped_package", "no_eligible_units"]}},
+        "evidence_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^ev_[0-9a-f]{32}$"}},
+        "review_event_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^review_[0-9a-f]{32}$"}}
+      }
+    }
+  }
+}

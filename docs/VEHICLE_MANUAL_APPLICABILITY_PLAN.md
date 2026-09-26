@@ -1,6 +1,6 @@
 # One manual library, organized by vehicle
 
-Status: design only; implementation has not started.
+Status: A1 and A2 complete; A3–A10 and Phase B have not started.
 Date: 2026-09-25.
 Planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
@@ -8,8 +8,9 @@ Repair Buddy baseline: merged `main` at
 `310ce810f9129576d5f0f72b37a27f35cac699a8`.
 
 This is a new sequence, numbered **A1–A10** and **B1–B4**, separate from the
-completed GM integration Steps 0–8. Execute one selected step per task. This
-document does not implement code, migrate a database, or process more manuals.
+completed GM integration Steps 0–8. A2 contracts are implemented on
+`codex/vehicle-applicability-a2`; no database has been migrated and no more
+manuals have been processed.
 
 ## 1. Decisions agreed with the owner
 
@@ -351,7 +352,7 @@ stale search projection instead of falling back to outdated eligibility.
 
 ## 5. Sequential implementation plan
 
-Step A1 completed on 2026-09-25; A2–B4 have not started. Each task must report changed files,
+Steps A1–A2 completed on 2026-09-25; A3–B4 have not started. Each task must report changed files,
 tests/evidence, remaining issues, and the next step with its model recommendation.
 Stop at that step's pass gate. A pass gate is not permission to merge or release.
 
@@ -422,6 +423,10 @@ without treating duplicates or catalog-only items as imports; enough reviewed
 examples exist to test each decision above. Commit the metadata summary only.
 
 ### A2 — Freeze the vehicle and applicability contracts
+
+**Status:** completed on 2026-09-25. See
+[the sidecar contract](VEHICLE_APPLICABILITY_CONTRACT_V1.md), its five JSON
+Schemas, semantic validators and synthetic decision examples.
 
 **Depends on:** A1. **Model:** GPT-6 Sol / High, because identity and scope errors
 would affect every later layer.
