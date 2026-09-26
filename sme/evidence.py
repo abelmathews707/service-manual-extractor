@@ -87,9 +87,10 @@ def _new_unit(generation, document, content, kind, selector, parent=None):
 
 
 def _assertion(source_id, subject, statement, citation, selector, derivation,
-               provenance, alternatives, support, intent='include'):
+               provenance, alternatives, support, intent='include',
+               applies_to_descendants=False):
     value = {'subject_id': subject, 'statement': statement, 'citation': citation,
-             'intent': intent, 'applies_to_descendants': False,
+             'intent': intent, 'applies_to_descendants': applies_to_descendants,
              'derivation': derivation, 'provenance': provenance,
              'support': support, 'alternatives': alternatives}
     if selector:
@@ -138,7 +139,7 @@ def capture_evidence(package, vocabulary, verify_originals=True):
     unit_ids = set()
 
     def add(subject, statement, citation, selector, derivation, provenance,
-            structured=None):
+            structured=None, applies_to_descendants=False):
         if not statement or not statement.strip():
             return
         intent = 'exclude' if _EXCLUSION.search(statement) else 'include'
@@ -149,7 +150,8 @@ def capture_evidence(package, vocabulary, verify_originals=True):
                    and derivation in {'explicit_structured', 'explicit_text'}
                    else 'proposal')
         candidate = _assertion(value['source_id'], subject, statement.strip(), citation,
-                               selector, derivation, provenance, alternatives, support, intent)
+                               selector, derivation, provenance, alternatives, support,
+                               intent, applies_to_descendants)
         if candidate['id'] not in assertion_ids:
             value['assertions'].append(candidate)
             assertion_ids.add(candidate['id'])
@@ -176,7 +178,7 @@ def capture_evidence(package, vocabulary, verify_originals=True):
                 add(publication['id'], item['statement'],
                     {'kind': 'path', 'path': item['source_path']},
                     item.get('selector', 'ford-epl-vehicle'), 'explicit_structured',
-                    'native', structured.get(item['statement']))
+                    'native', structured.get(item['statement']), True)
         # Other publication-level records may be inferred from a first HTML/PDF
         # page. Capture the page below; never promote it to whole-book scope.
         for document in publication['documents']:

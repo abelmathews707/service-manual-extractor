@@ -227,6 +227,7 @@ class EvidenceCaptureTest(unittest.TestCase):
             ford_mapped = capture_evidence(ford_package, mapped)
             self.assertTrue(any(item['derivation'] == 'explicit_structured' and
                                 item['support'] == 'source_supported' and
+                                item['applies_to_descendants'] and
                                 item['alternatives'][0]['model']['state'] == 'exact'
                                 for item in ford_mapped['assertions']))
             pdf_mapped = capture_evidence(pdf_package, mapped)

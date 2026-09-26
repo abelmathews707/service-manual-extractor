@@ -1,6 +1,6 @@
 # One manual library, organized by vehicle
 
-Status: A1–A3 complete; A4–A10 and Phase B have not started.
+Status: A1–A5 complete; A6–A10 and Phase B have not started.
 Date: 2026-09-26.
 Planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
@@ -10,8 +10,11 @@ Repair Buddy baseline: merged `main` at
 This is a new sequence, numbered **A1–A10** and **B1–B4**, separate from the
 completed GM integration Steps 0–8. A2 contracts are implemented on
 `codex/vehicle-applicability-a2`; the Ford neutral bridge is on
-`codex/ford-neutral-bridge-a3`. No application database has been migrated.
-See [A3 acceptance](FORD_NEUTRAL_ADAPTER_A3.md).
+`codex/ford-neutral-bridge-a3`; A4 evidence capture and A5 matching/review
+are on their own branches. No application database has been migrated. See
+[A3 acceptance](FORD_NEUTRAL_ADAPTER_A3.md),
+[A4 evidence](A4_EVIDENCE_DISCOVERY.md) and
+[A5 matching/review](A5_MATCHING_REVIEW.md).
 
 ## 1. Decisions agreed with the owner
 
@@ -507,6 +510,8 @@ dates/titles, OCR qualifier errors and mixed sections remain distinguishable;
 originals and their citations remain intact; unsupported items are counted.
 
 ### A5 — Implement matching, shared-content proposals and review storage
+
+Implementation record: [A5 matching and review](A5_MATCHING_REVIEW.md).
 
 **Depends on:** A4. **Model:** GPT-6 Sol / High, because exclusion precedence,
 review lifecycle and many-to-many applicability need careful testing.

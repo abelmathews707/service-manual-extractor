@@ -13,8 +13,8 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. A1–A4 are complete; A4 is on
-`codex/applicability-evidence-a4`. The next step is **A5**.
+Phase B adds structured extraction. A1–A5 are complete; A5 is on
+`codex/applicability-matching-a5`. The next step is **A6**.
 
 ## Start here
 
@@ -51,6 +51,7 @@ force-pushing, merging, tagging or releasing.
 | A2 contract branch | `codex/vehicle-applicability-a2`, based on the planning branch |
 | A3 Ford bridge branch | `codex/ford-neutral-bridge-a3`, based on A2 |
 | A4 evidence branch | `codex/applicability-evidence-a4`, based on A3 |
+| A5 matching branch | `codex/applicability-matching-a5`, based on A4 |
 | Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
@@ -250,13 +251,21 @@ The full suite passed 165 tests (one opt-in real-OCR test skipped); the real-OCR
 integration test passed separately. Ruff passed. No Repair Buddy database or
 toolkit files were changed.
 
-Next implement **A5: deterministic matching, shared-content proposals and
-review storage**. Apply source evidence and A2 truth tables to canonical
-vehicle scope, with child exclusions and conflicts taking precedence. Store
-human decisions separately from generated evidence, and make changed,
-rejected, revoked or stale decisions ineligible on reimport. Similar text or a
-shared part must never confirm repair applicability by itself. Recommended
-model: GPT-6 Sol / High.
+**A5 is complete** in [the matching and review record](A5_MATCHING_REVIEW.md).
+The pure per-unit matcher passes all 25 frozen A2 decision cases, preserves
+child conflict precedence and keeps metadata-only units out of text search.
+The portable review log is append-only and source-bound; stale/revoked links
+cannot grant fitment. Bounded shared-content leads remain unapproved. The
+full extractor suite passed 173 tests (one opt-in OCR test skipped), and Ruff
+passed. No Repair Buddy database or toolkit files were changed.
+
+Next implement **A6: assemble multiple normalized packages and generate
+pre-search eligibility**. Validate every package/reference and its evidence,
+vocabulary and review revision; preserve each book occurrence and citation;
+export only eligible units and scope-bound offline search shards. A changed or
+revoked decision must invalidate dependent eligibility without removing old
+readable originals, and empty scope must never widen to a global search.
+Recommended model: GPT-6 Sol / High.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
