@@ -13,8 +13,8 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. A1–A5 are complete; A5 is on
-`codex/applicability-matching-a5`. The next step is **A6**.
+Phase B adds structured extraction. A1–A6 are complete; A6 is on
+`codex/applicability-library-a6`. The next step is **A7**.
 
 ## Start here
 
@@ -52,6 +52,7 @@ force-pushing, merging, tagging or releasing.
 | A3 Ford bridge branch | `codex/ford-neutral-bridge-a3`, based on A2 |
 | A4 evidence branch | `codex/applicability-evidence-a4`, based on A3 |
 | A5 matching branch | `codex/applicability-matching-a5`, based on A4 |
+| A6 library branch | `codex/applicability-library-a6`, based on A5 |
 | Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
@@ -259,13 +260,22 @@ cannot grant fitment. Bounded shared-content leads remain unapproved. The
 full extractor suite passed 173 tests (one opt-in OCR test skipped), and Ruff
 passed. No Repair Buddy database or toolkit files were changed.
 
-Next implement **A6: assemble multiple normalized packages and generate
-pre-search eligibility**. Validate every package/reference and its evidence,
-vocabulary and review revision; preserve each book occurrence and citation;
-export only eligible units and scope-bound offline search shards. A changed or
-revoked decision must invalidate dependent eligibility without removing old
-readable originals, and empty scope must never widen to a global search.
-Recommended model: GPT-6 Sol / High.
+**A6 is complete** in [the combined-library and export record](A6_LIBRARY_SEARCH_EXPORT.md).
+Multiple validated packages retain distinct occurrences and citations. A
+versioned Python scope result controls membership-homogeneous offline text
+shards, with search rejecting old review revisions. The combined Ford/HTML/GM
+fixture loaded no GM text for a Ford-only query; a simulated failed rebuild
+kept old content readable but rejected its stale search index. All generated
+full, partial and qualifier-state scopes agreed with Python membership. The
+full suite passed 177 tests (one opt-in OCR test skipped), and Ruff passed.
+
+Next implement **A7: Repair Buddy migration and unified pre-search retrieval**.
+Use a separate clean Repair Buddy worktree and pin this extractor revision.
+Migrate a disposable DB copy before touching any live data; preserve legacy
+Ford/owner-PDF identities and user edits. Every primary, conflict, literal,
+legacy-PDF and pilot search path must take the same eligible-ID allowlist
+before token matching, ranking, snippets or limits. A failed index rebuild
+must not revive a revoked approval. Recommended model: GPT-6 Sol / High.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.

@@ -1,6 +1,6 @@
 # One manual library, organized by vehicle
 
-Status: A1–A5 complete; A6–A10 and Phase B have not started.
+Status: A1–A6 complete; A7–A10 and Phase B have not started.
 Date: 2026-09-26.
 Planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
@@ -14,7 +14,8 @@ completed GM integration Steps 0–8. A2 contracts are implemented on
 are on their own branches. No application database has been migrated. See
 [A3 acceptance](FORD_NEUTRAL_ADAPTER_A3.md),
 [A4 evidence](A4_EVIDENCE_DISCOVERY.md) and
-[A5 matching/review](A5_MATCHING_REVIEW.md).
+[A5 matching/review](A5_MATCHING_REVIEW.md) and
+[A6 library/export](A6_LIBRARY_SEARCH_EXPORT.md).
 
 ## 1. Decisions agreed with the owner
 
@@ -539,6 +540,8 @@ an unreviewed confirmed match; child conflicts defeat broad parent approval;
 review history survives reimport and affected stale approvals stop matching.
 
 ### A6 — Assemble many sources and build eligible search data
+
+Implementation record: [A6 library and search export](A6_LIBRARY_SEARCH_EXPORT.md).
 
 **Depends on:** A5. **Model:** GPT-6 Sol / High, because this establishes the
 pre-search boundary and handles invalidation across many packages.

@@ -25,10 +25,20 @@ def _result(state, reason, evidence=(), events=(), missing=(), conflicts=(), mod
             'conflicts': sorted(set(conflicts))}
 
 
-def _ancestry(evidence, manifest, unit_id):
-    units = {item['id']: item for item in evidence['units']}
-    documents = {doc['id']: (doc, pub) for pub in manifest['publications']
-                 for doc in pub['documents']}
+def compile_evidence(evidence, manifest):
+    """Index one validated sidecar once for many scope/unit decisions."""
+    assertions = {}
+    for item in evidence['assertions']:
+        assertions.setdefault(item['subject_id'], []).append(item)
+    return {'units': {item['id']: item for item in evidence['units']},
+            'documents': {doc['id']: (doc, pub) for pub in manifest['publications']
+                          for doc in pub['documents']},
+            'assertions': assertions}
+
+
+def _ancestry(context, unit_id):
+    units = context['units']
+    documents = context['documents']
     if unit_id not in units:
         raise ContractError('unit does not exist in evidence sidecar')
     ancestors = [unit_id]
@@ -105,7 +115,7 @@ def _review_state(review, ancestry, config_id):
 
 def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
                 mode='confirmed', include_reference=False, review=None,
-                evidence_history=None, validate=True):
+                evidence_history=None, validate=True, compiled=None):
     """Return the effective decision and trace, without text-similarity promotion.
 
     Each call evaluates inherited source restrictions before review approvals.
@@ -129,7 +139,8 @@ def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
         validate_evidence(evidence, manifest, vocabulary)
         if review is not None:
             validate_review_overlay(review, evidence, vocabulary, evidence_history)
-    unit, publication, ancestry = _ancestry(evidence, manifest, unit_id)
+    context = compiled or compile_evidence(evidence, manifest)
+    unit, publication, ancestry = _ancestry(context, unit_id)
     if not selection:
         return _result('excluded', 'no_eligible_units', mode=mode)
     known_configs = {item['id']: item for item in vocabulary['configurations']}
@@ -147,9 +158,9 @@ def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
         return _result('excluded', 'generic_reference', mode=mode)
     if unit['search']['state'] == 'metadata_only' and unit['mixed_content']:
         return _result('excluded', 'mixed_content', mode=mode)
-    applicable = [item for item in evidence['assertions']
-                  if item['subject_id'] == unit_id or
-                  (item['subject_id'] in ancestry[1:] and item['applies_to_descendants'])]
+    applicable = [item for subject in ancestry
+                  for item in context['assertions'].get(subject, [])
+                  if subject == unit_id or item['applies_to_descendants']]
     by_subject = {}
     for assertion in applicable:
         by_subject.setdefault(assertion['subject_id'], []).append(assertion)
@@ -257,14 +268,15 @@ def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
 
 def match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
                mode='confirmed', include_reference=False, review=None,
-               evidence_history=None, validate=True):
+               evidence_history=None, validate=True, compiled=None):
     """Evaluate one unit and mark metadata-only units ineligible for text search."""
     result = _match_unit(evidence, manifest, vocabulary, unit_id, selection,
                          mode=mode, include_reference=include_reference,
                          review=review, evidence_history=evidence_history,
-                         validate=validate)
+                         validate=validate, compiled=compiled)
     if evidence is not None:
-        unit = next(item for item in evidence['units'] if item['id'] == unit_id)
+        unit = (compiled['units'][unit_id] if compiled else
+                next(item for item in evidence['units'] if item['id'] == unit_id))
         if unit['search']['state'] == 'metadata_only':
             result['search_eligible'] = False
     return result
