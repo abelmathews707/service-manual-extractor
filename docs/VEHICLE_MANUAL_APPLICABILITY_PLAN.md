@@ -476,6 +476,8 @@ bridge; content/asset checks and the existing Ford regression suite pass.
 
 ### A4 — Capture applicability evidence consistently across inputs
 
+Implementation record: [A4 discovery and evidence](A4_EVIDENCE_DISCOVERY.md).
+
 **Depends on:** A3. **Model:** GPT-6 Sol / High, because scope and evidence
 quality differ substantially between HTML, disc metadata and PDF pages.
 

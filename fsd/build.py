@@ -36,7 +36,8 @@ MEDIA_EXT = ('.jpg', '.jpeg', '.gif', '.png', '.svg', '.pdf', '.bmp')
 # ------------------------------------------------------------------- helpers
 def rd_text(p):
     """Pages claim UTF-8 but a good number of them are really Windows-1252."""
-    d = open(p, 'rb').read()
+    with open(p, 'rb') as stream:
+        d = stream.read()
     if d[:2] == b'\xff\xfe':
         return d.decode('utf-16-le')
     if d[:3] == b'\xef\xbb\xbf':

@@ -13,8 +13,8 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. A1–A3 are complete; A3 is on
-`codex/ford-neutral-bridge-a3`. The next step is **A4**.
+Phase B adds structured extraction. A1–A4 are complete; A4 is on
+`codex/applicability-evidence-a4`. The next step is **A5**.
 
 ## Start here
 
@@ -50,6 +50,7 @@ force-pushing, merging, tagging or releasing.
 | Planning branch | `codex/vehicle-manual-library-plan` |
 | A2 contract branch | `codex/vehicle-applicability-a2`, based on the planning branch |
 | A3 Ford bridge branch | `codex/ford-neutral-bridge-a3`, based on A2 |
+| A4 evidence branch | `codex/applicability-evidence-a4`, based on A3 |
 | Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
@@ -241,13 +242,21 @@ five representative real books passed; the full suite passed 154 tests and
 Ruff passed. MDB wiring remains preserved but not interpreted, with an explicit
 capability report. No Repair Buddy database or toolkit files were changed.
 
-Next implement **A4: capture applicability evidence consistently across
-inputs**. Inventory mixed folders, route recognized formats, emit source-bound
-vehicle/section evidence without turning titles or folder names into confirmed
-fitment, and selectively OCR only pages that need it. Keep unsupported files
-counted and source/derived hashes intact. The pass gate is consistent evidence
-contracts across Ford, HTML and PDF; misleading dates, OCR and mixed-page
-qualifiers must stay distinguishable. Recommended model: GPT-6 Sol / High.
+**A4 is complete** in [the discovery and evidence record](A4_EVIDENCE_DISCOVERY.md).
+Mixed inputs route to Ford or neutral adapters; evidence is cited to original
+members/pages with conservative vehicle proposals. Page-selective OCR uses the
+separately versioned toolkit, with low-text/mixed-image pages flagged for review.
+The full suite passed 165 tests (one opt-in real-OCR test skipped); the real-OCR
+integration test passed separately. Ruff passed. No Repair Buddy database or
+toolkit files were changed.
+
+Next implement **A5: deterministic matching, shared-content proposals and
+review storage**. Apply source evidence and A2 truth tables to canonical
+vehicle scope, with child exclusions and conflicts taking precedence. Store
+human decisions separately from generated evidence, and make changed,
+rejected, revoked or stale decisions ineligible on reimport. Similar text or a
+shared part must never confirm repair applicability by itself. Recommended
+model: GPT-6 Sol / High.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
@@ -259,4 +268,4 @@ The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf
 warnings are review metadata, not automatic source rejection.
 
-Recommended for A3: GPT-6 Sol High; each step and its rationale are in the plan.
+Each step and its model rationale are in the plan.

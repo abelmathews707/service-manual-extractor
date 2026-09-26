@@ -382,6 +382,7 @@ def _wiring_files(pub, directory, base, staging, members, records, failures):
                 content["structure"].append({"tag": "p", "attrs": {}, "children": [text]})
             svg = folded.get((page["svg"] or "").casefold()) if page["svg"] else None
             if svg:
+                document['citations'].append({'kind': 'path', 'path': svg})
                 content["figures"].append(
                     {"path": svg, "caption": title, "status": "pending", "reason": None}
                 )
