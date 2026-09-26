@@ -33,6 +33,13 @@ class PdfClassificationTests(unittest.TestCase):
         )
         self.assertEqual(kind, "owner")
 
+    def test_plural_owners_guide_inside_first_page_is_owner_material(self):
+        _, kind = title_and_kind(
+            "Table of Contents\nIntroduction 4\n2003 F250/350/450/550 (f23)\n"
+            "Owners Guide (post-2002-fmt)\nUSA English (fus)"
+        )
+        self.assertEqual(kind, "owner")
+
     def test_service_warning_and_manual_system_reference_are_not_owner_information(self):
         _, kind = title_and_kind(
             """2002 Chevrolet Silverado 1500
