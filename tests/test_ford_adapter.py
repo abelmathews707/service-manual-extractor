@@ -4,6 +4,8 @@ import json
 import os
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
+from unittest.mock import patch
 
 from test_formats import make_arc, make_v1_arc, payload
 from test_sources import pdf_bytes
@@ -11,6 +13,7 @@ from test_sources import pdf_bytes
 from sme.ford_adapter import (
     BRIDGE_NAME,
     CAPABILITIES_NAME,
+    _wiring_files,
     import_ford,
     probe_ford,
     resolve_legacy_citation,
@@ -53,6 +56,16 @@ def _files(code="SAA"):
 
 
 class FordAdapterTest(unittest.TestCase):
+    def test_malformed_wiring_xml_is_recorded_as_partial_not_crash(self):
+        publication = {'source_path': 'content/useni4/eco.arc', '_prefix': 'ECO'}
+        failures = []
+        with patch('sme.ford_adapter.parse_wiring', side_effect=ET.ParseError('bad XML')):
+            count = _wiring_files(publication, '/unused', 'originals/eco', '/unused',
+                                  {}, [], failures)
+        self.assertEqual(count, 0)
+        self.assertEqual(failures[0]['code'], 'ford_wiring_xml_failed')
+        self.assertEqual(failures[0]['path'], publication['source_path'])
+
     def _disc(self, root, version, locales=("useni4",)):
         selected = []
         for locale in locales:

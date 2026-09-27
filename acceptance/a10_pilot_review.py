@@ -47,7 +47,8 @@ def build_pilot_review(ford_evidence, gm_evidence, vocabulary):
     validate_vocabulary(vocabulary)
     if gm_evidence['source_id'] != GM_SOURCE or gm_evidence['revision'] != GM_EVIDENCE_REVISION:
         raise ValueError('GM evidence changed; inspect the original pages again')
-    sources = [ford_evidence, gm_evidence]
+    ford_sources = ford_evidence if isinstance(ford_evidence, list) else [ford_evidence]
+    sources = ford_sources + [gm_evidence]
     review = new_overlay(sources, vocabulary)
     configurations = {(item['model_year'], item['engine_id']): item['id']
                       for item in vocabulary['configurations']}
@@ -84,15 +85,23 @@ def main():
     parser.add_argument('gm_evidence')
     parser.add_argument('vocabulary')
     parser.add_argument('output')
+    parser.add_argument('--extra-ford-evidence', action='append', default=[])
     args = parser.parse_args()
     with open(args.ford_evidence, encoding='utf-8') as stream:
         ford = json.load(stream)
     with open(args.gm_evidence, encoding='utf-8') as stream:
         gm = json.load(stream)
+    extras = []
+    for path in args.extra_ford_evidence:
+        with open(path, encoding='utf-8') as stream:
+            extras.append(json.load(stream))
+    if extras:
+        ford = [ford] + extras
     with open(args.vocabulary, encoding='utf-8') as stream:
         vocabulary = json.load(stream)
     review = build_pilot_review(ford, gm, vocabulary)
-    save_overlay(args.output, review, [ford, gm], vocabulary)
+    sources = (ford if isinstance(ford, list) else [ford]) + [gm]
+    save_overlay(args.output, review, sources, vocabulary)
     print(json.dumps({'output': args.output, 'revision': review['revision'],
                       'events': len(review['events'])}, indent=2))
 

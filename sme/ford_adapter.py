@@ -330,13 +330,21 @@ def _navigation(records, pub, book, directory):
 
 
 def _wiring_files(pub, directory, base, staging, members, records, failures):
+    warnings = []
     try:
-        cells, _indexes = parse_wiring(directory, pub["_prefix"], warn=lambda *_: None)
-    except (OSError, ValueError) as error:
+        cells, _indexes = parse_wiring(directory, pub["_prefix"], warn=warnings.append)
+    except (OSError, ValueError, ET.ParseError) as error:
         failures.append(
             {"code": "ford_wiring_xml_failed", "path": pub["source_path"], "message": str(error)}
         )
         return 0
+    for warning in warnings:
+        if warning.startswith('malformed wiring XML '):
+            failures.append({
+                'code': 'ford_wiring_xml_partial',
+                'path': pub['source_path'],
+                'message': warning,
+            })
     folded = {
         path.rsplit("/", 1)[-1].casefold(): path for path in members if path.startswith(base + "/")
     }

@@ -66,6 +66,41 @@ This is a checkpoint, not an A10 pass or a user-facing release claim.
   rejection and the original-PDF page-87 link passed. The measured warm GM
   p95 of about 0.12 ms concerns a **single reviewed section**; it is not a
   full-library performance claim.
+- The same pilot generation was imported into a disposable SQLite backup of
+  Repair Buddy's live database, never the live database. All 52 exported scopes
+  and 110,216 eligible rows matched the app's stored copies. The four Ford/GM
+  result sets matched across both search engines and HTTP readers; original
+  PDFs opened, and direct wrong-vehicle links returned 404. The OCR
+  cabin-filter page remains **possible** for 2002 Silverado, absent for 2006
+  and absent in confirmed-only mode. Details are in Repair Buddy's
+  `docs/a10-real-manual-progress.md` and local-only `app-parity-v3.json`.
+
+## Expanded Ford import in progress
+
+- Source A's 18 English archives, source C's 12 English archives and source D's
+  11 nonempty English archives have been imported as four verified packages:
+  source A splits by POD generation. This reconciles to the 41 unique English
+  publications from A1. Source B's 20 byte-identical archive occurrences are
+  deliberately not counted again. The two French-Canadian archives (damaged
+  S21 and V22) and the empty VCQ referral stub remain exact catalog-only
+  items, not silent losses.
+- An initial select-all attempt stopped at the known S21 decoder fault. A
+  separate source-D attempt found malformed `EDO119005.xml` in `edo.arc`.
+  The Ford wiring reader now retains healthy circuit sheets when optional
+  page-metadata XML is malformed and records that exact defect as
+  `ford_wiring_xml_partial`. A fresh, isolated source-D package contains all
+  397 EDO wiring pages, with this one page's metadata incomplete; the original
+  XML and diagrams are preserved. The earlier partial package remains a
+  historical build, not the chosen input.
+- A separate original Ford 2003 Super Duty owner PDF was verified by SHA-256
+  and normalized to 280 native-text pages with no failures. Its existing
+  Repair Buddy citation route remains intact. Its common-library inclusion
+  is still pending.
+- Evidence for each of the four Ford packages has been generated against the
+  same four-configuration pilot vocabulary. A five-source review snapshot
+  (four Ford packages plus GM PDFs) has six agent-pilot events for the three
+  exact GM pages. The first full-size combined export is building; do not
+  claim its performance or app integration until measured.
 
 ## Open A10 work
 
@@ -73,15 +108,16 @@ This is a checkpoint, not an A10 pass or a user-facing release claim.
    the cabin-filter exclusions. Record reviewer, reason and exact page
    evidence; keep page 9 excluded from engine-specific text search. The
    current agent-reviewed events are a pilot, not a claim of human approval.
-2. Resume/convert the remaining supported Ford archive instances and GM
-   publications, or record a specific pending reason per item. The replacement
+2. Reconcile the expanded Ford package document and asset counts, include the
+   owner PDF in the final common-library export, and record explicit pending
+   reasons for duplicate/French/empty entries. The replacement
    GM HTML path still has not been identified/verified; do not use the old
    damaged USB ZIPs as substitute. Reconcile counts with A1 without counting
    duplicate archive occurrences as new vehicle coverage.
-3. Extend the already-published pilot library with the remaining Ford imports,
-   then import into a disposable Repair Buddy database with the extractor
-   dependency revision pinned. Compare eligible IDs/states in both readers
-   and test no cross-make text-shard load.
+3. Finish and evaluate the full-size combined Ford+GM export, build its offline
+   site, then import into a disposable Repair Buddy database with the final
+   extractor dependency revision pinned. Compare eligible IDs/states in both
+   readers and test no cross-make text-shard load at that scale.
 4. Verify sampled original/derived hashes and citations, inspect tables,
    figures and OCR against originals, measure cold build and warm scoped
    search latency/cancellation/resource bounds, run full tests/Ruff, then

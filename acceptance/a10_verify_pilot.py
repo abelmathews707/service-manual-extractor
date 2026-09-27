@@ -10,6 +10,7 @@ from sme.library_export import SearchCancelled, open_current, search_export
 
 WIRING = '2006 - 2007/wiring engine.pdf'
 ENGINE = '1998-2007/ENGINE PERFORMANCE.pdf'
+CABIN = '1998-2007/CABIN AIR FILTER.pdf'
 
 
 def _read(path):
@@ -40,7 +41,8 @@ def verify(root, vocabulary, review, ford, gm):
     gm_x_scope = _select(configurations[(2006, engines['4.3L VIN X'])])
     gm_v_scope = _select(configurations[(2006, engines['4.8L VIN V'])])
     mixed = _unit(gm, WIRING, 9)
-    ford_ids = {item['id'] for item in ford['units']}
+    ford_sets = ford if isinstance(ford, list) else [ford]
+    ford_ids = {item['id'] for source in ford_sets for item in source['units']}
     gm_ids = {item['id'] for item in gm['units']}
     cases = (
         ('ford', ford_scope, 'fuel', ford_ids, set()),
@@ -83,6 +85,25 @@ def verify(root, vocabulary, review, ford, gm):
     if not selected & reference_ids:
         raise AssertionError('opted-in generic reference is unavailable')
     report['reference_eligible'] = len(selected & reference_ids)
+    cabin = _unit(gm, CABIN, 1)
+    possible = search_export(generation, index, gm_w_scope, 'CABIN AIR FILTER',
+                             mode='include_possible',
+                             current_review_revision=review['revision'])
+    possible_rows = {item['unit_id']: item for item in
+                     index['scopes'][possible['fingerprint']]['scope']['eligible']}
+    if (cabin not in {item['unit_id'] for item in possible['results']} or
+            possible_rows[cabin]['state'] != 'possible' or
+            'missing_engine' not in possible_rows[cabin]['reason_codes']):
+        raise AssertionError('OCR cabin-filter page lost its possible-only state')
+    confirmed = search_export(generation, index, gm_w_scope, 'CABIN AIR FILTER',
+                              current_review_revision=review['revision'])
+    later_year = search_export(generation, index, gm_x_scope, 'CABIN AIR FILTER',
+                               mode='include_possible',
+                               current_review_revision=review['revision'])
+    if (cabin in {item['unit_id'] for item in confirmed['results']} or
+            cabin in {item['unit_id'] for item in later_year['results']}):
+        raise AssertionError('OCR cabin-filter page leaked into confirmed/later-year search')
+    report['ocr_cabin_filter'] = 'possible for 2002; withheld for 2006 and confirmed mode'
     try:
         search_export(generation, index, ford_scope, 'fuel', cancelled=lambda: True,
                       current_review_revision=review['revision'])
@@ -114,10 +135,12 @@ def main():
     parser.add_argument('review')
     parser.add_argument('ford_evidence')
     parser.add_argument('gm_evidence')
+    parser.add_argument('--extra-ford-evidence', action='append', default=[])
     parser.add_argument('--output')
     args = parser.parse_args()
+    ford = [_read(args.ford_evidence)] + [_read(path) for path in args.extra_ford_evidence]
     result = verify(args.library, _read(args.vocabulary), _read(args.review),
-                    _read(args.ford_evidence), _read(args.gm_evidence))
+                    ford, _read(args.gm_evidence))
     if args.output:
         with open(args.output, 'x', encoding='utf-8') as stream:
             json.dump(result, stream, indent=2)

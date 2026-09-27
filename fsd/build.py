@@ -300,7 +300,14 @@ def parse_wiring(d, P, warn=print):
             title = ptype = ''
             conns, grounds, splices, fuses = [], [], [], []
             if meta:
-                pe = xml_of(meta).find('page')
+                try:
+                    pe = xml_of(meta).find('page')
+                except ET.ParseError as error:
+                    # Keep the circuit sheet and its SVG available even when
+                    # one optional page-metadata file is malformed. Callers
+                    # can report the exact lost metadata as a partial import.
+                    warn(f'malformed wiring XML {os.path.basename(meta)}: {error}')
+                    pe = None
                 if pe is not None:
                     title, ptype = txt(pe, 'title'), txt(pe, 'type')
                     for c in pe.iter('conn'):
