@@ -2,8 +2,10 @@
 
 Updated: 2026-09-27
 Current checkpoint: Steps 0–8 and applicability steps A1–A9 are implemented.
-The A9 vehicle-scoped offline viewer is on `codex/offline-viewer-parity-a9`;
-see [its acceptance record](A9_OFFLINE_VIEWER.md). A10 is next. The seller PDF set produced
+A10 is in progress on `codex/real-manual-acceptance-a10`; see
+[its current findings and remaining gates](A10_PROGRESS.md). The A9
+vehicle-scoped offline viewer is on `codex/offline-viewer-parity-a9`;
+see [its acceptance record](A9_OFFLINE_VIEWER.md). The seller PDF set produced
 12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
 the extractor now builds the shared offline viewer directly from neutral
 records. The user reports that replacement GM HTML files have been obtained;
