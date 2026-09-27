@@ -353,6 +353,18 @@ class PdfPageTests(unittest.TestCase):
         self.assertFalse(content['documents'][1]['search_eligible'])
         self.assertEqual(content['documents'][1]['figures'][0]['page'], 2)
 
+    def test_pdf_opening_engine_heading_does_not_label_later_pages(self):
+        _, manifest, _ = self.normalize_pdf([
+            '2006 Chevrolet Silverado 1500\n4.3L VIN X',
+            '2006 Chevrolet Silverado 1500\n4.8L VIN V',
+        ])
+        publication = manifest['publications'][0]
+        self.assertEqual(publication['title'], 'Source PDF: manual.pdf')
+        self.assertTrue(all('4.3L' not in doc['title'] and '4.8L' not in doc['title']
+                            for doc in publication['documents']))
+        self.assertEqual([doc['citations'][0]['page']
+                          for doc in publication['documents']], [1, 2])
+
     def test_wrong_ocr_hash_cannot_publish_searchable_pages(self):
         result, _, content = self.normalize_pdf(['native', ''], ['native', 'scan'], bad_hash=True)
         self.assertFalse(result['ok'])

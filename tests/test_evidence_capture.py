@@ -231,10 +231,10 @@ class EvidenceCaptureTest(unittest.TestCase):
                                 item['alternatives'][0]['model']['state'] == 'exact'
                                 for item in ford_mapped['assertions']))
             pdf_mapped = capture_evidence(pdf_package, mapped)
-            self.assertTrue(any(item['derivation'] == 'title_hint' and
-                                item['support'] == 'proposal' and
-                                item['alternatives'][0]['model']['state'] == 'exact'
-                                for item in pdf_mapped['assertions']))
+            pdf_units = {item['id'] for item in pdf_mapped['units']}
+            self.assertFalse(any(item['derivation'] == 'title_hint' and
+                                 item['subject_id'] in pdf_units
+                                 for item in pdf_mapped['assertions']))
 
             vocabulary_path = os.path.join(root, 'vocabulary.json')
             Path(vocabulary_path).write_text(json.dumps(vocabulary))

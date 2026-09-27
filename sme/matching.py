@@ -113,6 +113,44 @@ def _review_state(review, ancestry, config_id):
     return accepted, pending, stale
 
 
+def _adjacent_pdf_review_fills_missing(review, evidence, accepted, unit,
+                                       selection, missing):
+    """Allow a reviewed PDF figure to use its next-page caption for identity.
+
+    This does not infer the relationship automatically. A current accepted
+    unit-specific review must bind native, source-supported wording on the
+    same original PDF page or the immediately following page. Only exact
+    values matching the selected vehicle can fill a missing dimension.
+    """
+    citation = unit['citation']
+    if not (review and unit['kind'] == 'region' and citation['kind'] == 'page'
+            and missing):
+        return False
+    assertions = {item['id']: item for item in evidence['assertions']}
+    for event in review['events']:
+        if event['id'] not in accepted or event['subject_id'] != unit['id']:
+            continue
+        bound = [assertions[item['id']] for item in event['evidence_bindings']]
+        proved = set()
+        for assertion in bound:
+            source = assertion['citation']
+            if (assertion['intent'] != 'include' or
+                    assertion['support'] != 'source_supported' or
+                    assertion['provenance'] != 'native' or
+                    source['kind'] != 'page' or source['path'] != citation['path'] or
+                    source['page'] not in (citation['page'], citation['page'] + 1)):
+                continue
+            for alternative in assertion['alternatives']:
+                for field, key in zip(_FIELDS, _SELECTION):
+                    predicate = alternative[field]
+                    if (field in missing and predicate['state'] == 'exact' and
+                            predicate['value'] == selection.get(key)):
+                        proved.add(field)
+        if set(missing).issubset(proved):
+            return True
+    return False
+
+
 def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
                 mode='confirmed', include_reference=False, review=None,
                 evidence_history=None, validate=True, compiled=None):
@@ -232,7 +270,9 @@ def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
         return _result('unmapped', 'unknown_identity', mode=mode)
     missing = source_missing if positive else proposal_missing
     missing_qualifiers = source_qualifiers if positive else proposal_qualifiers
-    if accepted and (missing_qualifiers or missing) and by_subject.get(unit_id):
+    if (accepted and (missing_qualifiers or missing) and by_subject.get(unit_id) and
+            (missing_qualifiers or not _adjacent_pdf_review_fills_missing(
+                review, evidence, accepted, unit, selection, missing))):
         reason = ('missing_qualifier' if missing_qualifiers else
                   next((_MISSING[field] for field in _FIELDS if field in missing),
                        'missing_qualifier'))

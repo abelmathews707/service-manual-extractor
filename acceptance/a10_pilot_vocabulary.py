@@ -3,7 +3,8 @@
 Usage: python3 acceptance/a10_pilot_vocabulary.py OUTPUT.json
 
 The Ford tuple is from the 2003 V3D PC/ED source and the Chevrolet tuples
-are from the 2006 Silverado 1500 wiring PDF. This intentionally omits other
+are from the 2006 Silverado 1500 wiring PDF and the 2002 Silverado 1500
+engine-performance PDF. This intentionally omits other
 engines, model years and makes until their original citations are reviewed.
 """
 
@@ -25,9 +26,11 @@ def make_pilot_vocabulary():
     f250 = sidecar_id('model', ford, 'f-250')
     silverado = sidecar_id('model', chevrolet, 'silverado-1500')
     diesel = sidecar_id('engine', 'ford', '6-0-power-stroke-diesel')
+    vin_w = sidecar_id('engine', 'gm', '4-3-vin-w-gasoline')
     vin_x = sidecar_id('engine', 'gm', '4-3-vin-x-gasoline')
     vin_v = sidecar_id('engine', 'gm', '4-8-vin-v-gasoline')
     tuples = [(ford, f250, 2003, diesel),
+              (chevrolet, silverado, 2002, vin_w),
               (chevrolet, silverado, 2006, vin_x),
               (chevrolet, silverado, 2006, vin_v)]
     value = {
@@ -46,6 +49,9 @@ def make_pilot_vocabulary():
             {'id': diesel, 'key': '6-0-power-stroke-diesel',
              'name': '6.0L Power Stroke diesel', 'manufacturer': 'ford',
              'fuel': 'diesel', 'displacement_l': 6.0},
+            {'id': vin_w, 'key': '4-3-vin-w-gasoline', 'name': '4.3L VIN W',
+             'manufacturer': 'gm', 'fuel': 'gasoline', 'displacement_l': 4.3,
+             'code': 'VIN W'},
             {'id': vin_x, 'key': '4-3-vin-x-gasoline', 'name': '4.3L VIN X',
              'manufacturer': 'gm', 'fuel': 'gasoline', 'displacement_l': 4.3,
              'code': 'VIN X'},

@@ -188,8 +188,12 @@ def capture_evidence(package, vocabulary, verify_originals=True):
             parent = _new_unit(generation, document, record, kind, selector)
             value['units'].append(parent)
             unit_ids.add(parent['id'])
-            add(parent['id'], document['title'], document['citations'][0],
-                'document-title', 'title_hint', 'catalog')
+            # PDF page titles contain only their source filename and page number.
+            # Neither that filename nor an opening-page heading may be treated
+            # as page-specific vehicle evidence for later pages.
+            if kind != 'region':
+                add(parent['id'], document['title'], document['citations'][0],
+                    'document-title', 'title_hint', 'catalog')
             for index, item in enumerate(document['applicability']):
                 level = item['level']
                 subject = parent['id']
