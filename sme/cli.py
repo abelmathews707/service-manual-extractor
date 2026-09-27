@@ -9,6 +9,7 @@ from .contract import ContractError, contract_summary, load_manifest
 from .discovery import discover_folder
 from .evidence import write_evidence
 from .ford_adapter import import_ford, probe_ford
+from .library_viewer import build_library_viewer
 from .normalize import normalize_source
 from .ocr_selection import plan_ocr, run_toolkit_ocr
 from .orchestrate import process_folder
@@ -135,6 +136,22 @@ def cmd_build_viewer(args):
                 'Warning: normalized content is partial; unavailable material is labeled.',
                 file=sys.stderr,
             )
+    return 0
+
+
+def cmd_build_library_viewer(args):
+    try:
+        result = build_library_viewer(args.library, args.review_overlay,
+                                      args.out, args.title)
+    except (OSError, SourceError, ContractError, KeyError,
+            json.JSONDecodeError) as ex:
+        return _source_error(args, ex)
+    if args.json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        print(f'Vehicle-scoped viewer: {result["publications"]} publications, '
+              f'{result["units"]} searchable sections')
+        print(f'Output: {result["output"]}')
     return 0
 
 
@@ -379,6 +396,17 @@ def make_parser():
     command.add_argument('--title', help='override the library title')
     command.add_argument('--json', action='store_true', help='machine-readable output')
     command.set_defaults(function=cmd_build_viewer)
+    command = commands.add_parser(
+        'build-library-viewer',
+        help='build a vehicle-scoped viewer from a published multi-manual library',
+    )
+    command.add_argument('library')
+    command.add_argument('--review-overlay', required=True,
+                         help='trusted current review JSON outside the immutable library')
+    command.add_argument('-o', '--out', required=True)
+    command.add_argument('--title', help='override the library title')
+    command.add_argument('--json', action='store_true', help='machine-readable output')
+    command.set_defaults(function=cmd_build_library_viewer)
     return parser
 
 

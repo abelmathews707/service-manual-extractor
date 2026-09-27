@@ -145,13 +145,14 @@ def _navigation(publication, records, documents):
     return tree
 
 
-def _render_node(node, record, document_publications, asset_urls):
+def _render_node(node, record, document_publications, asset_urls, unit_routes=None):
     if isinstance(node, str):
         return html.escape(node)
     tag = node['tag']
     attrs = node['attrs']
     children = ''.join(
-        _render_node(child, record, document_publications, asset_urls) for child in node['children']
+        _render_node(child, record, document_publications, asset_urls, unit_routes)
+        for child in node['children']
     )
     values = []
     for key in ('rowspan', 'colspan'):
@@ -164,9 +165,16 @@ def _render_node(node, record, document_publications, asset_urls):
         )
         if reference['status'] == 'resolved':
             target = reference['target_id']
+            if unit_routes is not None and target not in unit_routes:
+                return (f'<span class="unavailable-link">{label} '
+                        '<span class="pill">No searchable section</span></span>')
             publication = document_publications[target]
             fragment = reference.get('target_fragment') or reference.get('fragment') or ''
             anchor = '#' + fragment if fragment else ''
+            if unit_routes is not None:
+                return (f'<a href="#/library-unit/{unit_routes[target]}" '
+                        f'data-source-anchor="{html.escape(anchor, quote=True)}">'
+                        f'{label}</a>')
             return (
                 f'<a href="#/manual/{publication}/{target}" data-source-anchor="'
                 f'{html.escape(anchor, quote=True)}">{label}</a>'
@@ -194,9 +202,10 @@ def _render_node(node, record, document_publications, asset_urls):
     return f'<{tag}{"".join(values)}>{children}</{tag}>'
 
 
-def _prepare_assets(root, staging, records):
+def _prepare_assets(root, staging, records, copied=None):
     urls = {}
-    copied = {}
+    if copied is None:
+        copied = {}
     asset_root = os.path.join(staging, 'content', 'assets')
     source_root = os.path.join(staging, 'content', 'sources')
     for record in records:
@@ -208,9 +217,10 @@ def _prepare_assets(root, staging, records):
             extension = os.path.splitext(relative)[1].lower()
             name = expected + extension
             target = os.path.join(asset_root, name)
-            if expected not in copied:
+            key = (expected, extension)
+            if key not in copied:
                 _copy_hashed(_local_file(root, relative), target, expected)
-                copied[expected] = target
+                copied[key] = target
             urls[(record['id'], index)] = f'content/assets/{name}'
         if record['role'] != 'pdf_page':
             continue
@@ -218,9 +228,10 @@ def _prepare_assets(root, staging, records):
         expected = figure['sha256']
         name = expected + '.pdf'
         target = os.path.join(source_root, name)
-        if expected not in copied:
+        key = (expected, '.pdf')
+        if key not in copied:
             _copy_hashed(_local_file(root, record['original_path']), target, expected)
-            copied[expected] = target
+            copied[key] = target
         record['source_url'] = f'content/sources/{name}#page={record["page"]}'
     return urls
 

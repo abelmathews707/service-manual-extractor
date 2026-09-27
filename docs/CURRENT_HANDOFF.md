@@ -1,7 +1,9 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-26
-Current checkpoint: Steps 0–8 are implemented. The seller PDF set produced
+Updated: 2026-09-27
+Current checkpoint: Steps 0–8 and applicability steps A1–A9 are implemented.
+The A9 vehicle-scoped offline viewer is on `codex/offline-viewer-parity-a9`;
+see [its acceptance record](A9_OFFLINE_VIEWER.md). A10 is next. The seller PDF set produced
 12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
 the extractor now builds the shared offline viewer directly from neutral
 records. The user reports that replacement GM HTML files have been obtained;
@@ -13,13 +15,12 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. A1–A6 are complete; A6 is on
-`codex/applicability-library-a6`. The next step is **A7**.
+Phase B adds structured extraction. The next step is **A10**.
 
 ## Start here
 
 1. Read the [current vehicle mapping plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
-   and select one A/B step. Do not implement several steps on a generic continue.
+   and select the next A/B step. A10 is the first real-manual acceptance run.
 2. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
    The [GM HTML USB inspection](GM_HTML_INSPECTION.md) is historical; the user
    has obtained replacements and the old damage is not a project blocker.
@@ -269,13 +270,21 @@ kept old content readable but rejected its stale search index. All generated
 full, partial and qualifier-state scopes agreed with Python membership. The
 full suite passed 177 tests (one opt-in OCR test skipped), and Ruff passed.
 
-Next implement **A7: Repair Buddy migration and unified pre-search retrieval**.
-Use a separate clean Repair Buddy worktree and pin this extractor revision.
-Migrate a disposable DB copy before touching any live data; preserve legacy
-Ford/owner-PDF identities and user edits. Every primary, conflict, literal,
-legacy-PDF and pilot search path must take the same eligible-ID allowlist
-before token matching, ranking, snippets or limits. A failed index rebuild
-must not revive a revoked approval. Recommended model: GPT-6 Sol / High.
+**A7 and A8 are complete** on their respective pushed Repair Buddy branches.
+A7 introduced the eligibility gate across search paths; A8 added the
+vehicle-filter/review UI and safe legacy export backfill. Their acceptance
+records and current branches are in the Repair Buddy checkout. **A9 is
+complete** on this repository's `codex/offline-viewer-parity-a9` branch;
+see [A9_OFFLINE_VIEWER.md](A9_OFFLINE_VIEWER.md) for the build command,
+checks, and limitations.
+
+Next implement **A10: real-manual library acceptance** across the extractor
+and Repair Buddy. Reconcile the A1 inventory, import supported Ford/GM/PDF
+inputs into a combined local library, verify citations/assets and reviewed
+vehicle examples in both readers, measure search/build performance, and
+publish a reproducible acceptance report. Use disposable outputs and a copied
+database first; preserve originals, live database, unrelated user edits, and
+the independently versioned toolkit. Recommended model: GPT-6 Sol / High.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
