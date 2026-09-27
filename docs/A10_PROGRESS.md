@@ -99,8 +99,29 @@ This is a checkpoint, not an A10 pass or a user-facing release claim.
 - Evidence for each of the four Ford packages has been generated against the
   same four-configuration pilot vocabulary. A five-source review snapshot
   (four Ford packages plus GM PDFs) has six agent-pilot events for the three
-  exact GM pages. The first full-size combined export is building; do not
-  claim its performance or app integration until measured.
+  exact GM pages. The first full-size combined export completed with five
+  packages, 154 publications (41 Ford, 113 GM), 69,838 evidence units, 30,596
+  searchable text units, 52 scopes, 843 shards, and 216,596 eligible scope
+  rows. It is still a four-configuration pilot mapping, not complete vehicle
+  coverage. The export revision is
+  `b12b271cdffa2a8bb638786d29500b58a01e86a8028989ebf6da9063a90875a6`;
+  its review revision is
+  `44208111a5b8871a5c6fa779ed55e5bdf8df9739897de50641c80ddeb6703c5a`.
+  The verified export is local-only `full-library-v1`.
+- The full-size export repeated the four guarded searches, OCR possible-mode
+  boundary, generic reference opt-in, cancellation and stale-review tests.
+  Ford loaded five Ford-only shards and returned 40 `fuel` hits from 127
+  eligible sections. Each cited GM engine case returned its one reviewed page.
+  Warm tiny-scope timings remain nonrepresentative of broader full-library
+  searches. A disposable Repair Buddy copy imported this same generation and
+  passed parity across all 52 scopes and 216,596 eligible rows, plus HTTP
+  reader/original-PDF/wrong-vehicle checks. Its SQLite integrity check is `ok`.
+  All 23 pre-library tables were also equal row-for-row to the untouched live
+  Ford database, preserving old citations and cases in the disposable copy.
+  The 8 GB machine held the 3.3 GB export and 1.2 GB disposable database;
+  cold export build took several minutes. The full-size offline site completed
+  with 154 publications and 30,596 searchable units at local-only
+  `full-site-v1`; its browser walkthrough is still pending.
 
 ## Open A10 work
 
@@ -114,10 +135,9 @@ This is a checkpoint, not an A10 pass or a user-facing release claim.
    GM HTML path still has not been identified/verified; do not use the old
    damaged USB ZIPs as substitute. Reconcile counts with A1 without counting
    duplicate archive occurrences as new vehicle coverage.
-3. Finish and evaluate the full-size combined Ford+GM export, build its offline
-   site, then import into a disposable Repair Buddy database with the final
-   extractor dependency revision pinned. Compare eligible IDs/states in both
-   readers and test no cross-make text-shard load at that scale.
+3. Inspect the full-size offline site in a browser. Include the owner PDF in a
+   final immutable generation, then repeat the disposable app parity check
+   with the final pinned extractor revision and compare old citation routes.
 4. Verify sampled original/derived hashes and citations, inspect tables,
    figures and OCR against originals, measure cold build and warm scoped
    search latency/cancellation/resource bounds, run full tests/Ruff, then
