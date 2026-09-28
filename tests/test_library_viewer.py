@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -22,6 +23,8 @@ from sme.source import extract_source
 
 
 class LibraryViewerTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which('pdfinfo') and shutil.which('pdftotext'),
+                         'native PDF reader test requires Poppler (covered in pdf-and-schema CI)')
     def test_mixed_original_retained_in_navigation_but_absent_from_every_shard(self):
         with tempfile.TemporaryDirectory() as root:
             vocabulary = make_vocabulary()
@@ -111,9 +114,10 @@ class LibraryViewerTests(unittest.TestCase):
                                  found['fingerprint']]['scope']['eligible']})
             self.assertTrue(all(Path(destination, 'content', 'manual-unit',
                                      unit + '.html').is_file() for unit in units))
-            pdf_fragment = Path(destination, 'content', 'manual-unit',
-                                evidence[2]['units'][0]['id'] + '.html').read_text()
-            self.assertIn('GM-only article', pdf_fragment)
+            if evidence[2]['units']:
+                pdf_fragment = Path(destination, 'content', 'manual-unit',
+                                    evidence[2]['units'][0]['id'] + '.html').read_text()
+                self.assertIn('GM-only article', pdf_fragment)
             self.assertTrue(Path(destination, 'content', 'assets').is_dir())
             self.assertTrue(Path(destination, 'content', 'sources').is_dir())
 
@@ -150,6 +154,8 @@ class LibraryViewerTests(unittest.TestCase):
             with self.assertRaisesRegex(ContractError, 'search shard changed'):
                 build_library_viewer(library_root, overlay, os.path.join(root, 'changed'))
 
+    @unittest.skipUnless(shutil.which('pdfinfo') and shutil.which('pdftotext'),
+                         'native PDF review test requires Poppler (covered in pdf-and-schema CI)')
     def test_rebuilt_snapshot_changes_only_reviewed_membership(self):
         with tempfile.TemporaryDirectory() as root:
             vocabulary = make_vocabulary()

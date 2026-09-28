@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
@@ -131,6 +132,8 @@ class FordAdapterTest(unittest.TestCase):
             capabilities = self._load(package, CAPABILITIES_NAME)
             self.assertEqual(len(capabilities["publications"]), 2)
 
+    @unittest.skipUnless(shutil.which('pdfinfo') and shutil.which('pdftotext'),
+                         'native PDF link test requires Poppler (covered in pdf-and-schema CI)')
     def test_html_link_to_original_pdf_resolves_to_first_page(self):
         with tempfile.TemporaryDirectory() as root:
             disc = os.path.join(root, "disc")

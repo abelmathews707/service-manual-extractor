@@ -207,6 +207,13 @@ class EvidenceCaptureTest(unittest.TestCase):
                     evidence = capture_evidence(package, vocabulary)
                     manifest = load_manifest(os.path.join(package, '.sme-manifest.json'))
                     validate_evidence(evidence, manifest, vocabulary)
+                    if package == pdf_package and not (shutil.which('pdfinfo') and
+                                                       shutil.which('pdftotext')):
+                        # Extraction still preserves the source, but missing optional
+                        # PDF tools must not manufacture searchable page evidence.
+                        self.assertFalse(evidence['units'])
+                        self.assertFalse(manifest['publications'][0]['documents'])
+                        continue
                     self.assertTrue(evidence['units'])
                     self.assertTrue(evidence['assertions'])
                     self.assertTrue(all(item['support'] == 'proposal'
