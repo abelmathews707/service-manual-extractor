@@ -23,7 +23,7 @@ from sme.structured_extract import (
 )
 
 
-def run(root, output, recipes):
+def run(root, output, recipes, held_out=None):
     vocabulary, review = read(root / 'vocabulary.json'), read(root / 'review.json')
     generation, index = open_current(str(root / 'library'),
                                       current_review_revision=review['revision'])
@@ -113,7 +113,17 @@ def run(root, output, recipes):
             raise ContractError('extracted fields disagree with independently entered gold: ' +
                                 label)
         comparisons.append({'label': label, 'result': 'exact_fields_conditions_pass'})
+    held_out_results = []
+    for target in (held_out or {}).get('records', []):
+        matches = [item for item in results if item['type'] == 'specification' and
+                   item['original_text'] == target['original_text']]
+        if len(matches) != 1 or matches[0]['payload'] != target['payload'] or \
+                matches[0]['conditions'] != target['conditions']:
+            raise ContractError('held-out typed fields differ: ' + target['label'])
+        held_out_results.append({'label': target['label'],
+                                 'result': 'exact_fields_conditions_pass'})
     report = {'records': len(results), 'units': reports, 'gold_comparisons': comparisons,
+              'held_out_field_comparisons': held_out_results,
               'production_diagnostic_approvals': 0,
               'library_revision': index['library_revision'],
               'record_revision': seal_records(results)['revision']}
@@ -126,8 +136,10 @@ def main():
     parser.add_argument('b1_root', type=Path)
     parser.add_argument('output', type=Path)
     parser.add_argument('recipes', type=Path)
+    parser.add_argument('--held-out', type=Path)
     args = parser.parse_args()
-    print(json.dumps(run(args.b1_root, args.output, read(args.recipes)), indent=2))
+    print(json.dumps(run(args.b1_root, args.output, read(args.recipes),
+                         read(args.held_out) if args.held_out else None), indent=2))
 
 
 if __name__ == '__main__':

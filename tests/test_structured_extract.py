@@ -139,6 +139,14 @@ class StructuredExtractionTests(unittest.TestCase):
         for raw, unit in [('2/4', 'V'), ('2e3', 'Hz'), ('?', 'V'), ('2', 'guess')]:
             self.assertIsNone(numeric_value(raw, unit))
 
+    def test_conflicting_engine_or_unknown_row_restriction_never_inherits_parent(self):
+        for label in ('DEMO (6.0L diesel)', 'DEMO (E-Series only)', 'DEMO (VIN Z only)'):
+            recipe = copy.deepcopy(RECIPE)
+            recipe['rows'] = [label]
+            bundle, errors = self.html(HTML.replace(b'DEMO', label.encode()), recipe)
+            self.assertFalse(any(item['type'] == 'specification' for item in bundle['records']))
+            self.assertIn('vehicle restriction', errors[0]['reason'])
+
 
 if __name__ == '__main__':
     unittest.main()

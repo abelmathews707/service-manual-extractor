@@ -1,14 +1,18 @@
 # Service Manual Extractor — current handoff
 
 Updated: 2026-09-28
-Latest work: the owner selected B1 after the plan reconciliation. B1 discovery
-has begun on `codex/structured-evidence-b1` in
-`/Users/asokmathews/Documents/service-manual-extractor-b1`. Read
-[B1_PROGRESS.md](B1_PROGRESS.md) for candidate V10 sources and the exact resume
-sequence. B1 is incomplete: no V10 approval, contract implementation or live
-activation is implied. Continue B1 using GPT-6 Sol / High and monitor five-hour
-remaining usage, stopping around 10%. The A10 state below remains the accepted
-baseline; its pinned worktree and the independently versioned toolkit are intact.
+Latest work: B1 is complete within bounded engineering acceptance; read
+[B1_PROGRESS.md](B1_PROGRESS.md) and
+[STRUCTURED_EVIDENCE_CONTRACT.md](STRUCTURED_EVIDENCE_CONTRACT.md). Its reviewed
+gasoline V10 / 4R100 / 4WD reference scope binds the saved pilot; no production
+diagnostic approval was issued. The owner selected B2 on 2026-09-28. B2 is in
+progress on `codex/structured-specifications-b2`, with separate worktrees
+`/Users/asokmathews/Documents/service-manual-extractor-b2` and
+`/Users/asokmathews/Documents/repair-buddy-b2`. Read [B2_PROGRESS.md](B2_PROGRESS.md)
+for implemented extraction, independent quality integration and remaining gates.
+Monitor both usage windows: stop around 10% five-hour remaining or at 5% weekly
+remaining. Earlier accepted worktrees, live data and the independent toolkit
+remain intact. No merge, release, live activation or B3 implementation is implied.
 
 Current checkpoint: Steps 0–8 and applicability steps A1–A10 are implemented
 and the first local engineering delivery is accepted with the explicit limits
@@ -31,10 +35,11 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. The next step is **B1, only after the user
-selects Phase B**. Stop here when continuing only the A-numbered steps.
+Phase B adds structured extraction. The current selected step is **B2**; the
+completed A10 checkpoint above and reconciliation below are historical, not
+the current execution gate.
 
-Plan reconciliation (2026-09-28): the owner approved updating the existing plan,
+Historical plan reconciliation (2026-09-28): the owner approved updating the existing plan,
 not starting Phase B. Read the plan's current-delivery/RAG analysis and revised
 B gates. Primary validation returns to the 2003 F-250 6.8L V10 (4WD, automatic);
 the accepted four-configuration library currently contains the 6.0L diesel and
@@ -52,8 +57,9 @@ by this reconciliation.
 ## Start here
 
 1. Read the [current vehicle mapping plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
-   and the final [A10 acceptance report](A10_ACCEPTANCE.md). A10 is complete;
-   select B1 only when the user requests Phase B.
+   and [B2 progress](B2_PROGRESS.md), then the historical final
+   [A10 acceptance report](A10_ACCEPTANCE.md). A10 and B1 are complete;
+   B2 is selected, but later B steps still require selection.
 2. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
    The [GM HTML USB inspection](GM_HTML_INSPECTION.md) is historical; the user
    has obtained replacements and the old damage is not a project blocker.

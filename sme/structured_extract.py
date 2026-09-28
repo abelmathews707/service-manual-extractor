@@ -12,7 +12,9 @@ import re
 from .applicability_contracts import POLICY_VERSION
 from .contract import ContractError
 from .html_content import Node, TreeParser, decode_html, text_of
+from .matching import _alternative
 from .structured_contracts import record_identity, seal_records
+from .vehicle_interpretation import interpret_statement
 
 VERSION = 'b2-native-rows-v1'
 UNITS = {'Hz': ('frequency', 'Hz'), 'G/S': ('mass flow', 'g/s'),
@@ -120,6 +122,27 @@ def _selector(node):
     return ' > '.join(reversed(parts))
 
 
+def _row_scope(text, vocabulary, configurations):
+    """Reuse correlated interpretation, and only narrow a confirmed parent.
+
+Unresolved explicit vehicle cues cannot be inherited as universal row fitment.
+This is a guard on reviewed recipes, not automatic approval of arbitrary rows.
+"""
+    alternatives, resolved = interpret_statement(text, vocabulary)
+    has_constraint = any(item[field]['state'] != 'unknown' for item in alternatives
+                         for field in ('make', 'model', 'year', 'engine'))
+    has_vehicle_cue = re.search(r'\b(?:\d{1,2}(?:\.\d)?\s*L|VIN|RPO|Series|only|except|'
+                                r'diesel|gasoline|CNG|(?:19|20)\d{2})\b', text, re.I)
+    if not has_constraint and not has_vehicle_cue:
+        return configurations
+    if not resolved or not has_constraint:
+        return []
+    configs = {item['id']: item for item in vocabulary['configurations']}
+    return [identifier for identifier in configurations if any(
+        _alternative(alternative, configs[identifier])[0] != 'different'
+        for alternative in alternatives)]
+
+
 def extract_html(data, binding, vocabulary, configurations, decisions, recipes):
     """Extract selected rows from tables identified by their complete header paths.
 
@@ -207,6 +230,11 @@ all tables on a page. Recipes are bounded layout rules, not golden values.
                                     'reason': 'row absent/ambiguous'})
                 continue
             number = matches[0]
+            if _row_scope(header_text + ' ' + recipe.get('caption', '') + ' ' + label,
+                          vocabulary, configurations) != configurations:
+                abstentions.append({'recipe': recipe['name'], 'row': label,
+                                    'reason': 'conflicting/unresolved row vehicle restriction'})
+                continue
             row = grid[number]
             unit = row[recipe['unit_column']]['text']
             values, missing = [], []
