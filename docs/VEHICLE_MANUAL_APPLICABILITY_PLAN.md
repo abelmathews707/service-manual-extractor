@@ -1,8 +1,10 @@
 # One manual library, organized by vehicle
 
-Status: A1–A6 complete; A7–A10 and Phase B have not started.
-Date: 2026-09-26.
-Planning branch: `codex/vehicle-manual-library-plan`, based on merged
+Status: A1–A10 complete within the bounded A10 engineering acceptance; Phase B
+is planned, not implemented. Reconciled with the owner on 2026-09-28.
+Current branch: `codex/real-manual-acceptance-a10` in both repositories;
+pushed feature work, not merged or activated in the live database.
+Original planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
 Repair Buddy baseline: merged `main` at
 `310ce810f9129576d5f0f72b37a27f35cac699a8`.
@@ -11,7 +13,10 @@ This is a new sequence, numbered **A1–A10** and **B1–B4**, separate from the
 completed GM integration Steps 0–8. A2 contracts are implemented on
 `codex/vehicle-applicability-a2`; the Ford neutral bridge is on
 `codex/ford-neutral-bridge-a3`; A4 evidence capture and A5 matching/review
-are on their own branches. No application database has been migrated. See
+are recorded on their historical branches. A7–A10 integrated the work and
+validated migration on disposable database copies only. The live database is
+unchanged. The current completion record is [A10 acceptance](A10_ACCEPTANCE.md),
+not the starting-state inventory below. See also
 [A3 acceptance](FORD_NEUTRAL_ADAPTER_A3.md),
 [A4 evidence](A4_EVIDENCE_DISCOVERY.md) and
 [A5 matching/review](A5_MATCHING_REVIEW.md) and
@@ -25,6 +30,14 @@ are on their own branches. No application database has been migrated. See
   review, search, Repair Buddy, and the standalone offline viewer.
 - Organize by **make, model, model year, and engine**. Preserve additional
   qualifiers when the manual requires them.
+- Enforce that vehicle scope from the readable-reference stage onward. A
+  selected Ford Super Duty 6.0L diesel must not search, rank or consider GM-only,
+  other-brand-only or conflicting-engine text, including during future AI
+  retrieval. Missing coverage never authorizes a wider search.
+- Restore the **2003 Ford F-250 Super Duty, 6.8L V10, 4WD, automatic** as the
+  primary validation vehicle. Verify required transmission/other qualifiers
+  from evidence. Retain the 6.0L diesel as regression coverage and GM as a
+  secondary end-to-end case; do not relabel diesel mappings as V10 mappings.
 - Treat similarity and shared-part relationships as **possible matches
   requiring review**, not automatic procedure applicability.
 - Deliver searchable pages, diagrams, tables, citations, and vehicle mapping
@@ -33,13 +46,114 @@ are on their own branches. No application database has been migrated. See
 - Prepare the evidence for later AI integration. The first delivery needs no
   model API key or AI calls. Codex model recommendations below concern doing
   development work, not models embedded in the finished application.
+- Use one library and shared applicability rules for people and AI. Web and
+  command-line retrieval need equivalent eligibility, review and citation
+  behavior, not identical presentation features. The command line is a
+  development/evaluation tool, not a requirement for normal manual reading.
+- Keep vehicle applicability and content accuracy/completeness as independent
+  checks. Neither readable text nor a confirmed vehicle match alone approves
+  an extracted diagnostic instruction.
 
 The user has obtained replacement GM HTML files. Do not repeat recovery work
 on the earlier USB copies or make that damage a project blocker. Record and
 validate the replacement input during A1/A4 when it is available locally.
 Previous extraction reports describe the earlier inputs, not the replacements.
 
-## 2. What exists today
+## 2. Current delivery, discoveries and relationship to hybrid RAG
+
+### Accepted A1–A10 checkpoint
+
+The six-package local library contains 155 publications: 41 unique English Ford
+disc publications, 113 GM PDFs and one 280-page Ford owner guide. It contains
+70,118 evidence units, of which 30,854 are searchable, with 52 compiled scopes
+and 217,168 eligible membership rows. Membership rows and evidence units are
+not additional manuals or proof of complete vehicle coverage.
+
+| Completed work | Result and boundary |
+| --- | --- |
+| A1–A2 | Reconciled input inventory; versioned vehicle, evidence and review contracts. |
+| A3–A4 | Ford neutral bridge; format discovery and HTML/PDF/Ford evidence capture with original citations and native/OCR provenance. |
+| A5–A6 | Shared applicability matcher, review overlays, multi-package library and pre-search eligibility exports. |
+| A7–A8 | Disposable Repair Buddy migration, scoped search/readers, vehicle filters and persistent applicability review workflow. |
+| A9–A10 | Offline viewer parity and real-manual acceptance; wrong-vehicle text exclusion, old-link preservation and documented input/performance limits. |
+
+See [A10 acceptance](A10_ACCEPTANCE.md) for exact tested revisions, source
+accounting, 190 extractor tests, 266 application tests and CI/browser results.
+These are recorded acceptance results, not tests rerun by this plan update.
+Both feature worktrees are separate from the normal checkouts; promotion,
+rollback rehearsal against a recoverable live backup, merging and release
+remain separate actions requiring selection. Keep the independent toolkit and
+the main Repair Buddy checkout's unrelated user edits untouched.
+
+Final local outputs are under
+`/Users/asokmathews/Documents/service-manual-data/a10-acceptance-2026-09-27/`:
+`full-library-v2`, `full-review-v2.json`, `full-site-v4` and
+`repair-buddy-full-disposable-v2.sqlite3`. Sources and detailed reports stay
+local and outside Git.
+
+Important discoveries and limitations carried forward:
+
+- The four tested configurations are Ford 2003 F-250 6.0L diesel, Chevrolet
+  2002 Silverado 4.3L VIN W, and 2006 Silverado 4.3L VIN X / 4.8L VIN V.
+  **The V10 configuration is not yet in this accepted vocabulary.** The old
+  RAG manifest selects the V10; activating this library alone does not make
+  that pilot ready. Establish and review its scope in B1; do not change a label
+  or disable eligibility checks to make it pass.
+- Six GM acceptance review events are agent engineering-pilot decisions,
+  not human sign-off or production diagnostic approval.
+- PDF first-page headings could leak an engine label to later pages; A10
+  corrected titles and rebuilt page evidence. Exact same/next-page captions
+  can support bounded mappings, never override contradictory or mixed content.
+- Mixed-engine page text that cannot be isolated is excluded from scoped
+  search/readers. Its original remains available through explicit unfiltered
+  browsing. Some image-only attachments remain browse-only, not OCR successes.
+- Optional malformed Ford wiring XML is reported while 397 healthy wiring
+  pages remain available. French-Canadian S21, intentionally unselected V22,
+  the empty VCQ referral and duplicate source occurrences have explicit states.
+- The moved GM folder contains PDFs. Replacement GM HTML path/identity remains
+  unverified; do not resume recovery of the superseded damaged USB files.
+- Export cancellation/progress and a six-request viewer download pool were
+  added after acceptance findings. Backend p95 Ford possible search was 0.811 s
+  in the app, 1.009 s in the extractor, and broad Browse all 5.563 s. These are
+  not browser end-to-end latency or public-release performance acceptance.
+
+### One foundation for offline reading and AI
+
+Filtering determines **which information applies**; retrieval determines
+**which eligible information helps answer a question**. A human reader and an
+AI assistant consume the same verified sources and scope decisions. Separate
+SQLite and offline-browser search artifacts are implementations of that shared
+contract, not permission to create different matching rules.
+
+| Capability | Current state | Remaining work |
+| --- | --- | --- |
+| Local originals, reading and vehicle-scoped search | Implemented and tested within A10's bounded configurations. | Review the V10 scope, expand coverage deliberately, and separately promote the tested library. |
+| Local RAG evidence preview (M1) | Literal/assisted keyword retrieval, bounded excerpts, citations and staleness checks. Active-library web routes use reviewed scope. | Extend the existing implementation; it still declares `diagnostic_ready: false`. |
+| Command-line preview | Legacy fixed-book experiment; intentionally refuses to run with an active reviewed library. | B4 connects it to shared reviewed retrieval; no need to replicate browser UI features. |
+| Reviewed diagnostic units (M2) | Applicability foundation exists; full diagnostic quality/structure approval does not. | B1–B3 define and validate it; B4 consumes it. |
+| Grounded case/assistant loop (M3) | Case/message storage and provider contracts exist; case messages are saved locally without AI diagnosis. | Separately implement model calls, case-fact assembly, durable evidence history, cited hypotheses/tests and result-driven follow-up. |
+| Semantic experiment (M4) and broader hybrid retrieval | Planned, not implemented by the A steps or assisted keyword expansion. | Evaluate local semantic retrieval against lexical retrieval on the same approved units. Add only if held-out results justify it. |
+
+The hybrid design proposes exact lookup, keyword search, semantic search,
+structured facts and relationship/diagnostic traversal. These are not five
+finished search systems. B1–B4 deliver foundations for those retrieval methods;
+they do not authorize provider integration or require embeddings to make
+offline reading useful. Runtime API credentials are not needed for Phase B's
+local delivery. New AI answers would need the separately chosen provider;
+offline manual reading/search must remain independent of that provider.
+
+For a multi-cause concern, future retrieval may search several applicable
+diagnostic, workshop and wiring publications. The assistant must distinguish
+source facts from observed measurements and hypotheses, track contradictions
+and unknowns, and select the next supported test. Similarity is not causation,
+and a shared component is not proof of interchangeable procedures. Preserve
+prerequisites, branches and cross-manual references rather than relying on
+physical page adjacency or embedding similarity to invent relationships.
+
+### Historical starting inventory and gaps (before A1–A10)
+
+The following inventory explains why the work was undertaken. It is not the
+current import status or a fresh instruction to redo completed A steps.
 
 These are different inventories and processing stages; their counts must not
 be added together as though all of them were imported into one live library.
@@ -53,7 +167,7 @@ be added together as though all of them were imported into one live library.
 | GM application acceptance | Three GM publications, totaling 107 documents/fragments, were indexed into a disposable database copied from the Ford database. The other 110 were cataloged there. | The live Repair Buddy database is not already a fully imported Ford+GM library. Migration/import is an explicit step below. |
 | GM HTML | Existing adapter and authored examples retain HTML structure, navigation, diagrams and applicability statements. Replacement originals are owner-reported. | Use the replacement identity for new acceptance; do not transfer verification from an older or different input. |
 
-Local records to reconcile in A1:
+Historical local records reconciled in A1:
 
 - Ford and standalone PDF: `/Users/asokmathews/Documents/repair-buddy/data/`,
   including `repair-buddy.sqlite3` and `manuals/2003-f-super-duty-owner-guide.pdf`;
@@ -80,7 +194,10 @@ transactional ingestion, full-text search, vehicle profiles and linked readers.
 The toolkit supplies PDF text/OCR utilities; ordinary HTML should continue to
 be parsed directly, not converted to a scanned PDF and OCRed.
 
-There are specific gaps to close:
+The following were starting gaps. A3 supplied the Ford bridge, A5 the shared
+matcher/review semantics, A6 the multi-source library and A7–A9 the scoped
+application/viewer paths. Arbitrary unsupported HTML layouts still require
+explicit handlers and acceptance; no universal-format claim is made.
 
 1. `fsd` reads Ford discs, but the live Ford output has not been connected to
    the neutral `sme` document package. Declaring Ford in the contract and testing
@@ -101,7 +218,7 @@ There are specific gaps to close:
    Page-level checks happen after the result limit. The viewer ranks its whole
    index before filtering to the chosen manual.
 
-These findings require changes to the retrieval boundary, not just new UI
+These findings motivated changes to the retrieval boundary, not just new UI
 selectors. Primary code/document references are listed at the end of this plan.
 
 ## 3. Architecture and responsibility
@@ -126,8 +243,8 @@ Owned discs / PDFs / HTML folders / supported archives
 | `Repair Buddy` | Saved vehicles and cases; application database and migrations; review queue and decision persistence; search scope/cache; filter controls; readers; future evidence tools. It consumes the shared matcher and contracts. |
 | `workshop-manual-toolkit` | PDF inspection, native-text extraction and optional OCR derivatives. Keep independently versioned. Add an integration change only if an identified PDF requirement needs it. |
 
-The current Repair Buddy design says it owns applicability. Refine that boundary
-explicitly when implementing A7: the app owns decisions and user workflow, while
+Older Repair Buddy designs say it owns applicability. The reconciled boundary
+implemented in A7 is: the app owns decisions and user workflow, while
 the extractor owns portable semantics and the reference matcher. Do not maintain
 two conflicting sets of Ford/GM matching rules or make the extractor import
 Repair Buddy. Keep the dependency direction one-way and pin tested revisions.
@@ -137,8 +254,9 @@ Repair Buddy. Keep the dependency direction one-way and pin tested revisions.
 Keep the frozen manifest/content v1 contracts valid. Do not insert new fields
 into schemas that reject extra properties, and do not redefine historical IDs.
 Add separate versioned artifacts referencing the existing source, publication,
-document and asset IDs plus hashes. The names below are proposed contracts to
-freeze in A2, not commands or formats already implemented:
+document and asset IDs plus hashes. The following responsibilities are now
+implemented through A2–A6 except structured records, which remain Phase B work;
+consult the frozen schemas for exact artifact names and versions:
 
 | Artifact | Minimum purpose |
 | --- | --- |
@@ -245,6 +363,44 @@ clearly labeled.
 
 ### Review and lifecycle
 
+There are **two independent approval dimensions**, applied to a precise unit
+and intended use, not a blanket approval of a manual:
+
+| Dimension | Required evidence | What it does not establish |
+| --- | --- | --- |
+| Vehicle applicability | Explicit supported or reviewed make/model/year/engine mapping, inherited restrictions and any required transmission/VIN/RPO/other qualifiers. | Accurate OCR, complete diagnostic branches, or safety of an AI recommendation. |
+| Content quality and completeness | Comparison with the original; correct wording/numbers/units/conditions, complete relevant warnings/prerequisites/branches, resolvable citations and source/extraction hashes. | Fit for another vehicle, a proven root cause, or correctness of the assistant's reasoning. |
+
+Phase A implements applicability review and provenance checks; the second
+dimension's formal record, UI and diagnostic-use gates are **planned B work**.
+In B1 define versioned, purpose-specific quality decisions (unreviewed,
+approved for a named use, incomplete/rejected, revoked or stale) independently
+from applicability decisions. Do not retrofit new fields into frozen v1
+schemas. Record reviewer identity/type, reason, exact unit/region, dependencies,
+source/extraction versions and evidence; an agent proposal is not human
+approval, and an automated hash/schema pass is not a semantic quality review.
+Require accountable review against original sources for the diagnostic benchmark.
+
+The practical outcomes are separate capabilities, not progressively wider
+vehicle scopes:
+
+- **Readable reference:** retain the original despite incomplete extraction.
+  Inside a selected-vehicle session it still must satisfy that session's scope
+  and explicit matching mode. Unknown/unmapped originals require separate
+  library/review browsing; readability never lets GM-only text enter a Ford
+  search or diagnostic packet.
+- **Vehicle-confirmed result:** applicability is established; extracted steps
+  may still lack approval for diagnostic use. Display that distinction.
+- **Approved diagnostic evidence:** current applicability and use-specific
+  accuracy/completeness checks both pass, with all required context present.
+  It may enter an actionable-evidence packet, but the assistant's use of it
+  still needs separate scenario evaluation and claim-support checks.
+
+Rejecting quality does not delete the original or necessarily revoke its vehicle
+mapping. Revoking applicability blocks its use for that vehicle even if the
+extraction is perfect. Changes invalidate dependent decisions separately;
+affected diagnostic packets must not survive either invalidation.
+
 Keep source evidence, review state and query result distinct. A review item
 stores the proposed subject/vehicle relationship, exact evidence, derivation,
 decision, reason, reviewer identity/time and hashes. An approval may apply to
@@ -278,9 +434,13 @@ Use the same three matching choices in the app and viewer:
 | Include possible matches | Adds compatible but incomplete evidence within the chosen scope, with the missing fields/reason shown. Known contradictions remain excluded. Pending cross-make similarity proposals remain in the review queue. |
 | Reference material | An explicit opt-in for generic/background material, clearly separated from vehicle-specific repair coverage. This can be combined with a chosen vehicle scope. |
 
-The third choice may be presented as a checkbox beside the first two modes so
-generic reference material does not replace the vehicle query. Freeze that UI
-wording in A2 and use it consistently. A partial filter such as only `Ford`
+The third choice is a reference opt-in beside the matching modes, not a way
+to replace the vehicle query. Use the frozen A2 wording consistently. Generic
+background must be explicitly generic and free of conflicting restrictions;
+reference mode never admits another vehicle's repair instructions. Possible
+mode is a deliberate, labeled inspection choice, never confirmed fit or
+permission for AI diagnostic instructions. Known conflicts and unknown make
+are excluded in every vehicle-scoped mode. A partial filter such as only `Ford`
 means browsing a vehicle group, not confirmation for an exact vehicle. A saved
 vehicle missing a restriction required by a page gets a possible-match result,
 not an invented transmission/engine selection. Unknown-make content does not
@@ -295,7 +455,7 @@ retrieve, rank, form snippets and count results using only that eligible text.
 Apply limits last. Do not perform a second text query over excluded manuals
 just to explain exclusions; metadata can provide reasons/counts.
 
-Initial implementation design:
+Implemented search boundary, preserved for all future retrieval methods:
 
 - Repair Buddy uses an on-demand, bounded cache of search projections containing
   only eligible units. Reuse SQLite FTS5 and the existing retrieval interfaces.
@@ -335,8 +495,10 @@ PDF at the exact page or the safe HTML at its source anchor. Keep diagrams,
 captions, surrounding context and tables; do not flatten away their conditions.
 
 Return links restore filters, mode, query and result position. A source link
-leading outside the current vehicle scope explains that mismatch before
-opening as reference material; it does not silently broaden search scope.
+leading outside the current vehicle scope is rejected by the scoped reader.
+If the user deliberately chooses separate unfiltered original browsing, label
+that scope exit and preserve a return to the selected vehicle. Never carry
+that original, its snippets or browsing history into the vehicle's AI packet.
 Opening surrounding context is distinct from approving that context as evidence.
 
 Repair Buddy owns the review UI: inspect the original and proposal together,
@@ -357,7 +519,10 @@ stale search projection instead of falling back to outdated eligibility.
 
 ## 5. Sequential implementation plan
 
-Steps A1–A2 completed on 2026-09-25; A3–B4 have not started. Each task must report changed files,
+Steps A1–A10 are complete within the 2026-09-28 A10 acceptance limits. Their
+sections below retain the original deliverables/pass gates as implementation
+history, not unfinished work. B1–B4 have not started. This documentation update
+does not begin Phase B. Each task must report changed files,
 tests/evidence, remaining issues, and the next step with its model recommendation.
 Stop at that step's pass gate. A pass gate is not permission to merge or release.
 
@@ -368,8 +533,12 @@ or promises about Codex credit usage. Official guidance describes Sol as suited
 to coding and judgment, Luna as efficient for scoped work, and Astra for harder
 analysis. It recommends testing the lightest setting that meets the quality
 bar: [OpenAI model selection](https://developers.openai.com/api/docs/guides/model-selection).
-Sol supports High reasoning:
-[GPT-6 Sol](https://developers.openai.com/api/docs/models/gpt-6-sol).
+The retained Phase B recommendations were checked against official model
+capability/effort documentation on 2026-09-28:
+[GPT-6 Sol](https://developers.openai.com/api/docs/models/gpt-6-sol) and
+[GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra).
+High is supported for both; the choice of a model for each step remains our
+engineering judgment, not an official task-specific benchmark result.
 
 Use the exact model/effort listed as a starting point if available in your
 selector. These are dated recommendations and should be rechecked if model
@@ -389,10 +558,10 @@ inventory and rendering work should not require it.
 | A8 | Repair Buddy filters and persistent review workflow | Repair Buddy | GPT-6 Sol / High |
 | A9 | Offline viewer filters and matching parity | Extractor | GPT-6 Sol / High |
 | A10 | Real-library migration acceptance and first-delivery checkpoint | Both repos | GPT-6 Sol / High |
-| B1 | Structured-record contract and independently reviewed examples | Extractor | GPT-6 Sol / High |
+| B1 | V10 scope reconciliation, two approval dimensions, typed-record contract and reviewed examples | Extractor; Repair Buddy fixture alignment | GPT-6 Sol / High |
 | B2 | Typed specifications and part-reference extraction | Extractor; Repair Buddy reader | GPT-6 Sol / High |
 | B3 | Procedures, diagnostic branches and context-preserving units | Extractor; Repair Buddy reader | GPT-6 Astra / High |
-| B4 | Shared bounded evidence retrieval and final evaluation | Both repos | GPT-6 Sol / High |
+| B4 | Shared web/CLI evidence retrieval, approval enforcement and end-to-end evaluation | Both repos | GPT-6 Sol / High |
 
 ### A1 — Reconcile what is available and choose acceptance examples
 
@@ -685,10 +854,27 @@ until the user selects it. No public release or live AI diagnosis is implied.
 
 ## 6. Phase B — Expanded extraction after the first delivery
 
+Phase B continues the earlier RAG plan's reviewed-unit milestone (M2); it is
+not a competing extraction or matching system. Implement against a small
+reviewed V10/GM set first; scale extraction after the complete path meets its
+gates. Broadly indexing every page is not a prerequisite for a bounded pilot.
+No B task may weaken offline reading, source links or pre-search exclusion.
+Reuse Phase A contracts and the active-library evidence implementation.
+
 ### B1 — Define typed records and reviewed ground truth
 
 **Depends on:** accepted A10. **Model:** GPT-6 Sol / High, because typed records
 need precise source anchors and evaluation criteria before extraction scales.
+
+First reconcile the primary fixture with the accepted library. Inventory the
+already extracted 2003 gasoline PC/ED and relevant workshop/wiring material,
+verify the 6.8L V10 configuration and required qualifiers, and review exact
+eligible sections/rows against originals. Add a canonical V10 scope and record
+which tested content is eligible or pending; keep the diesel and GM cases.
+Bind the saved pilot configuration to that reviewed scope. Do not silently
+switch the primary vehicle to the diesel or claim the V10 is covered because
+its book exists. If the needed source/qualifier cannot be established, record
+the exact gap and stop that acceptance path instead of broadening it.
 
 Define schemas for procedure steps, specifications, part references, diagnostic
 nodes/branches, tools, warnings/prerequisites and diagram/table regions. Each
@@ -698,6 +884,13 @@ state and source/text hashes. Preserve original and normalized values together;
 absence of a value is not zero. Do not conflate part mention, fitment and
 supersession. A generic bag of key/value pairs is insufficient.
 
+Define the independent quality/completeness approval contract described above,
+its intended-use labels, review evidence, staleness rules and compatibility
+with existing applicability decisions. Specify how both states will appear in
+readers/review tools and how the future evidence packet will carry them. Reuse
+review infrastructure without treating an old vehicle approval as a quality
+approval. A schema-valid record is not automatically a diagnostic instruction.
+
 Choose a small reviewed benchmark across native HTML, Ford tables, native PDFs
 and OCR PDFs. Include deliberately unreadable/ambiguous examples with an
 expected abstention. Review expected answers from the original page, separate
@@ -705,9 +898,22 @@ from the extraction logic; keep a held-out subset to prevent tuning to every
 test. Set field-level accuracy/abstention criteria and the definition of a
 complete diagnostic branch before selecting an extraction approach.
 
+Include one bounded V10 concern requiring evidence across relevant available
+manual roles, a GM case, and wrong-engine/cross-brand competitors. Record
+required/forbidden evidence, missing-information questions, contradictions and
+expected abstentions. Use roughly 15–25 reviewed scenarios as the initial M2
+target, with held-out paraphrases; verify feasibility from actual source
+coverage rather than inventing unavailable procedures. Preserve branch-aware
+context and original-source review even when a unit is a complete page rather
+than a newly parsed graph.
+
 **Pass:** every proposed type has schema validation, a locator that opens the
-source, positive/negative/abstention examples, and explicit quality gates. No
-Phase A reader or mapping behavior regresses.
+source, positive/negative/abstention examples, and explicit quality gates. The
+V10 has a verified reviewed scope with positive results and diesel/GM-only
+exclusion checks; required missing coverage is explicit. Applicability-only,
+quality-only, both-approved and stale/revoked cases have distinct expected
+outcomes. No Phase A reader or mapping behavior regresses. This is contract,
+fixture and benchmark work, not bulk extraction or an AI diagnosis release.
 
 ### B2 — Extract specifications and part references
 
@@ -721,7 +927,9 @@ engine conditions and source spelling. Do not silently repair OCR numbers or
 convert an uncertain printed part identifier to a catalog identity.
 
 Link extracted parts to candidate shared-content reviews, without auto-approving
-procedures. Show typed values with original context in the reader. Any optional
+procedures. Show typed values with original context and both review dimensions
+in the reader; persist named-use quality review with original evidence through
+the shared review workflow. Any optional
 model-assisted extraction remains a proposal requiring provenance and the same
 validation; adopting a paid runtime service needs its own explicit product
 decision and cost/data plan, not just a Codex model selection.
@@ -747,6 +955,10 @@ Use deterministic parsing where structure is explicit. When layout/OCR prevents
 reliable graph construction, retain the original as readable reference and
 flag the missing structure for review. Reader views should expose the original
 table/page beside the interpreted steps so reviewers can find branch errors.
+Persist reviewed cross-page/manual edges and their target locators. Expanding a
+reference must independently recheck target vehicle applicability and quality;
+an eligible starting procedure never grants access to an excluded target.
+Partial graphs remain inspectable originals, not approved diagnostic sequences.
 
 **Pass:** complete reviewed graphs retain every edge/condition on the benchmark;
 missing branches and wrong-engine rows cause an incomplete/unapproved result;
@@ -758,13 +970,30 @@ success. No general diagnostic-readiness claim follows from page indexing.
 **Depends on:** B3. **Model:** GPT-6 Sol / High, because retrieval boundaries,
 staleness and structured context must remain consistent through the application.
 
-Extend the local evidence interface from its current single-book HTML pilot to
-approved multi-source/page/structured units using the same explicit vehicle
-scope. Pack bounded evidence with applicability decision/reason, unresolved
+Extend the **existing reviewed, multi-source evidence path** in Repair Buddy's
+`rag/scoped.py` and `pilot_web.py`; do not rebuild it as a second matcher or
+assume the application still has only a fixed-book HTML preview. The current
+implementation packs scoped text but deliberately marks it not diagnostic-ready.
+Connect the command-line preview to this same service, with explicit vehicle,
+library and review identity. Retain its safe refusal until that integration
+passes. Web/CLI need the same eligibility, quality, budgets and citation rules,
+not identical visual features or diagram controls. Keep legacy compatibility
+explicit and unavailable as a fallback around reviewed scope.
+
+Support approved multi-source/page/structured units. Pack bounded evidence
+with applicability and quality decisions/reasons, intended use, unresolved
 qualifiers, original citation, content/source hashes, native/OCR provenance,
 review revision and complete required context. Separate background reference
 and possible matches from approved actionable units. A vehicle match alone is
-not approval of a diagnostic step.
+not approval of a diagnostic step. Default diagnostic packets contain only
+both-approved units. Any separately requested background channel must retain
+the same vehicle boundary, carry non-actionable labels and never be promoted
+by a provider or reranker. Browse-all content is not an AI fallback.
+
+If the budget cannot fit prerequisites, warnings or required branches, omit
+the complete unit with a reason or return insufficient evidence; never silently
+truncate it into an apparently complete instruction. Record scope/generation,
+both review dependencies and query decisions in reproducible retrieval traces.
 
 Test deterministic query/evidence scenarios and citation resolution before
 adding a provider. Retain stale-source rejection and rejection of stale review
@@ -774,8 +1003,40 @@ integration remain separately selected work with their own measured benefit.
 
 **Pass:** evidence is bounded, reproducible and traceable; excluded material
 never enters a packet; changing a source, policy or review invalidates affected
-packets; reviewed structured examples meet B1 criteria. Produce the expanded
-extraction acceptance report and the concrete remaining AI integration tasks.
+packets; reviewed structured examples meet B1 criteria. Web/CLI evidence IDs,
+approval states and source checks agree for equal requests/revisions. Test a
+V10 and a GM scenario across relevant available manual roles, plus multiple
+plausible causes, contradictory observations, missing branches and no-evidence
+cases. Observe which partitions/units are visited, not just returned results.
+Produce the expanded extraction acceptance report and concrete remaining AI
+integration tasks. Passing B4 approves bounded retrieval, not the correctness
+of generated diagnoses or general vehicle coverage.
+
+### After B4 — Remaining RAG milestones, separately selected
+
+- **M3, grounded assistant loop:** assemble saved vehicle/case facts with the
+  approved evidence, implement the provider call and complete-request token
+  budget, preserve durable evidence identities/history, validate citations and
+  evaluated claim support, and store cited hypotheses, contradictions and
+  proposed tests. Follow-up uses actual reported results, never assumed test
+  outcomes. Pass reviewed end-to-end diagnostic scenarios and missing-evidence
+  abstentions before claiming diagnostic readiness. Recommended development
+  model: GPT-6 Sol / High, retaining this plan's integration-work default;
+  reassess if evaluation exposes a harder unresolved design problem.
+- **M4, semantic experiment:** compare lexical-only with local semantic/hybrid
+  retrieval on the same approved scoped units and held-out cases; measure
+  retrieval quality, wrong-vehicle exclusion, memory, latency and maintenance
+  cost. Adopt it only for demonstrated benefit. Semantic candidates and any
+  relationship expansion must be restricted before scoring; do not globally
+  retrieve and post-filter. Recommended development model: GPT-6 Sol / High
+  for implementation/evaluation, not a selection of an embedding model.
+
+The broader hybrid rollout may add more structured lookup and wiring/entity
+relationships after these bounded milestones. No automatic causal links or
+production-readiness claim follows from similarity or extraction volume.
+Keep offline reading/keyword search usable if embeddings or the AI provider
+are unavailable. A complete offline generative assistant would be a separate
+runtime/product decision, not something already delivered by these plans.
 
 ## 7. Acceptance matrix shared by all implementations
 
@@ -785,6 +1046,7 @@ hardcoded Ford/GM assumptions. Do not use model output as its own ground truth.
 
 | Test | Required outcome |
 | --- | --- |
+| Primary 2003 F-250 V10 fixture against the accepted diesel/GM library | Until reviewed V10 mappings exist, return missing scope; never relabel the diesel or fall back to another vehicle. B1 must establish positive V10 evidence. |
 | Ford Super Duty 6.0 diesel query with GM 6.0 gasoline present | GM-only index/text is never visited; no equal-displacement engine merge. |
 | Lincoln/Mercury book from a Ford disc | Source publisher does not become vehicle make; correct canonical brand or explicit unknown. |
 | Correlated model/year/engine alternatives | No unsupported Cartesian combination is generated. |
@@ -806,6 +1068,14 @@ hardcoded Ford/GM assumptions. Do not use model output as its own ground truth.
 | Failed import, migration or viewer build | Previous content remains available; search fallback requires still-valid review/policy eligibility; originals unchanged. |
 | Offline browser and source links | No remote assets required; links, captions and return state work at narrow widths. |
 | Structured value/step lacking reliable context | Abstain or mark incomplete; do not invent units, branches or fitment. |
+| Applicability approved, diagnostic branch or OCR value incomplete | Original remains readable within scope; reject actionable evidence despite confirmed vehicle fit. |
+| Quality approved, vehicle conflicting or applicability revoked | Reject before text search/retrieval; perfect extraction cannot override vehicle exclusion. |
+| Either approval becomes stale; cached packet or failed rebuild exists | Invalidate dependent actionable evidence; do not resurrect it from a cache or old packet. |
+| Readable-reference / possible / generic-reference modes | None bypasses known vehicle conflicts; unmapped content is outside the selected-vehicle session, and possible/background content is not a diagnostic instruction. |
+| Explicit Browse all then return to a vehicle case | Unfiltered text, history and cached results do not enter that vehicle's retrieval or AI packet. |
+| Web and command line, same vehicle/query/revisions/budgets | B4 returns equivalent eligible evidence and approval states; the legacy CLI refuses active-library access until adapted. |
+| Relationship target, semantic candidate or query expansion belongs to another vehicle | Exclude before text loading/scoring/context expansion; never use global retrieval followed by hiding results. |
+| Multiple causes, contradictory measurements, missing required context | Retrieval retains relevant applicable alternatives; later M3 asks/abstains rather than inventing a measurement or declaring similarity to be causation. |
 
 ## 8. How to run this plan in separate tasks
 
@@ -822,8 +1092,8 @@ when testing those paths. For an application step, run Repair Buddy's suite,
 Ruff, migration/retrieval tests and relevant browser checks. Browser steps need
 actual interaction/network-observation checks, not only source-text assertions.
 Documentation-only steps need link, consistency and diff checks rather than
-rerunning extraction or OCR. Baseline Step 8 counts were 134 extractor and 234
-Repair Buddy tests; later totals should grow, not be treated as fixed targets.
+rerunning extraction or OCR. A10 recorded 190 extractor and 266 Repair Buddy
+tests. Counts are context, not fixed targets or a substitute for semantic gates.
 
 Keep detailed logs and manual examples outside Git. Summarize completed gates,
 exact revisions, pending input paths and the next selected task in the handoff.
@@ -859,6 +1129,16 @@ Reusable task prompt:
   `docs/service-manual-package-integration.md`,
   `docs/pilot-rag-implementation-plan.md`, and the Ford inventory/coverage audit
   documents reconciled during A1.
+- [Repair Buddy hybrid RAG design](https://github.com/abelmathews707/repair-buddy/blob/codex/real-manual-acceptance-a10/docs/hybrid-rag-system-design.md),
+  [RAG milestone runbook](https://github.com/abelmathews707/repair-buddy/blob/codex/real-manual-acceptance-a10/docs/pilot-rag-implementation-plan.md),
+  and [A10 integration acceptance](https://github.com/abelmathews707/repair-buddy/blob/codex/real-manual-acceptance-a10/docs/a10-real-manual-progress.md).
+  Equivalent local files are in `/Users/asokmathews/Documents/repair-buddy-a10/docs/`.
+
+This plan owns the A/B execution sequence and the reconciled approval/scope
+rules. The RAG runbook owns M3/M4 details and the hybrid design describes the
+longer-term architecture. Implement shared work once and record which gates it
+satisfies in each plan. Do not execute historical baseline instructions as if
+they were new requirements.
 
 Historical documents sometimes describe an earlier implementation stage. Use
 the verified code, source identities and this plan's explicit proposed behavior

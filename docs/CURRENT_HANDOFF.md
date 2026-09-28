@@ -15,7 +15,7 @@ see [its acceptance record](A9_OFFLINE_VIEWER.md). The seller PDF set produced
 the extractor now builds the shared offline viewer directly from neutral
 records. The user reports that replacement GM HTML files have been obtained;
 their integrity and coverage have not yet been checked in this repository.
-The completed code was merged into extractor `main` at `9341637` and Repair
+The earlier Steps 0–8 code was merged into extractor `main` at `9341637` and Repair
 Buddy `main` at `310ce81`; no public release was created. See
 [the release record](STEP8_RELEASE_CHECKPOINT.md).
 
@@ -24,6 +24,21 @@ covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
 Phase B adds structured extraction. The next step is **B1, only after the user
 selects Phase B**. Stop here when continuing only the A-numbered steps.
+
+Plan reconciliation (2026-09-28): the owner approved updating the existing plan,
+not starting Phase B. Read the plan's current-delivery/RAG analysis and revised
+B gates. Primary validation returns to the 2003 F-250 6.8L V10 (4WD, automatic);
+the accepted four-configuration library currently contains the 6.0L diesel and
+three Chevrolet configurations, not the V10. B1 must establish evidence-backed
+V10 eligibility; diesel and GM remain regression cases. Readable-reference
+mode never bypasses selected-vehicle scope. Quality/completeness approval is a
+separate planned B contract from existing applicability approval. B4 extends
+the already scoped web evidence path and connects the legacy CLI to the same
+rules; the CLI currently refuses an active reviewed library. B1–B4 advance RAG
+M2, with M3 provider/case integration and M4 semantic evaluation still separate.
+Keep model recommendations and pass criteria in the plan rather than creating
+another competing roadmap. No code, manual data or live database is changed
+by this reconciliation.
 
 ## Start here
 
