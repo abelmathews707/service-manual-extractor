@@ -1,4 +1,24 @@
-# A10 real-manual acceptance — in progress
+# A10 real-manual acceptance - final checkpoint
+
+Updated: 2026-09-28. The earlier progress notes below are historical and are
+superseded by [A10_ACCEPTANCE.md](A10_ACCEPTANCE.md). The first local
+engineering delivery includes 155 publications, 70,118 evidence units,
+30,854 searchable units and 3,505 readable unsearchable originals. The 280-page
+Ford owner guide is included. All 52 scopes/217,168 eligible rows match the
+disposable app, and all 23 legacy tables remain unchanged.
+
+The acceptance report records the final revisions, original/derived hash
+reconciliation, browser results, CI, resource measurements and named pending
+inputs. The four-configuration mapping pilot and agent-reviewed GM events are
+not full coverage or human production approval. Ford possible-mode export p95
+is 1.009 seconds and Browse all is 5.563 seconds: performance release readiness
+is not claimed. No live activation, merge, release or Phase B work occurred.
+
+Next is B1 only after the user selects Phase B: typed extraction contracts and
+reviewed ground truth, recommended GPT-6 Sol / High. Do not restart the
+superseded open-work list below.
+
+## Historical progress log (2026-09-27, superseded)
 
 Updated: 2026-09-27. Branch: `codex/real-manual-acceptance-a10`.
 This is a checkpoint, not an A10 pass or a user-facing release claim.
@@ -123,7 +143,7 @@ This is a checkpoint, not an A10 pass or a user-facing release claim.
   with 154 publications and 30,596 searchable units at local-only
   `full-site-v1`; its browser walkthrough is still pending.
 
-## Open A10 work
+## Historical open A10 work (superseded by the final acceptance report)
 
 1. Expand source review to possible, excluded and OCR examples, especially
    the cabin-filter exclusions. Record reviewer, reason and exact page

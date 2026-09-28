@@ -1,9 +1,14 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-27
-Current checkpoint: Steps 0–8 and applicability steps A1–A9 are implemented.
-A10 is in progress on `codex/real-manual-acceptance-a10`; see
-[its current findings and remaining gates](A10_PROGRESS.md). The A9
+Updated: 2026-09-28
+Current checkpoint: Steps 0–8 and applicability steps A1–A10 are implemented
+and the first local engineering delivery is accepted with the explicit limits
+in [A10_ACCEPTANCE.md](A10_ACCEPTANCE.md). Worktrees are
+`/Users/asokmathews/Documents/service-manual-extractor-a10` and
+`/Users/asokmathews/Documents/repair-buddy-a10`, both on
+`codex/real-manual-acceptance-a10`; these branches are pushed, not merged.
+The runtime pin is Repair Buddy's `config/service-manual-extractor.lock.json`.
+The toolkit remains independently versioned and unchanged. The A9
 vehicle-scoped offline viewer is on `codex/offline-viewer-parity-a9`;
 see [its acceptance record](A9_OFFLINE_VIEWER.md). The seller PDF set produced
 12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
@@ -17,12 +22,14 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. The next step is **A10**.
+Phase B adds structured extraction. The next step is **B1, only after the user
+selects Phase B**. Stop here when continuing only the A-numbered steps.
 
 ## Start here
 
 1. Read the [current vehicle mapping plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
-   and select the next A/B step. A10 is the first real-manual acceptance run.
+   and the final [A10 acceptance report](A10_ACCEPTANCE.md). A10 is complete;
+   select B1 only when the user requests Phase B.
 2. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
    The [GM HTML USB inspection](GM_HTML_INSPECTION.md) is historical; the user
    has obtained replacements and the old damage is not a project blocker.
@@ -37,7 +44,9 @@ Phase B adds structured extraction. The next step is **A10**.
 
 The user wants the same Repair Buddy experience across makes, with the manuals
 providing the content. Work is intentionally split into small sequential tasks
-to manage Codex usage. Do not implement all steps on a generic “continue.”
+to manage Codex usage. The user authorized continuous A-step work until complete
+or five-hour remaining usage dropped below about 10%. That does not authorize
+Phase B, live activation, merging or public release.
 
 User preference recorded 2026-09-23: push new commits to the corresponding
 remote branch after committing. Report any push failure; this does not authorize
@@ -227,7 +236,7 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 - The Step 7 generated-site audit found no missing local PDF/diagram targets,
   hash mismatches, external fragment links or remote runtime assets.
 
-## Next task
+## Completed A-step history
 
 Step 8 passed its fresh-checkout tests and release checks, and both feature
 branches were merged. **A1 inventory reconciliation and acceptance-case
@@ -280,13 +289,18 @@ complete** on this repository's `codex/offline-viewer-parity-a9` branch;
 see [A9_OFFLINE_VIEWER.md](A9_OFFLINE_VIEWER.md) for the build command,
 checks, and limitations.
 
-Next implement **A10: real-manual library acceptance** across the extractor
-and Repair Buddy. Reconcile the A1 inventory, import supported Ford/GM/PDF
-inputs into a combined local library, verify citations/assets and reviewed
-vehicle examples in both readers, measure search/build performance, and
-publish a reproducible acceptance report. Use disposable outputs and a copied
-database first; preserve originals, live database, unrelated user edits, and
-the independently versioned toolkit. Recommended model: GPT-6 Sol / High.
+**A10 is complete for the bounded first local engineering delivery.** See
+[the acceptance report](A10_ACCEPTANCE.md) for the 155-publication final
+generation, four-config pilot, hashes, tested reader boundaries, exact revisions,
+local paths and documented performance exceptions. All originals and live data
+remain intact. The separate owner guide is included, not pending.
+
+Next, if explicitly selected, **B1: typed records and reviewed ground truth**.
+Define source-bound procedure/specification/part/diagnostic/tool/warning/diagram
+schemas and an independent benchmark covering native HTML, Ford tables, native
+PDF and OCR, including negatives and abstention. Each type must validate and
+open its source; held-out quality gates and no Phase A regression are required.
+Recommended model: GPT-6 Sol / High. No B step has started.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
