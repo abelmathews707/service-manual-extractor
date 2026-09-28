@@ -1,6 +1,13 @@
 # Service Manual Extractor — current handoff
 
 Updated: 2026-09-28
+Current B3 preparation: the owner selected B3. Read [B3_PROGRESS.md](B3_PROGRESS.md)
+first. Worktree `/Users/asokmathews/Documents/service-manual-extractor-b3`, branch
+`codex/procedure-structure-b3`. No B3 code has changed. Work stopped at 9% five-hour
+remaining (16% weekly); resume within the existing usage limits. The B2 application
+and its dependency pin remain unchanged. The B2 completion record below is the
+accepted implementation baseline.
+
 Latest work: B1 is complete within bounded engineering acceptance; read
 [B1_PROGRESS.md](B1_PROGRESS.md) and
 [STRUCTURED_EVIDENCE_CONTRACT.md](STRUCTURED_EVIDENCE_CONTRACT.md). Its reviewed
