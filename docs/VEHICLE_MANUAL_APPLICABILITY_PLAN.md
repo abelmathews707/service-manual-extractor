@@ -1,8 +1,8 @@
 # One manual library, organized by vehicle
 
-Status: A1–A10 complete within the bounded A10 engineering acceptance; Phase B
-is planned, not implemented. Reconciled with the owner on 2026-09-28.
-Current branch: `codex/real-manual-acceptance-a10` in both repositories;
+Status: A1–A10 and B1 complete within their bounded engineering acceptances;
+B2–B4 have not started. Reconciled with the owner on 2026-09-28.
+Current branch: `codex/structured-evidence-b1` in both repositories;
 pushed feature work, not merged or activated in the live database.
 Original planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
@@ -15,8 +15,9 @@ completed GM integration Steps 0–8. A2 contracts are implemented on
 `codex/ford-neutral-bridge-a3`; A4 evidence capture and A5 matching/review
 are recorded on their historical branches. A7–A10 integrated the work and
 validated migration on disposable database copies only. The live database is
-unchanged. The current completion record is [A10 acceptance](A10_ACCEPTANCE.md),
-not the starting-state inventory below. See also
+unchanged. Read [B1 completion](B1_PROGRESS.md) and
+[the structured-evidence contract](STRUCTURED_EVIDENCE_CONTRACT.md) before
+the historical [A10 acceptance](A10_ACCEPTANCE.md) and starting-state inventory below. See also
 [A3 acceptance](FORD_NEUTRAL_ADAPTER_A3.md),
 [A4 evidence](A4_EVIDENCE_DISCOVERY.md) and
 [A5 matching/review](A5_MATCHING_REVIEW.md) and
@@ -521,8 +522,9 @@ stale search projection instead of falling back to outdated eligibility.
 
 Steps A1–A10 are complete within the 2026-09-28 A10 acceptance limits. Their
 sections below retain the original deliverables/pass gates as implementation
-history, not unfinished work. B1–B4 have not started. This documentation update
-does not begin Phase B. Each task must report changed files,
+history, not unfinished work. B1 is complete within the contracts, reviewed
+fixtures and disposable integration gate recorded in [B1 completion](B1_PROGRESS.md).
+B2–B4 have not started. Each task must report changed files,
 tests/evidence, remaining issues, and the next step with its model recommendation.
 Stop at that step's pass gate. A pass gate is not permission to merge or release.
 
@@ -862,6 +864,17 @@ No B task may weaken offline reading, source links or pre-search exclusion.
 Reuse Phase A contracts and the active-library evidence implementation.
 
 ### B1 — Define typed records and reviewed ground truth
+
+**Status:** complete, bounded engineering acceptance on 2026-09-28. All nine
+typed contracts and independent purpose-specific quality gates are implemented;
+the reviewed gasoline V10 scope binds the saved pilot. Original-source ground
+truth contains 16 records and 25 scenarios (eight held out). Contract/safety checks
+pass, while two held-out natural-language queries remain documented literal-search
+misses. Those are later retrieval targets, not concealed successes or proof of a
+complete diagnostic answer. Complete V10 pinpoint/wiring context is still pending,
+and no production diagnostic approval was issued. See [B1 completion](B1_PROGRESS.md)
+for test counts, application integration and exact coverage limits. The instructions
+below are retained as the completed gate's specification.
 
 **Depends on:** accepted A10. **Model:** GPT-6 Sol / High, because typed records
 need precise source anchors and evaluation criteria before extraction scales.

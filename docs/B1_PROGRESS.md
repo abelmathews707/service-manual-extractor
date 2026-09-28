@@ -1,13 +1,13 @@
 # B1 — V10 scope and structured-evidence checkpoint
 
-Date: 2026-09-28. Status: contracts and original-source engineering acceptance
-implemented; final Repair Buddy integration verification is in progress.
+Date: 2026-09-28. Status: B1 complete within the bounded engineering acceptance;
+B2 has not started. Repair Buddy integration verification passes.
 Branch: `codex/structured-evidence-b1`, based on accepted plan commit
 `b3043a79b913f6302428fcb815f5565f8f3c4c50`.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b1`.
 The owner authorized beginning B1 while retaining the five-hour usage stop
-threshold of approximately 10% remaining. This is a resumable discovery
-checkpoint. Current engineering review is bounded reading applicability, not
+threshold of approximately 10% remaining. Current engineering review is
+bounded reading applicability, not
 production approval or diagnostic validation.
 
 ## Current implementation (read before the historical discovery notes)
@@ -34,8 +34,8 @@ production approval or diagnostic validation.
   staleness, revocation and source-resolution checks pass. Two held-out V10
   natural-language queries remain literal-search misses; do not claim all future
   retrieval targets are met or tune query expansion to conceal these misses.
-- Current extractor verification: 216 tests pass with two optional-environment
-  skips; Ruff passes. A10 Ford diesel, all three GM scopes, OCR possible/excluded
+- Current extractor verification: 216 tests run, with two optional Node-dependent
+  tests skipped and no failures; Ruff passes. A10 Ford diesel, all three GM scopes, OCR possible/excluded
   states, generic-reference opt-in, cancellation and stale-review rejection pass.
 
 Local-only acceptance root:
@@ -46,10 +46,50 @@ historical. Golden source quotations are in `ground-truth.json`; records and
 quality log are in `structured-records.json` and `structured-quality-review.json`.
 No licensed manual content, renderings, database or local config enters Git.
 
-Remaining before B1 closes: commit/push the extractor, pin it in the independent
-Repair Buddy B1 worktree, import only a new disposable database, and verify the
-saved V10 pilot, reader/diagram links, wrong-vehicle rejection and existing app
-regressions. Then record the integration results and update the plan status.
+## Completed application integration
+
+Repair Buddy's separate `codex/structured-evidence-b1` worktree pins the exact
+extractor revision and unchanged B1 search-transform revision. Its saved pilot
+now resolves to the reviewed gasoline V10 / 4R100 / 4WD scope without changing
+the configured vehicle. No application runtime code needed changing.
+
+- 269 application tests pass; Ruff passes in both repositories.
+- Disposable integration compares all 72 compiled scopes and 284,592 eligible
+  membership rows against the exported library. These are membership checks,
+  not unique pages or a coverage guarantee.
+- All 23 legacy tables retain their baseline row fingerprints; 280 owner-guide
+  page links and existing Ford diesel/GM readers remain valid.
+- The V10 pilot returns the single reviewed reference page with checked links,
+  remains reference-only and reports `diagnostic_ready: false`. The rich reader
+  retains the original merged-header table and checked diagram images; both
+  the pilot and rich reader were also inspected in the local browser.
+- Wrong-vehicle readers reject access; OCR possible/excluded and mixed-page
+  browse-only boundaries remain intact. SQLite integrity checking passes.
+
+The application report is `app-verification-v1.json` under the local acceptance
+root above. The new database is `repair-buddy-b1-disposable.sqlite3`, copied
+with SQLite backup from the read-only A10 disposable baseline; old generations
+and originals remain available. No live database or toolkit changes were made.
+Final commits are pushed to each repository's existing B1 branch, not merged.
+
+## Next gate: B2, only when selected
+
+Extract specifications and part references from the small reviewed HTML/native
+PDF set, preserving merged headers, exact units, ranges, operating conditions,
+footnotes, source spelling and original locators. Expose typed values alongside
+original context and both approval dimensions; persist intended-use quality
+decisions without turning applicability approval into diagnostic sign-off.
+Part mention, fitment and supersession remain separate. Ambiguous OCR values
+must abstain rather than be silently repaired. No paid runtime service is implied.
+
+Pass criteria: held-out values retain their exact conditions and citations;
+safety-critical fields meet the contract's 100% correctness gate on the reviewed
+benchmark; ambiguous values abstain; wrong-engine values, unit contexts and
+part namespaces cannot combine; unreviewed/stale records cannot become actionable;
+existing scoped reading and regression tests remain green. Track the two B1
+literal-search paraphrase misses honestly; B2 does not promise semantic retrieval.
+Recommended development model: GPT-6 Sol / High (workload judgment, not a measured
+credit-cost guarantee). See the authoritative plan for detailed B2 deliverables.
 Do not begin B2, merge, release or activate the live database in this task.
 
 ## Explicit coverage / approval limits
@@ -152,8 +192,8 @@ candidate have been promoted into approved records.
 
 At the first discovery checkpoint no schema, validator, vocabulary expansion,
 new review approval, test benchmark or pilot activation had been implemented.
-The current implementation above supersedes that historical status. Continue
-the remaining B1 integration check, not B2.
+The completed implementation and integration above supersede that historical
+status. B1 is closed; wait for the owner's next selected step.
 
 ## Checkpoint verification
 
