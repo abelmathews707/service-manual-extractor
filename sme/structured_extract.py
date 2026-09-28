@@ -6,8 +6,11 @@ Callers must establish the unit's vehicle scope before opening source content.
 """
 
 import copy
+import hashlib
 import math
 import re
+from functools import lru_cache
+from pathlib import Path
 
 from .applicability_contracts import POLICY_VERSION
 from .contract import ContractError
@@ -24,6 +27,17 @@ UNITS = {'Hz': ('frequency', 'Hz'), 'G/S': ('mass flow', 'g/s'),
          'mm': ('length', 'mm'), 'in': ('length', 'in')}
 NUMBER = r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)'
 RANGE = re.compile(rf'({NUMBER})(?:\s*(?:-|to)\s*({NUMBER}))?')
+
+
+@lru_cache(maxsize=1)
+def extraction_revision():
+    """Changing interpretation/layout/validation code changes record bindings."""
+    root = Path(__file__).parent
+    value = hashlib.sha256()
+    for name in ('structured_extract.py', 'structured_contracts.py', 'html_content.py',
+                 'vehicle_interpretation.py', 'matching.py'):
+        value.update(name.encode() + b'\0' + (root / name).read_bytes())
+    return VERSION + ':' + value.hexdigest()
 
 
 def compact(text):
@@ -95,7 +109,7 @@ def bound_record(kind, binding, vocabulary, configurations, locator, original,
               'context_record_ids': list(context), 'payload': payload,
               'completeness': {'state': 'ambiguous' if missing else 'complete',
                                'missing': list(missing)}}
-    result['binding']['extraction_version'] = VERSION
+    result['binding']['extraction_version'] = extraction_revision()
     result['id'] = record_identity(result)
     return result
 
