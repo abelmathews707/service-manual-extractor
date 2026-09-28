@@ -10,7 +10,8 @@ from pathlib import Path
 class ViewerShardPoolTests(unittest.TestCase):
     def test_bounded_ordered_cancelled_and_failed_requests(self):
         source = Path(__file__).resolve().parents[1] / 'viewer/assets/app.js'
-        scheduler = source.read_text().split('async function libraryShards(', 1)[1]
+        scheduler = source.read_text(encoding='utf-8').split(
+            'async function libraryShards(', 1)[1]
         scheduler = 'async function libraryShards(' + scheduler.split(
             'async function libraryShard(', 1)[0]
         script = scheduler + r"""
