@@ -24,6 +24,7 @@ from sme.evidence import capture_evidence
 from sme.ford_adapter import import_ford
 from sme.library import resolve_scope, verified_package
 from sme.library_export import (
+    BuildCancelled,
     ScopeCache,
     SearchCancelled,
     open_current,
@@ -43,6 +44,40 @@ def selection(config):
 
 
 class LibraryExportTests(unittest.TestCase):
+    def test_build_progress_cancellation_and_interrupt_preserve_pointer(self):
+        with tempfile.TemporaryDirectory() as root:
+            vocabulary = make_vocabulary()
+            packages, evidence = self._sources(root, vocabulary)
+            review = new_overlay(evidence, vocabulary)
+            sources = [{'package': package, 'evidence': item}
+                       for package, item in zip(packages, evidence)]
+            output = os.path.join(root, 'library')
+            events = []
+            publish_library(output, sources, vocabulary, review, progress=events.append)
+            pointer = Path(output, 'current.json').read_bytes()
+            self.assertTrue(any(event['stage'] == 'scope' for event in events))
+            self.assertEqual(events[-1]['stage'], 'activate')
+            for stop_at in ('copy_package', 'scope', 'activate'):
+                state = {'stop': False}
+
+                def stop(event, state=state, stop_at=stop_at):
+                    state['stop'] = event['stage'] == stop_at
+
+                with self.assertRaises(BuildCancelled):
+                    publish_library(output, sources, vocabulary, review, progress=stop,
+                                    cancelled=lambda state=state: state['stop'])
+                self.assertEqual(Path(output, 'current.json').read_bytes(), pointer)
+                self.assertFalse(list(Path(output, 'generations').glob('.build-*')))
+
+            def interrupt(event):
+                if event['stage'] == 'scope':
+                    raise KeyboardInterrupt
+
+            with self.assertRaises(KeyboardInterrupt):
+                publish_library(output, sources, vocabulary, review, progress=interrupt)
+            self.assertEqual(Path(output, 'current.json').read_bytes(), pointer)
+            self.assertFalse(list(Path(output, 'generations').glob('.build-*')))
+
     def _sources(self, root, vocabulary):
         disc = os.path.join(root, 'disc')
         archives = os.path.join(disc, 'content', 'useni4')

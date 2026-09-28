@@ -35,6 +35,10 @@ class SearchCancelled(Exception):
     """A newer vehicle/query request superseded this search."""
 
 
+class BuildCancelled(Exception):
+    """A cancelled build did not replace the published generation."""
+
+
 def _json(path, value):
     with open(path, 'x', encoding='utf-8') as stream:
         json.dump(value, stream, ensure_ascii=False, separators=(',', ':'))
@@ -81,7 +85,7 @@ def _unit_texts(records, projections):
     return texts
 
 
-def _scopes(library, records, vocabulary, review, history):
+def _scopes(library, records, vocabulary, review, history, checkpoint=None):
     results = {}
     compiled = {record['evidence']['source_id']:
                 compile_evidence(record['evidence'], record['manifest'])
@@ -89,6 +93,8 @@ def _scopes(library, records, vocabulary, review, history):
     for selection, browse_all in scope_selections(vocabulary):
         for mode in ('confirmed', 'include_possible'):
             for include_reference in (False, True):
+                if checkpoint:
+                    checkpoint('scope', completed=len(results))
                 resolved = resolve_scope(library, records, vocabulary, review,
                                          selection, mode=mode,
                                          include_reference=include_reference,
@@ -175,14 +181,26 @@ def _index(scopes, shards, unit_to_shard, library, vocabulary, review,
 
 def publish_library(output_root, sources, vocabulary, review, *,
                     evidence_history=None, projections=None, max_shard_chars=96000,
-                    before_activate=None, discovery_report=None):
+                    before_activate=None, discovery_report=None,
+                    progress=None, cancelled=None):
     """Publish a new immutable generation, then atomically point to it.
 
     ``sources`` are dictionaries with ``package`` and optional ``evidence``
     (a validated sidecar value). The output root must not be inside a source.
     A failed build leaves the previous content generation in place. Consumers
     must still compare its review revision to the current review before search.
+    ``progress`` receives stage dictionaries. ``cancelled`` is checked between
+    packages, copied files and scopes; Ctrl-C interrupts longer validation work.
+    Cancellation cleans the temporary stage without changing the current pointer.
     """
+    def checkpoint(stage_name, **details):
+        if cancelled and cancelled():
+            raise BuildCancelled('library build cancelled before activation')
+        if progress:
+            progress({'stage': stage_name, **details})
+        if cancelled and cancelled():
+            raise BuildCancelled('library build cancelled before activation')
+
     if type(max_shard_chars) is not int or not 1000 <= max_shard_chars <= 1000000:
         raise ContractError('shard character limit must be 1,000–1,000,000')
     unsupported = []
@@ -209,12 +227,21 @@ def publish_library(output_root, sources, vocabulary, review, *,
         os.mkdir(package_folder)
         records = []
         for index, source in enumerate(sources):
+            checkpoint('verify_package', completed=index, total=len(sources))
             verified = verified_package(source['package'], source.get('evidence'),
                                         vocabulary if source.get('evidence') else None)
             _reject_symlinks(verified['root'])
             relative = f'packages/{index:04d}-{verified["manifest"]["source"]["id"]}'
             target = os.path.join(stage, relative)
-            shutil.copytree(verified['root'], target, symlinks=False)
+            checkpoint('copy_package', completed=index, total=len(sources))
+
+            def copy_file(first, second):
+                if cancelled and cancelled():
+                    raise BuildCancelled('library build cancelled while copying')
+                return shutil.copy2(first, second)
+
+            shutil.copytree(verified['root'], target, symlinks=False,
+                            copy_function=copy_file)
             copied = verified_package(target, source.get('evidence'),
                                       vocabulary if source.get('evidence') else None)
             copied['relative_root'] = relative
@@ -223,12 +250,15 @@ def publish_library(output_root, sources, vocabulary, review, *,
                 copied['superseded_by'] = source['superseded_by']
             records.append(copied)
         history = evidence_history or {}
+        checkpoint('assemble_library', completed=len(records), total=len(sources))
         library = make_library(records, vocabulary, review, history)
-        scopes = _scopes(library, records, vocabulary, review, history)
+        scopes = _scopes(library, records, vocabulary, review, history, checkpoint)
+        checkpoint('write_shards', scopes=len(scopes))
         texts = _unit_texts(records, projections or {})
         shards, unit_to_shard = _shards(scopes, texts, stage, max_shard_chars)
         exported = _index(scopes, shards, unit_to_shard, library, vocabulary,
                           review, unsupported)
+        checkpoint('write_manifests', scopes=len(scopes), shards=len(shards))
         _json(os.path.join(stage, 'library.json'), library)
         _json(os.path.join(stage, 'vocabulary.json'), vocabulary)
         _json(os.path.join(stage, 'review.json'), review)
@@ -243,6 +273,7 @@ def publish_library(output_root, sources, vocabulary, review, *,
                     _json(path, record['evidence'])
         if before_activate:
             before_activate(stage)
+        checkpoint('activate', scopes=len(scopes), shards=len(shards))
         generation_key = digest([library['revision'], exported['transform_revision'],
                                  max_shard_chars, projections or {}, unsupported])
         published = os.path.join(generations, generation_key)
@@ -273,7 +304,7 @@ def publish_library(output_root, sources, vocabulary, review, *,
                 'review_revision': review['revision'],
                 'scopes': len(scopes), 'shards': len(shards),
                 'packages': len(records)}
-    except Exception:
+    except BaseException:
         if os.path.isdir(stage):
             shutil.rmtree(stage)
         raise

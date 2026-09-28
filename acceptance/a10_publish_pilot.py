@@ -2,8 +2,10 @@
 
 import argparse
 import json
+import sys
+from time import perf_counter
 
-from sme.library_export import publish_library
+from sme.library_export import BuildCancelled, publish_library
 
 
 def _read(path):
@@ -26,8 +28,20 @@ def main():
     sources = [{'package': package, 'evidence': _read(evidence)}
                for package, evidence in zip(args.ford_package, args.ford_evidence)]
     sources.append({'package': args.gm_package, 'evidence': _read(args.gm_evidence)})
-    result = publish_library(args.output, sources,
-                             _read(args.vocabulary), _read(args.review))
+    started = perf_counter()
+
+    def progress(event):
+        print(json.dumps({'elapsed_seconds': round(perf_counter() - started, 2),
+                          **event}), file=sys.stderr, flush=True)
+
+    try:
+        result = publish_library(args.output, sources,
+                                 _read(args.vocabulary), _read(args.review),
+                                 progress=progress)
+    except (KeyboardInterrupt, BuildCancelled):
+        print('Cancelled; the previous library pointer is unchanged.', file=sys.stderr)
+        raise SystemExit(130) from None
+    result['elapsed_seconds'] = perf_counter() - started
     print(json.dumps(result, indent=2))
 
 
