@@ -231,6 +231,26 @@ function librarySnapshot(manifest) {
 const libraryRouteOf = (unit, params, returnHash) =>
   `#/library-unit/${unit}?${libraryParams(params).toString()}${returnHash ?
     '&return=' + encodeURIComponent(returnHash) : ''}`;
+// Bound simultaneous local HTTP requests even for a large possible/all scope.
+async function libraryShards(ids, load, signal, concurrency = 6) {
+  const results = new Array(ids.length);
+  let cursor = 0, failed = false;
+  async function worker() {
+    while (!failed && cursor < ids.length) {
+      if (signal.aborted) throw new DOMException('Search cancelled', 'AbortError');
+      const position = cursor++;
+      try {
+        results[position] = await load(ids[position], signal);
+      } catch (error) {
+        failed = true;
+        throw error;
+      }
+    }
+  }
+  await Promise.all(Array.from({length: Math.min(concurrency, ids.length)}, worker));
+  if (signal.aborted) throw new DOMException('Search cancelled', 'AbortError');
+  return results;
+}
 async function libraryShard(id, descriptor, signal) {
   if (!/^[a-f0-9]{32}$/.test(id) || descriptor.path !== `shards/${id}.json`)
     throw new Error('Invalid search shard path');
@@ -272,6 +292,7 @@ async function libraryRoute(parts, params, manifest) {
   const token = ++libraryRequest;
   if (libraryAbort) libraryAbort.abort();
   libraryAbort = new AbortController();
+  const signal = libraryAbort.signal;
   $$('#bookTabs a').forEach(item => item.classList.toggle('on', item.dataset.book === 'library'));
   document.body.classList.remove('nav-open');
   side.innerHTML = '';
@@ -357,8 +378,8 @@ async function libraryRoute(parts, params, manifest) {
       ${!query ? `<h2>Publications</h2>${publications}` : '<p class="subtitle">Searching selected scope…</p>'}</div>`;
     if (!query || !entry || entry.no_content) return;
     const selectedIds = new Set(eligible.keys());
-    const shards = await Promise.all(entry.shard_ids.map(id =>
-      libraryShard(id, index.shards[id], libraryAbort.signal)));
+    const shards = await libraryShards(entry.shard_ids,
+      (id, signal) => libraryShard(id, index.shards[id], signal), signal);
     if (token !== libraryRequest) return;
     const loaded = shards.flat();
     if (!loaded.every(item => selectedIds.has(item.unit_id)))
