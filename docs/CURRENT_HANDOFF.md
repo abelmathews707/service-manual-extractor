@@ -1,6 +1,15 @@
 # Service Manual Extractor — current handoff
 
 Updated: 2026-09-28
+Latest work: the owner selected B1 after the plan reconciliation. B1 discovery
+has begun on `codex/structured-evidence-b1` in
+`/Users/asokmathews/Documents/service-manual-extractor-b1`. Read
+[B1_PROGRESS.md](B1_PROGRESS.md) for candidate V10 sources and the exact resume
+sequence. B1 is incomplete: no V10 approval, contract implementation or live
+activation is implied. Continue B1 using GPT-6 Sol / High and monitor five-hour
+remaining usage, stopping around 10%. The A10 state below remains the accepted
+baseline; its pinned worktree and the independently versioned toolkit are intact.
+
 Current checkpoint: Steps 0–8 and applicability steps A1–A10 are implemented
 and the first local engineering delivery is accepted with the explicit limits
 in [A10_ACCEPTANCE.md](A10_ACCEPTANCE.md). Worktrees are
