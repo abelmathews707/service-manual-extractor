@@ -442,7 +442,9 @@ def _scan_zip(path, limits):
         raise SourceError(f'cannot open ZIP: {ex}') from None
     with archive:
         for info in archive.infolist():
-            raw_name = info.filename
+            # ZipInfo may normalize Windows separators or truncate at NUL.
+            # Validate the raw central-directory name before either conversion.
+            raw_name = info.orig_filename
             try:
                 safe = _safe_path(raw_name, directory=info.is_dir())
             except SourceError as ex:

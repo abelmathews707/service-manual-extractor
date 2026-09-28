@@ -118,8 +118,8 @@ class LibraryViewerTests(unittest.TestCase):
                 pdf_fragment = Path(destination, 'content', 'manual-unit',
                                     evidence[2]['units'][0]['id'] + '.html').read_text()
                 self.assertIn('GM-only article', pdf_fragment)
+                self.assertTrue(Path(destination, 'content', 'sources').is_dir())
             self.assertTrue(Path(destination, 'content', 'assets').is_dir())
-            self.assertTrue(Path(destination, 'content', 'sources').is_dir())
 
     def test_stale_review_and_changed_shard_refuse_build(self):
         with tempfile.TemporaryDirectory() as root:
