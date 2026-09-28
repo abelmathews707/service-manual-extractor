@@ -1,7 +1,8 @@
 # One manual library, organized by vehicle
 
 Status: A1–A10 and B1 complete within their bounded engineering acceptances;
-B2 is in progress; B3–B4 have not started. Reconciled with the owner on 2026-09-28.
+B2 is complete within bounded engineering acceptance; B3–B4 have not started.
+Reconciled with the owner on 2026-09-28.
 Current branch: `codex/structured-specifications-b2` in both repositories;
 pushed feature work, not merged or activated in the live database.
 Original planning branch: `codex/vehicle-manual-library-plan`, based on merged
@@ -524,7 +525,8 @@ Steps A1–A10 are complete within the 2026-09-28 A10 acceptance limits. Their
 sections below retain the original deliverables/pass gates as implementation
 history, not unfinished work. B1 is complete within the contracts, reviewed
 fixtures and disposable integration gate recorded in [B1 completion](B1_PROGRESS.md).
-B2 is in progress; see [its checkpoint](B2_PROGRESS.md). B3–B4 have not started.
+B2 is complete within its stated limits; see [its checkpoint](B2_PROGRESS.md).
+B3–B4 have not started.
 Each task must report changed files,
 tests/evidence, remaining issues, and the next step with its model recommendation.
 Stop at that step's pass gate. A pass gate is not permission to merge or release.
@@ -931,8 +933,10 @@ fixture and benchmark work, not bulk extraction or an AI diagnosis release.
 
 ### B2 — Extract specifications and part references
 
-**Status:** in progress; [B2 checkpoint](B2_PROGRESS.md) records bounded extraction
-and remaining application/review/acceptance gates. B3 is not authorized by B2 work.
+**Status:** complete within bounded engineering acceptance; [B2 checkpoint](B2_PROGRESS.md)
+records native extraction, typed reading, separate persisted quality review and
+verification limits. No full-library or production-readiness claim is made.
+B3 is not authorized by B2 work.
 
 **Depends on:** B1. **Model:** GPT-6 Sol / High, because numbers, units and
 conditions must remain attached to their exact row and vehicle context.

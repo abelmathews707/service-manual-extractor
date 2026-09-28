@@ -85,9 +85,12 @@ Two dimensions must remain visible, with their reasons and source links:
 | Confirmed | Current, complete diagnostic approval | Admit only the same record, configuration, intended use and review purpose. |
 
 The current Phase A reader already shows applicability and withholds diagnostic
-readiness. B1 defines the second dimension; B2–B4 implement its presentation and
-consumption. Until then, do not claim these new typed records are in web/CLI AI
-packets. B4 must use the same eligibility IDs and both review states in both
+readiness. B1 defines the second dimension; bounded B2 displays typed values and
+both review dimensions beside originals and persists separate engineering
+quality decisions with signed preview/commit. See [B2 acceptance](B2_PROGRESS.md).
+B3–B4 complete procedure/graph context and shared packet consumption. These
+typed records are not yet in web/CLI AI packets. B4 must use the same eligibility
+IDs and both review states in both
 interfaces; it need not reproduce their UI layouts.
 
 `diagnostic_admission` takes a caller-validated, configuration-bound scope

@@ -5,11 +5,13 @@ Latest work: B1 is complete within bounded engineering acceptance; read
 [B1_PROGRESS.md](B1_PROGRESS.md) and
 [STRUCTURED_EVIDENCE_CONTRACT.md](STRUCTURED_EVIDENCE_CONTRACT.md). Its reviewed
 gasoline V10 / 4R100 / 4WD reference scope binds the saved pilot; no production
-diagnostic approval was issued. The owner selected B2 on 2026-09-28. B2 is in
-progress on `codex/structured-specifications-b2`, with separate worktrees
+diagnostic approval was issued. B2 is complete within bounded engineering
+acceptance on `codex/structured-specifications-b2`, with separate worktrees
 `/Users/asokmathews/Documents/service-manual-extractor-b2` and
 `/Users/asokmathews/Documents/repair-buddy-b2`. Read [B2_PROGRESS.md](B2_PROGRESS.md)
-for implemented extraction, independent quality integration and remaining gates.
+for extraction, independent quality integration, verification and limits.
+Both branches are pushed, not merged. B3 is next only when selected; recommended
+development model: GPT-6 Astra / High. Current packets are not diagnostic-ready.
 Monitor both usage windows: stop around 10% five-hour remaining or at 5% weekly
 remaining. Earlier accepted worktrees, live data and the independent toolkit
 remain intact. No merge, release, live activation or B3 implementation is implied.
@@ -35,7 +37,7 @@ Buddy `main` at `310ce81`; no public release was created. See
 The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
 covers all available formats, shared vehicle mapping/review, pre-search filters,
 Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
-Phase B adds structured extraction. The current selected step is **B2**; the
+Phase B adds structured extraction. **B1 and bounded B2 are complete; B3 is next**; the
 completed A10 checkpoint above and reconciliation below are historical, not
 the current execution gate.
 
@@ -59,7 +61,7 @@ by this reconciliation.
 1. Read the [current vehicle mapping plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
    and [B2 progress](B2_PROGRESS.md), then the historical final
    [A10 acceptance report](A10_ACCEPTANCE.md). A10 and B1 are complete;
-   B2 is selected, but later B steps still require selection.
+   B2 is complete within its limits; later B steps still require selection.
 2. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
    The [GM HTML USB inspection](GM_HTML_INSPECTION.md) is historical; the user
    has obtained replacements and the old damage is not a project blocker.

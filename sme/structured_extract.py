@@ -145,7 +145,7 @@ This is a guard on reviewed recipes, not automatic approval of arbitrary rows.
     alternatives, resolved = interpret_statement(text, vocabulary)
     has_constraint = any(item[field]['state'] != 'unknown' for item in alternatives
                          for field in ('make', 'model', 'year', 'engine'))
-    has_vehicle_cue = re.search(r'\b(?:\d{1,2}(?:\.\d)?\s*L|VIN|RPO|Series|only|except|'
+    has_vehicle_cue = re.search(r'\b(?:\d{1,2}(?:\.\d)?\s*L|VIN|RPO|Series|except|'
                                 r'diesel|gasoline|CNG|(?:19|20)\d{2})\b', text, re.I)
     if not has_constraint and not has_vehicle_cue:
         return configurations
@@ -359,5 +359,8 @@ warnings and branch instructions need a different reviewed layout rule.
                           original, {'subject': subject, 'quantity': UNITS[unit][0],
                                      'values': [{'condition': condition, 'original_value': raw,
                                                  'original_unit': unit,
-                                                 'normalized': normalized}]}, [condition])
+                                                 'normalized': normalized}]}, [condition],
+                          missing=[] if condition in original else [
+                              'operating condition absent from native region; '
+                              'original context required'])
     return seal_records([record]), []

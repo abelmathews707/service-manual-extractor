@@ -16,13 +16,13 @@ from sme.structured_extract import (
 )
 
 HTML = b'''<html><body><p>NOTE: Example measurements under fixture load.</p>
-<table><caption>Example reference table</caption><tr>
+<table><caption>Authored reference table</caption><tr>
 <th rowspan=2>Signal</th><th colspan=2>Measured values</th><th rowspan=2>Units</th></tr>
 <tr><th>Cold</th><th>Warm</th></tr>
 <tr><td>DEMO</td><td>0</td><td>2-4</td><td>V</td></tr></table></body></html>'''
 RECIPE = {'name': 'authored voltage', 'headers': [['Signal'], ['Measured values', 'Cold'],
            ['Measured values', 'Warm'], ['Units']], 'rows': ['DEMO'], 'unit_column': 3,
-          'value_columns': [(1, 'Cold'), (2, 'Warm')], 'caption': 'Example reference table',
+          'value_columns': [(1, 'Cold'), (2, 'Warm')], 'caption': 'Authored reference table',
           'note': 'NOTE: Example measurements under fixture load.',
           'conditions': ['fixture load']}
 
@@ -126,6 +126,12 @@ class StructuredExtractionTests(unittest.TestCase):
                                              self.decisions, **kwargs)
         self.assertEqual(errors, [])
         self.assertEqual(bundle['records'][0]['payload']['values'][0]['normalized']['maximum'], 4)
+        self.assertEqual(bundle['records'][0]['completeness']['state'], 'ambiguous')
+        complete, _ = extract_native_line(
+            'installation stage 1: Example bolt 2-4 N.m', self.binding, self.vocabulary,
+            [self.config], self.decisions,
+            **(kwargs | {'pattern': 'installation stage 1: ' + pattern}))
+        self.assertEqual(complete['records'][0]['completeness']['state'], 'complete')
         for text in ('Fig. 1: Example pressure 2-4 N.m', 'Example bolt 2-4/3-5 N.m',
                      'DO NOT proceed above 2-4 N.m'):
             bundle, errors = extract_native_line(text, self.binding, self.vocabulary,
@@ -140,12 +146,25 @@ class StructuredExtractionTests(unittest.TestCase):
             self.assertIsNone(numeric_value(raw, unit))
 
     def test_conflicting_engine_or_unknown_row_restriction_never_inherits_parent(self):
-        for label in ('DEMO (6.0L diesel)', 'DEMO (E-Series only)', 'DEMO (VIN Z only)'):
+        for label in ('DEMO (6.0L gasoline)', 'DEMO (E-Series only)', 'DEMO (VIN Z only)',
+                      'DEMO Chevrolet'):
             recipe = copy.deepcopy(RECIPE)
             recipe['rows'] = [label]
             bundle, errors = self.html(HTML.replace(b'DEMO', label.encode()), recipe)
             self.assertFalse(any(item['type'] == 'specification' for item in bundle['records']))
             self.assertIn('vehicle restriction', errors[0]['reason'])
+        matching = copy.deepcopy(RECIPE)
+        matching['rows'] = ['DEMO (6.0L diesel)']
+        bundle, errors = self.html(HTML.replace(b'DEMO', b'DEMO (6.0L diesel)'), matching)
+        self.assertEqual(errors, [])
+        self.assertTrue(any(item['type'] == 'specification' for item in bundle['records']))
+
+    def test_pid_only_header_is_not_a_vehicle_restriction(self):
+        recipe = copy.deepcopy(RECIPE)
+        recipe['headers'][0] = ['Pin/PID only']
+        bundle, errors = self.html(HTML.replace(b'Signal', b'Pin/PID only'), recipe)
+        self.assertEqual(errors, [])
+        self.assertTrue(any(item['type'] == 'specification' for item in bundle['records']))
 
 
 if __name__ == '__main__':
