@@ -57,6 +57,19 @@ Other diagnostic candidate citations include `V321020.htm`, `V321022.htm` and
 `V323003.htm` under the same source-relative `v32` directory; these remain
 unreviewed. Do not approve an entire publication from these mentions.
 
+Further original-HTML inspection identifies this as a diagnostic reference
+values table, not an ordered pinpoint test. It uses merged headers with separate
+operating-condition columns (KOEO, hot idle and two vehicle speeds), a PCM
+pin/PID column, and combined measurement/unit expressions. B1 should use it
+as a candidate for qualified specification records and table-region anchors:
+each value must inherit its sensor, pin/PID, condition and unit context. A
+flattened cell or fragment cannot supply those relationships by itself.
+The page displays a procedure revision date of 2004-09-23 despite residing in
+the 2003 source collection. That date is a revision date, not proof of model
+year coverage; verify publication/catalog identity separately. Its image
+`A0051363.gif` also needs original figure review. No numeric values from this
+candidate have been promoted into approved records.
+
 ## Resume B1 in this order
 
 1. Read the revised B1 gate in
