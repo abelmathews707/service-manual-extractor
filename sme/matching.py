@@ -151,6 +151,48 @@ def _adjacent_pdf_review_fills_missing(review, evidence, accepted, unit,
     return False
 
 
+def _ancestral_html_review_fills_missing(review, evidence, accepted, unit,
+                                        ancestry, selection, missing):
+    """Require explicit reviewed native statements within this HTML ancestry.
+
+    A page heading may name the engine while its original catalog names the
+    model/year. Combining those restrictions is allowed only for an accepted
+    review on this exact unit, with the actual statements bound. Unrecognized
+    dimensions remain missing; arbitrary other pages, filename hints and OCR
+    cannot supply them. A native heading is still only a proposal until this
+    exact, source-bound review is accepted. Conflict checks run first.
+    """
+    if not (review and unit['kind'] == 'section' and
+            unit['citation']['kind'] == 'path' and missing):
+        return False
+    assertions = {item['id']: item for item in evidence['assertions']}
+    for event in review['events']:
+        if event['id'] not in accepted or event['subject_id'] != unit['id']:
+            continue
+        proved = set()
+        for binding in event['evidence_bindings']:
+            assertion = assertions[binding['id']]
+            if (assertion['subject_id'] not in ancestry or
+                    assertion['intent'] != 'include' or
+                    assertion['provenance'] != 'native' or
+                    not (assertion['derivation'] in ('explicit_text', 'explicit_structured') or
+                         (assertion['derivation'] == 'title_hint' and
+                          assertion.get('selector') == 'heading')) or
+                    _assertion_match(assertion, selection) is None):
+                continue
+            for alternative in assertion['alternatives']:
+                if _alternative(alternative, selection)[0] == 'different':
+                    continue
+                for field, key in zip(_FIELDS, _SELECTION):
+                    predicate = alternative[field]
+                    if (field in missing and predicate['state'] == 'exact' and
+                            predicate['value'] == selection.get(key)):
+                        proved.add(field)
+        if set(missing).issubset(proved):
+            return True
+    return False
+
+
 def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
                 mode='confirmed', include_reference=False, review=None,
                 evidence_history=None, validate=True, compiled=None):
@@ -184,12 +226,20 @@ def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
     known_configs = {item['id']: item for item in vocabulary['configurations']}
     config_id = None
     if all(key in selection for key in _SELECTION):
-        config_id = next((identifier for identifier, config in known_configs.items()
-                          if (config['make_id'], config['model_id'], config['model_year'],
-                              config['engine_id']) == tuple(selection[key] for key in _SELECTION)),
-                         None)
-        if config_id is None:
+        candidates = [(identifier, config) for identifier, config in known_configs.items()
+                      if (config['make_id'], config['model_id'], config['model_year'],
+                          config['engine_id']) == tuple(selection[key] for key in _SELECTION)]
+        selected_qualifiers = selection.get('qualifiers', {})
+        compatible = [(identifier, config) for identifier, config in candidates
+                      if all(name not in selected_qualifiers or selected_qualifiers[name] == value
+                             for name, value in config['qualifiers'].items())]
+        if not compatible:
             return _result('excluded', 'no_eligible_units', mode=mode)
+        complete = [(identifier, config) for identifier, config in compatible
+                    if all(selected_qualifiers.get(name) == value
+                           for name, value in config['qualifiers'].items())]
+        if complete:
+            config_id = max(complete, key=lambda pair: len(pair[1]['qualifiers']))[0]
     if publication['kind'] == 'reference':
         if include_reference:
             return _result('reference', 'generic_reference', mode=mode)
@@ -271,8 +321,11 @@ def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
     missing = source_missing if positive else proposal_missing
     missing_qualifiers = source_qualifiers if positive else proposal_qualifiers
     if (accepted and (missing_qualifiers or missing) and by_subject.get(unit_id) and
-            (missing_qualifiers or not _adjacent_pdf_review_fills_missing(
-                review, evidence, accepted, unit, selection, missing))):
+            (missing_qualifiers or not (
+                _adjacent_pdf_review_fills_missing(
+                    review, evidence, accepted, unit, selection, missing) or
+                _ancestral_html_review_fills_missing(
+                    review, evidence, accepted, unit, ancestry, selection, missing)))):
         reason = ('missing_qualifier' if missing_qualifiers else
                   next((_MISSING[field] for field in _FIELDS if field in missing),
                        'missing_qualifier'))

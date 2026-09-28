@@ -1,12 +1,71 @@
 # B1 — V10 scope and structured-evidence checkpoint
 
-Date: 2026-09-28. Status: started; **B1 is not complete**.
+Date: 2026-09-28. Status: contracts and original-source engineering acceptance
+implemented; final Repair Buddy integration verification is in progress.
 Branch: `codex/structured-evidence-b1`, based on accepted plan commit
 `b3043a79b913f6302428fcb815f5565f8f3c4c50`.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b1`.
 The owner authorized beginning B1 while retaining the five-hour usage stop
 threshold of approximately 10% remaining. This is a resumable discovery
-checkpoint, not V10 applicability approval or diagnostic validation.
+checkpoint. Current engineering review is bounded reading applicability, not
+production approval or diagnostic validation.
+
+## Current implementation (read before the historical discovery notes)
+
+- Added all nine typed-record shapes and an independent, purpose-specific
+  quality log. See [the contract](STRUCTURED_EVIDENCE_CONTRACT.md).
+- Added a source-backed 2003 F-250 gasoline 6.8L V10 / 4R100 / 4WD configuration,
+  retaining every A10 configuration. VIN S gasoline and VIN Z natural-gas engines
+  are distinct, even though both have 6.8L displacement. The user's qualifiers
+  remain declared configuration, not proof from an actual decoded VIN.
+- Reviewed the original V32 catalog, reference-values page, and workshop
+  identification-code tables. Exact V10 reading acceptance binds the page's
+  native heading and its original catalog model/year/gasoline entry; no book-wide
+  acceptance or numeric diagnostic approval was added.
+- Fixed configuration approval lookup to respect transmission/drivetrain.
+  Combining a reviewed native HTML heading with original catalog identity requires
+  a current exact-unit acceptance and the actual bound ancestral statements;
+  filenames, OCR and unrelated pages cannot fill those missing fields.
+- Re-captured applicability sidecars from all six immutable A10 packages, checking
+  original hashes without re-extracting or redoing OCR. Published a separate
+  disposable library; old A10 outputs and the live application database are intact.
+- Original-layout-reviewed local ground truth covers 16 records, all nine types
+  and 25 scenarios. Eight scenarios are held out. Boundary, abstention, field,
+  staleness, revocation and source-resolution checks pass. Two held-out V10
+  natural-language queries remain literal-search misses; do not claim all future
+  retrieval targets are met or tune query expansion to conceal these misses.
+- Current extractor verification: 216 tests pass with two optional-environment
+  skips; Ruff passes. A10 Ford diesel, all three GM scopes, OCR possible/excluded
+  states, generic-reference opt-in, cancellation and stale-review rejection pass.
+
+Local-only acceptance root:
+`/Users/asokmathews/Documents/service-manual-data/b1-acceptance-2026-09-28`.
+Generation: `library/generations/30ef410f2c567f94e8e4af4a288b9863906fb46ce5f84a4ca9d20dc404093e2c`.
+The authoritative current benchmark report is `verification-v2.json`; v1 is
+historical. Golden source quotations are in `ground-truth.json`; records and
+quality log are in `structured-records.json` and `structured-quality-review.json`.
+No licensed manual content, renderings, database or local config enters Git.
+
+Remaining before B1 closes: commit/push the extractor, pin it in the independent
+Repair Buddy B1 worktree, import only a new disposable database, and verify the
+saved V10 pilot, reader/diagram links, wrong-vehicle rejection and existing app
+regressions. Then record the integration results and update the plan status.
+Do not begin B2, merge, release or activate the live database in this task.
+
+## Explicit coverage / approval limits
+
+The no-start concern is a feasibility benchmark, not a diagnosis. CKP reference
+readings are available, but complete eligible pinpoint/no-start instructions,
+exact V10 wiring context and remaining workshop applicability still require
+review. Ask about normal cranking, DTCs/live readings and actual VIN/qualifiers;
+never substitute GM, diesel or CNG material. A revision date does not change the
+publication's model year. The no-load note governs the generic OBD II table, not
+every sensor/input table on the page. GM page 87 contains an illustrative test
+figure and only part of a procedure; its following page and prerequisites are
+not approved. OCR cabin-filter content remains possible for 2002 and excluded
+for 2006. B1 creates **zero production diagnostic approvals**.
+
+## Historical first discovery checkpoint
 
 ## Verified starting state
 
@@ -70,7 +129,7 @@ year coverage; verify publication/catalog identity separately. Its image
 `A0051363.gif` also needs original figure review. No numeric values from this
 candidate have been promoted into approved records.
 
-## Resume B1 in this order
+## Original resume sequence (contracts/source benchmark now implemented)
 
 1. Read the revised B1 gate in
    [the authoritative plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md). Inspect
@@ -91,9 +150,10 @@ candidate have been promoted into approved records.
    Verify V10 positive results and excluded-text boundaries; preserve Phase A
    behavior. Bind the app pilot only after its reviewed scope passes.
 
-No schema, validator, vocabulary expansion, new review approval, test benchmark
-or pilot activation has been implemented at this checkpoint. Continue **B1**,
-not B2. Its recommended development model remains **GPT-6 Sol / High**.
+At the first discovery checkpoint no schema, validator, vocabulary expansion,
+new review approval, test benchmark or pilot activation had been implemented.
+The current implementation above supersedes that historical status. Continue
+the remaining B1 integration check, not B2.
 
 ## Checkpoint verification
 
