@@ -151,6 +151,7 @@ def build_library_viewer(library_root, review_overlay, destination, title=None):
 
         books = []
         units = {}
+        metadata_units = set()
         copied_assets = {}
         for occurrence, package in packages:
             manifest, content, evidence = (package['manifest'], package['content'],
@@ -163,7 +164,8 @@ def build_library_viewer(library_root, review_overlay, destination, title=None):
                                      for publication in manifest['publications']
                                      for item in publication['documents']}
             routes = {item['document_id']: item['id'] for item in evidence['units']
-                      if item['search']['state'] != 'metadata_only'} if evidence else {}
+                      if item['search']['state'] != 'metadata_only' or
+                      'parent_unit_id' not in item} if evidence else {}
             asset_urls = _prepare_assets(package['root'], staging, records, copied_assets)
             for publication in manifest['publications']:
                 book_id = _site_id(occurrence['occurrence_id'], publication['id'])
@@ -172,9 +174,13 @@ def build_library_viewer(library_root, review_overlay, destination, title=None):
                 if evidence:
                     for unit in evidence['units']:
                         document_id = unit['document_id']
+                        metadata_only = unit['search']['state'] == 'metadata_only'
                         if (document_publications[document_id] != publication['id'] or
-                                unit['id'] not in texts):
+                                (unit['id'] not in texts and (not metadata_only or
+                                                             'parent_unit_id' in unit))):
                             continue
+                        if metadata_only:
+                            metadata_units.add(unit['id'])
                         count += 1
                         record = record_map[document_id]
                         document = manifest_docs[document_id]
@@ -194,12 +200,13 @@ def build_library_viewer(library_root, review_overlay, destination, title=None):
                             continue
                         fragment = os.path.join(staging, 'content', 'manual-unit',
                                                 unit['id'] + '.html')
-                        if unit['search']['state'] == 'whole':
+                        if unit['search']['state'] == 'whole' or metadata_only:
                             body = ''.join(_render_node(node, record, document_publications,
                                                         asset_urls, routes)
                                            for node in record['structure'])
                             if not body.strip():
                                 body = '<pre class="source-projection">' + html.escape(
+                                    record['text'] if metadata_only else
                                     texts[unit['id']]['text']) + '</pre>'
                         else:
                             body = '<pre class="source-projection">' + html.escape(
@@ -215,20 +222,23 @@ def build_library_viewer(library_root, review_overlay, destination, title=None):
                             'provenance': document['text']['provenance'],
                             'path': record['original_path'],
                             'warnings': record['warnings'],
+                            'metadata_only': metadata_only,
+                            'mixed_content': unit['mixed_content'],
                         }
                 books.append({'id': book_id, 'name': publication['title'],
                               'kind': publication['kind'],
                               'source_path': publication['source_path'],
                               'occurrence_id': occurrence['occurrence_id'],
                               'units': count, 'navigation': navigation})
-        if set(units) != set(texts):
+        if set(units) - metadata_units != set(texts):
             raise ContractError('offline viewer could not bind every search unit')
         built = datetime.now(timezone.utc).isoformat(timespec='seconds')
         _write_json(os.path.join(staging, 'data', 'manifest.json'), {
             'viewerMode': 'library', 'title': name, 'books': books,
             'libraryRevision': library['revision'],
             'reviewRevision': review['revision'], 'builtAt': built,
-            'counts': {'books': len(books), 'searchable': len(units)},
+            'counts': {'books': len(books), 'searchable': len(texts),
+                       'unsearchable_originals': len(metadata_units)},
         })
         _write_json(os.path.join(staging, 'data', 'unit-details.json'), units)
         os.replace(staging, destination)
@@ -236,5 +246,6 @@ def build_library_viewer(library_root, review_overlay, destination, title=None):
         shutil.rmtree(staging, ignore_errors=True)
         raise
     return {'ok': True, 'output': destination, 'publications': len(books),
-            'units': len(units), 'library_revision': library['revision'],
+            'units': len(texts), 'unsearchable_originals': len(metadata_units),
+            'library_revision': library['revision'],
             'review_revision': review['revision']}

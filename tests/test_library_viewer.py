@@ -10,14 +10,53 @@ from pathlib import Path
 
 import test_library_export
 from test_applicability_contracts import make_vocabulary
+from test_sources import pdf_bytes
 
 from sme.contract import ContractError
+from sme.evidence import capture_evidence
 from sme.library_export import open_current, publish_library, search_export
 from sme.library_viewer import build_library_viewer
+from sme.normalize import normalize_source
 from sme.review import decide, new_overlay, propose
+from sme.source import extract_source
 
 
 class LibraryViewerTests(unittest.TestCase):
+    def test_mixed_original_retained_in_navigation_but_absent_from_every_shard(self):
+        with tempfile.TemporaryDirectory() as root:
+            vocabulary = make_vocabulary()
+            original = Path(root, 'mixed.pdf')
+            original.write_bytes(pdf_bytes(('2006 Chevrolet Silverado 1500 '
+                                            '4.3L and 6.0L engine sections',)))
+            extracted = os.path.join(root, 'extracted')
+            package = os.path.join(root, 'package')
+            extract_source(str(original), extracted)
+            normalize_source(extracted, package)
+            evidence = capture_evidence(package, vocabulary)
+            unit = evidence['units'][0]
+            self.assertTrue(unit['mixed_content'])
+            self.assertEqual(unit['search']['state'], 'metadata_only')
+            review = new_overlay(evidence, vocabulary)
+            overlay = Path(root, 'review.json')
+            overlay.write_text(json.dumps(review), encoding='utf-8')
+            library = os.path.join(root, 'library')
+            publish_library(library, [{'package': package, 'evidence': evidence}],
+                            vocabulary, review)
+            site = os.path.join(root, 'site')
+            result = build_library_viewer(library, overlay, site)
+            self.assertEqual(result['units'], 0)
+            self.assertEqual(result['unsearchable_originals'], 1)
+            details = json.loads(Path(site, 'data', 'unit-details.json').read_text())
+            self.assertTrue(details[unit['id']]['metadata_only'])
+            self.assertTrue(details[unit['id']]['source_url'].endswith('#page=1'))
+            manifest = json.loads(Path(site, 'data', 'manifest.json').read_text())
+            self.assertEqual(manifest['books'][0]['navigation'][0]['document_id'], unit['id'])
+            index = json.loads(Path(site, 'data', 'library-index.json').read_text())
+            self.assertFalse(index['shards'])
+            self.assertFalse(any(entry['scope']['eligible'] for entry in index['scopes'].values()))
+            self.assertIn('4.3L and 6.0L', Path(site, 'content', 'manual-unit',
+                                              unit['id'] + '.html').read_text())
+
     def test_builds_scope_bound_site_without_changing_legacy_viewer(self):
         with tempfile.TemporaryDirectory() as root:
             vocabulary = make_vocabulary()
@@ -54,8 +93,12 @@ class LibraryViewerTests(unittest.TestCase):
             for shard in index['shards'].values():
                 self.assertTrue(Path(destination, 'data', shard['path']).is_file())
             units = json.loads(Path(destination, 'data', 'unit-details.json').read_text())
-            self.assertEqual(set(units), {unit for entry in index['scopes'].values()
-                                          for unit in entry['unit_occurrences']})
+            searchable = {unit for entry in index['scopes'].values()
+                          for unit in entry['unit_occurrences']}
+            self.assertEqual({unit for unit, detail in units.items()
+                              if not detail['metadata_only']}, searchable)
+            self.assertFalse({unit for unit, detail in units.items()
+                              if detail['metadata_only']} & searchable)
             ford = vocabulary['configurations'][0]
             selected = {key: ford[key] for key in
                         ('make_id', 'model_id', 'model_year', 'engine_id')}

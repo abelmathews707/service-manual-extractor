@@ -285,17 +285,26 @@ async function libraryRoute(parts, params, manifest) {
       throw new Error('Offline library snapshot revisions disagree');
     const entry = libraryScope(index, params);
     const eligible = new Map((entry?.scope.eligible || []).map(item => [item.unit_id, item]));
+    // Originals withheld from search are readable only through explicit unfiltered browsing.
+    // This does not add their text to any search shard or eligibility set.
+    const readable = new Map(eligible);
+    if (entry && params.get('browse_all') === '1' && entry.scope.mode === 'include_possible') {
+      for (const [unit, info] of Object.entries(details)) {
+        if (info.metadata_only) readable.set(unit, {state: 'unsearchable original',
+          reason_codes: [info.mixed_content ? 'mixed_content' : 'no_searchable_text']});
+      }
+    }
     const source = librarySnapshot(manifest);
     const filters = libraryFilters(vocabulary, params);
     const [kind, id] = parts;
     if (kind === 'library-unit') {
-      if (!safeId(id) || !eligible.has(id) || !details[id]) {
+      if (!safeId(id) || !readable.has(id) || !details[id]) {
         main.innerHTML = `<div class="wrap"><h1 class="title">Section unavailable for this selection</h1>
           <p class="subtitle">It may be outside the vehicle scope, missing, or from another snapshot.</p>
           <a href="#/library-search?${libraryParams(params)}">← Back to search</a></div>`;
         return;
       }
-      const info = details[id], state = eligible.get(id);
+      const info = details[id], state = readable.get(id);
       const response = await fetch(`content/manual-unit/${id}.html`);
       if (token !== libraryRequest) return;
       if (!response.ok) throw new Error('Manual section is unavailable');
@@ -307,6 +316,7 @@ async function libraryRoute(parts, params, manifest) {
         <h1 class="title">${esc(info.title)}</h1><p class="subtitle">${esc(info.publication_title)} ·
         ${esc(info.path)} · ${esc(info.provenance)} text · ${esc(state.state)}</p>
         ${source}<div class="note">${esc(state.reason_codes.join(', '))}</div>
+        ${info.metadata_only ? '<div class="note">Unfiltered original. This page is withheld from text search and is not a confirmed vehicle match.</div>' : ''}
         ${info.source_url ? `<p><a class="chip" href="${esc(info.source_url)}" target="_blank"
           rel="noopener">Open original PDF at page ${esc(info.citation.page)}</a></p>
           <p class="subtitle">The PDF opens as a whole file; its other pages are not vehicle-filtered.</p>` : ''}
@@ -315,7 +325,7 @@ async function libraryRoute(parts, params, manifest) {
       $$('.paper a[href^="#/library-unit/"]').forEach(link => {
         const target = link.getAttribute('href').split('/').pop();
         link.href = libraryRouteOf(target, params, returnHash);
-        if (!eligible.has(target)) {
+        if (!readable.has(target)) {
           link.replaceWith(document.createTextNode(link.textContent + ' (outside selected scope)'));
         }
       });
@@ -325,7 +335,7 @@ async function libraryRoute(parts, params, manifest) {
     if (kind === 'library-publication') {
       const book = (manifest.books || []).find(item => item.id === id);
       if (!book) return notFound();
-      const nav = libraryNavigation(book.navigation, eligible, params);
+      const nav = libraryNavigation(book.navigation, readable, params);
       side.innerHTML = `<div class="s-head">${esc(book.name)}</div>${nav}`;
       main.innerHTML = `<div class="wrap"><a href="#/library-search?${libraryParams(params)}">← Vehicle manuals</a>
         <h1 class="title">${esc(book.name)}</h1>${source}${libraryCoverage(entry, params, index)}
@@ -336,12 +346,12 @@ async function libraryRoute(parts, params, manifest) {
     const query = params.get('q') || '';
     if (document.activeElement !== $('#q')) $('#q').value = query;
     const visibleBooks = (manifest.books || []).map(book => ({book,
-      count: [...eligible.keys()].filter(unit => details[unit]?.books.includes(book.id)).length}))
+      count: [...readable.keys()].filter(unit => details[unit]?.books.includes(book.id)).length}))
       .filter(item => item.count || (!params.get('make_id') &&
         params.get('browse_all') !== '1'));
     const publications = `<div class="grid">${visibleBooks.map(({book, count}) =>
       `<a class="card" href="#/library-publication/${book.id}?${libraryParams(params)}">
-        <h3>${esc(book.name)}</h3><p>${esc(book.kind)} · ${count} eligible section(s)</p></a>`).join('')}</div>`;
+        <h3>${esc(book.name)}</h3><p>${esc(book.kind)} · ${count} readable section(s)</p></a>`).join('')}</div>`;
     main.innerHTML = `<div class="wrap"><h1 class="title">${esc(manifest.title)}</h1>
       ${source}${filters}${libraryCoverage(entry, params, index)}
       ${!query ? `<h2>Publications</h2>${publications}` : '<p class="subtitle">Searching selected scope…</p>'}</div>`;
