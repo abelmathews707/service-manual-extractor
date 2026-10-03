@@ -527,7 +527,7 @@ sections below retain the original deliverables/pass gates as implementation
 history, not unfinished work. B1 is complete within the contracts, reviewed
 fixtures and disposable integration gate recorded in [B1 completion](B1_PROGRESS.md).
 B2 is complete within its stated limits; see [its checkpoint](B2_PROGRESS.md).
-B3–B4 have not started.
+B3 is in progress; its complete-procedure acceptance remains pending. B4 has not started.
 Each task must report changed files,
 tests/evidence, remaining issues, and the next step with its model recommendation.
 Stop at that step's pass gate. A pass gate is not permission to merge or release.
