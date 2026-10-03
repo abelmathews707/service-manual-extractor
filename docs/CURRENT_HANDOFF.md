@@ -1,12 +1,13 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-28
-Current B3 preparation: the owner selected B3. Read [B3_PROGRESS.md](B3_PROGRESS.md)
+Updated: 2026-10-03
+Current B3 implementation: the owner selected B3. Read [B3_PROGRESS.md](B3_PROGRESS.md)
 first. Worktree `/Users/asokmathews/Documents/service-manual-extractor-b3`, branch
-`codex/procedure-structure-b3`. No B3 code has changed. Work stopped at 9% five-hour
-remaining (16% weekly); resume within the existing usage limits. The B2 application
-and its dependency pin remain unchanged. The B2 completion record below is the
-accepted implementation baseline.
+`codex/procedure-structure-b3`. Native decision extraction and a tested continuation
+boundary are implemented; full B3 acceptance is pending. The separate app worktree
+is `/Users/asokmathews/Documents/repair-buddy-b3`. Accepted B2 worktrees remain
+unchanged. Monitor both usage limits. The B2 completion record below is the accepted
+implementation baseline; the current B3 checkpoint does not complete that step.
 
 Latest work: B1 is complete within bounded engineering acceptance; read
 [B1_PROGRESS.md](B1_PROGRESS.md) and

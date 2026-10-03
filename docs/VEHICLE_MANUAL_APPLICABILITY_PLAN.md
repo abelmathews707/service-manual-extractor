@@ -1,9 +1,10 @@
 # One manual library, organized by vehicle
 
 Status: A1–A10 and B1 complete within their bounded engineering acceptances;
-B2 is complete within bounded engineering acceptance; B3–B4 have not started.
+B2 is complete within bounded engineering acceptance; B3 is in progress and B4
+has not started. See [B3 progress and remaining gates](B3_PROGRESS.md).
 Reconciled with the owner on 2026-09-28.
-Current branch: `codex/structured-specifications-b2` in both repositories;
+Current branch: `codex/procedure-structure-b3` in both repositories;
 pushed feature work, not merged or activated in the live database.
 Original planning branch: `codex/vehicle-manual-library-plan`, based on merged
 extractor `main` at `9341637306af6595ab4233b39db7f80693d7069b`.
@@ -960,6 +961,10 @@ values abstain, and mismatched engines/units/part namespaces cannot combine.
 Incorrect or unreviewed records cannot be promoted to actionable evidence.
 
 ### B3 — Extract procedures and diagnostic structure
+
+**Status:** in progress; native decision extraction and continuation checks are
+implemented. Complete real-procedure extraction and application traversal remain
+pending; see [B3 checkpoint](B3_PROGRESS.md).
 
 **Depends on:** B2. **Model:** GPT-6 Astra / High, because branched diagnostics,
 cross-page context and completeness judgments are the most demanding part of

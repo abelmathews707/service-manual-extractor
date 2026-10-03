@@ -1,15 +1,19 @@
 # B3 — Procedures and diagnostic structure
 
-2026-09-28: selected by the owner; preparation only. Implementation has not started.
+2026-10-03: B3 implementation is in progress. The first extraction and continuation
+boundary checkpoint is implemented; full B3 acceptance remains pending.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b3`.
 Branch: `codex/procedure-structure-b3`, based on accepted B2
 `2945f7c9a73e3d6c87b2f4b160501b35d49955e0`.
 
-Stopped because the five-hour allowance reached 9% remaining; weekly remaining
+Historical 2026-09-28 stop: the five-hour allowance reached 9% remaining; weekly remaining
 was 16%. Resume only with sufficient allowance. Preserve the existing stop limits:
 approximately 10% five-hour or 5% weekly remaining.
 
 ## Verified before stopping
+
+The following is the historical preparation record, superseded by the current
+implementation checkpoint below.
 
 - Accepted B2 extractor and app worktrees are clean. Extractor remote matches
   its accepted commit. Repair Buddy remains at `eb368ec5d436debd0a5a12e41f3dec3b5063cbee`
@@ -48,3 +52,61 @@ Do not invent a branch or claim diagnostic readiness from indexing or schema che
 
 Recommended model remains GPT-6 Astra / High. B4 shared web/CLI evidence packets
 follow B3; provider integration and semantic evaluation remain later work.
+
+## Current implementation checkpoint — 2026-10-03
+
+`sme/procedure_extract.py` reads bounded native HTML decision tables and native
+numbered PDF steps with explicit Yes/No alternatives. It preserves exact branch
+wording, instruction context, nested notes and source locators. Missing, duplicate
+or merged alternatives abstain. OCR does not silently use the native parser.
+Confirmed unit/configuration checks precede HTML parsing; conflicting engines
+in a question, instruction or branch cause rejection. Explicit unmapped original
+inspection produces no vehicle configuration IDs.
+
+Source hyperlinks are never followed by the extractor. Unreviewed references,
+conditional continuations and unordered instruction groups remain incomplete.
+`sme/procedure_context.py` adds a single-hop continuation resolver: metadata locates
+the target, target-specific vehicle scope is checked before loading, and current
+record-bound intended-use quality is checked independently afterward. Excluded
+targets load zero text. It is a tested primitive, **not yet wired to application
+cross-page traversal**. Loader and quality callbacks must validate current source
+and dependency identities; a starting-page approval grants no target approval.
+
+Twelve new authored regression tests pass. The full extractor suite runs 239 tests
+with zero failures and two optional Node-dependent skips; Ruff passes.
+
+Local-only root:
+`/Users/asokmathews/Documents/service-manual-data/b3-acceptance-2026-10-03`.
+Original GM pages 87–89 were rendered and visually inspected. Step 4 distinguishes
+VIN W/X pressures; step 6 continues to page 89, which then starts another-engine
+procedure. These are retained as review boundaries, not merged instructions.
+`expected-fields.json` was entered before extraction; this is agent engineering
+comparison, not independent human approval. `records-v2/verification.json` reports
+seven Ford and seven GM records with exact compared fields and zero approvals.
+The Ford example retains all three destinations in its No branch but remains
+unmapped original inspection. Only GM page 87 has existing confirmed applicability;
+its prerequisite and next-page targets remain incomplete. Earlier `records-v1`
+is historical. Licensed fields, rendered pages and databases stay outside Git.
+
+Repair Buddy's separate `/Users/asokmathews/Documents/repair-buddy-b3` worktree
+uses the same branch name. Its reader now presents source steps, decisions and
+both branches alongside the original and separate quality state. Existing quality
+contracts prevent incomplete instructions from receiving structured approval.
+Its tests also caught/fixed a missing-values rendering bug for part references.
+The exact extractor is pinned in that application's lock file. Application final
+integration results and remaining gates are recorded in its B3 progress document.
+
+## Remaining B3 pass gates
+
+1. Freeze and original-review at least one complete applicable procedure/graph,
+   including tools, warnings, prerequisites and every required continuation.
+2. Extract explicit ordered steps/tools and distinguish conditional alternatives;
+   current HTML instruction groups deliberately require further review.
+3. Persist reviewed cross-page/manual target bindings, integrate scoped traversal
+   using the resolver, and handle bounded expansion/cycles without dropped branches.
+4. Compare complete graphs and every safety-relevant field against original-reviewed
+   expectations; test missing/changed targets, stale/revoked dependencies and excluded
+   text loads through the real application path. Retain original reading throughout.
+
+Do not mark B3 complete from the partial examples above. Continue with GPT-6 Astra
+/ High. B4 and diagnostic/provider activation remain later work.
