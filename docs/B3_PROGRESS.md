@@ -372,3 +372,65 @@ where a target or external prerequisite is unavailable. B3 remains incomplete;
 B4 shared web/CLI evidence packets and AI/provider activation remain later work.
 Recommended development model remains GPT-6 Astra / High (task judgment, not a
 measured model comparison). Preserve the reported-usage stop thresholds.
+
+## One-hop dependency audit — 2026-10-04
+
+`acceptance/b3_dependency_audit.py` now performs a bounded structural inspection of
+the Quick Test original and its seven direct reference pages. Each unit must have
+its own current confirmed eligibility before original bytes are read; bytes must
+match the preserved original hash before parsing. Duplicate targets are read once,
+fragment existence is reported without approving an association, and deeper links
+are metadata-only. Missing, unconfirmed, external and unsupported destinations
+remain explicit. No source HTML/scripts are executed and no figures are loaded.
+
+The local-only `quick-test-dependencies-v1/dependency-audit.json` under the B3 root
+preserves eight parsed documents, including complete visible text, static table
+structure, image references and source hashes. Seven direct target pages were read;
+176 downstream href occurrences (87 distinct href strings) were inventoried, with
+zero recursive reads and zero approvals. These are links, not 176 additional manuals
+or required test steps. Context and visual completeness remain unreviewed.
+
+Findings from source markup/text inspection:
+
+- The engine-control overview includes a specific modifications subsection and a
+  non-hyperlinked reference to the vehicle warranty guide.
+- Pinpoint Test AE's direct target is an introduction with entry restrictions,
+  connector-handling cautions/notes and images, not the actual test sequence. Its
+  two onward links name the same separate test page.
+- Scan-tool hookup requires manufacturer-specific cables/adapters/instructions,
+  records communication-error prerequisites and links back to AE.
+- Quick Test Description distinguishes five test modes, mode-specific conditions
+  and an image. These cannot be flattened into one universal instruction list.
+- Freeze Frame Data has a PID/unit table, data-retention behavior and external
+  scan-tool instructions. It is not a complete diagnostic procedure.
+- The DTC routing table has 133 href occurrences (71 distinct hrefs), merged
+  headers separating test modes, and lettered footnotes. One href is a legacy
+  query-dependent ASP frameset reference, currently unsupported. The 132 other
+  occurrences resolve to independently confirmed unit metadata, not reviewed
+  content or verified destination fragments.
+- The symptom index has 40 occurrences to 15 chart anchors in `V3D3003.htm`.
+  Its target unit `unit_bde3920ebcf95f609fa39db93e0e6758` is absent from the current
+  selected confirmed eligibility set; no target original was read. The audit's
+  `excluded` fallback means outside this search scope, not proof of an explicit
+  wrong-vehicle verdict. Reconcile applicability separately; do not inherit the
+  index page's eligibility or change the review to force a match.
+
+Seven authored regression tests cover zero-read source/target denial, changed
+originals before parsing, missing metadata, deduplication/cycles, target budget,
+table/image-reference retention and missing fragments. Full gate: 293 extractor
+tests, two optional skips, zero failures; Ruff and diff checks pass.
+
+Visual approval is blocked: only the prior Drive Cycles and Quick Test PDFs are
+present in the B3 folders. The seven target pages need user-supplied PDF copies
+for original-layout comparison. Do not work around the earlier browser URL-policy
+denial by another browser/indirect server. Repair Buddy's latest B3 progress section
+has direct original-file links and requested PDF filenames. No new readable-reference,
+association, applicability, diagnostic or production approval was granted. No
+runtime extractor behavior, live data, original manuals or toolkit changes.
+
+Next: obtain those rendered originals, inspect every relevant page/table/figure,
+preserve governing context, and reconcile the symptom-chart eligibility separately.
+Approve only exact supported readable associations/content; full diagnostic graph
+acceptance remains open and must not require blindly expanding all 176 links.
+Choose a bounded applicable path with complete prerequisites and branches for the
+real-procedure benchmark. B4 and AI/provider activation remain deferred.

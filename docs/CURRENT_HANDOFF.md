@@ -17,6 +17,13 @@ scope but unreviewed content. No new approvals or destination reads. Next: revie
 dependencies and full graph coverage; do not restart QT2/QT3 extraction. Local output
 is `b3-acceptance-2026-10-03/quick-test-records-v1`. B3 remains incomplete.
 
+Latest dependency audit: the seven direct target originals have now been structurally
+inspected after independent scope/hash checks. `quick-test-dependencies-v1` records
+176 further href occurrences without following them. The symptom charts themselves
+are outside the current selected eligibility set; one DTC ASP link is unsupported.
+Visual approval needs seven saved target PDFs (direct links in the app B3 progress
+document). Preserve these blockers; do not grant approval from text inspection alone.
+
 Latest work: B1 is complete within bounded engineering acceptance; read
 [B1_PROGRESS.md](B1_PROGRESS.md) and
 [STRUCTURED_EVIDENCE_CONTRACT.md](STRUCTURED_EVIDENCE_CONTRACT.md). Its reviewed
