@@ -976,6 +976,12 @@ QT1–QT3 now have a combined PDF-compared candidate bundle and a full hyperlink
 inventory (two same-page candidates, seven independently scoped other pages).
 Target quality/association review and complete real-graph acceptance remain open;
 see the latest B3 checkpoint before repeating extraction work.
+All seven direct-target PDF printouts have now been visually reviewed (19 pages).
+The symptom-chart scope failure was traced to an oil quantity falsely treated as
+an engine displacement and fixed in evidence capture, with a separate candidate
+recapture verified against the preserved originals. Candidate library publication
+and explicit stale-review reconciliation remain pending; the old library and
+approvals have not been silently replaced. See the latest B3 scope-repair section.
 
 **Depends on:** B2. **Model:** GPT-6 Astra / High, because branched diagnostics,
 cross-page context and completeness judgments are the most demanding part of

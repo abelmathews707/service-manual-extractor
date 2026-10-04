@@ -8,6 +8,12 @@ A real association now has separate engineering readable-reference approvals in
 final section below before relying on older outstanding-review notes.
 Conditional source-reference paths are now represented separately; see the latest
 checkpoint at the end. They do not satisfy complete execution-graph acceptance.
+Latest scope repair: all seven dependency PDFs (19 pages) were reviewed in the
+app checkpoint. The excluded symptom chart was a false positive: an oil-consumption
+quantity was counted as an engine. A narrowly tested capture fix and separate
+full-source candidate recapture now resolve that cause. The accepted library is
+unchanged; candidate publication/review reconciliation and full procedure acceptance
+are still next. See the final scope-repair section, not historical PDF requests.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b3`.
 Branch: `codex/procedure-structure-b3`, based on accepted B2
 `2945f7c9a73e3d6c87b2f4b160501b35d49955e0`.
@@ -434,3 +440,55 @@ Approve only exact supported readable associations/content; full diagnostic grap
 acceptance remains open and must not require blindly expanding all 176 links.
 Choose a bounded applicable path with complete prerequisites and branches for the
 real-procedure benchmark. B4 and AI/provider activation remain deferred.
+
+## Symptom-chart false-positive repair - 2026-10-04
+
+Metadata-only matching established that `V3D3003.htm` is excluded for
+`mixed_content`, not a wrong-make/model/year verdict. Its publication has explicit
+2003 F-250 6.0L diesel evidence. A separate, hash-checked administrative source
+inspection (not selected diagnostic retrieval) found two litre mentions: the
+engine heading and an oil-consumption threshold. The old displacement expression
+misread the decimal threshold as a two-digit suffix, then treated it as a second
+engine. No user-selected search or diagnostic packet was broadened during inspection.
+
+`sme/evidence.py` now reads full decimals without starting inside a number. It
+discounts only a tightly bounded oil-consumption comparison with an immediately
+adjacent quart conversion. An oil keyword alone, a conversion alone, unknown
+quantities and actual other-engine wording cannot clear the mixed-content guard.
+This is not a general physical-quantity classifier or an applicability approval.
+The existing engine/unit-spelling scope is retained rather than expanded here.
+
+`acceptance/b3_symptom_scope.py` validates the current metadata/review snapshots,
+rehashes the preserved Ford originals, captures a new evidence snapshot and checks
+that unit identities, originals and applicability assertions are unchanged. It
+never publishes a library or copies old quality/association approvals. Candidate
+matching uses fresh evidence without an old review overlay.
+
+Final local output: `b3-acceptance-2026-10-03/mixed-content-recapture-v2`.
+Candidate evidence revision:
+`017261d33e5c6ce0cba33aab07d0cc1373c652db8dbd7ddb3e62ae534a5da967`.
+Only eleven unit flags across two source documents change: `V3D3003.htm` and
+`V4C3003.htm`. Both have the same bounded oil-quantity issue; this is not eleven
+manuals. No newly mixed units appear in the final capture. The earlier v1 output
+is a superseded broader experiment, NOT the approved candidate for follow-up.
+
+For the target symptom chart, fresh candidate matching confirms the Ford diesel
+fixture and excludes gasoline V10, CNG V10 and all three GM fixtures. The original
+saved library still excludes it: sidecars are immutable, and changing capture
+code cannot update existing search shards or silently reactivate old approvals.
+No original/PDF, existing library, review event, live database or toolkit was edited.
+
+Fourteen new authored tests cover decimal parsing, narrow quantity context,
+genuine mixed engines, candidate identity and stale/tampered snapshots, unchanged
+applicability statements and other-vehicle exclusion. Full extractor gate: 307
+tests, two optional skips, zero failures; Ruff and diff checks pass. App exact-pin
+verification is recorded in its scope-repair checkpoint.
+
+Next: publish a separate disposable candidate library, preserving historical
+review events and making changed-source approvals explicitly stale. Re-review
+only exact supported bindings; do not copy approval to a new evidence revision.
+Verify new eligibility/shards and old Ford/GM/V10 boundaries before using the
+chart in selected retrieval. Then inventory a bounded chart path and retain all
+required prerequisites and branches for original-layout/complete-graph comparison.
+No additional PDF request is made by this checkpoint. B3 remains incomplete.
+Recommended development model remains GPT-6 Astra / High; B4 remains later work.

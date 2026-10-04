@@ -22,7 +22,12 @@ from .source import INVENTORY_NAME, MANIFEST_NAME, SourceError, validate_invento
 from .vehicle_interpretation import interpret_statement
 
 EVIDENCE_NAME = '.sme-applicability-evidence.json'
-_ENGINE = re.compile(r'\b(\d{1,2}(?:\.\d)?)\s*(?:L\b|liter\b|litre\b)', re.I)
+# Never restart inside a decimal (0.95 liter used to become 95 liter).
+_ENGINE = re.compile(r'(?<![\w.,])(\d{1,2}(?:\.\d+)?|\.\d+)\s*'
+                     r'(?:L\b|liter\b|litre\b)', re.I)
+_OIL_RATE = re.compile(r'\boil consumption(?: rate)?\s+(?:is\s+)?(?:not\s+)?'
+                       r'(?:higher|greater|more|less|lower)\s+than\s*$', re.I)
+_QUART_EQUIVALENT = re.compile(r'^\s*\(\s*\d+(?:\.\d+)?\s+(?:quarts?|qt)\s*\)', re.I)
 _EXCLUSION = re.compile(r'\b(?:except|excluding|not\s+for|does\s+not\s+apply\s+to)\b',
                         re.I)
 
@@ -36,7 +41,19 @@ def _file_sha(path):
 
 
 def _mixed(text):
-    return len(set(_ENGINE.findall(text))) > 1
+    """Conservative displacement screen, not a vehicle applicability decision.
+
+    Ignore only an explicit oil-consumption comparison with an adjacent quart
+    conversion. Other litre quantities remain ambiguous and keep the mixed flag.
+    Do not use a nearby oil keyword to suppress actual engine restrictions.
+    """
+    values = set()
+    for match in _ENGINE.finditer(text):
+        if (_OIL_RATE.search(text[max(0, match.start() - 100):match.start()]) and
+                _QUART_EQUIVALENT.match(text[match.end():])):
+            continue
+        values.add(match.group(1))
+    return len(values) > 1
 
 
 def _ford_svg_statements(path):
