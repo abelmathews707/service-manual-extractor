@@ -980,8 +980,13 @@ All seven direct-target PDF printouts have now been visually reviewed (19 pages)
 The symptom-chart scope failure was traced to an oil quantity falsely treated as
 an engine displacement and fixed in evidence capture, with a separate candidate
 recapture verified against the preserved originals. Candidate library publication
-and explicit stale-review reconciliation remain pending; the old library and
-approvals have not been silently replaced. See the latest B3 scope-repair section.
+is complete in a disposable output, with historical events preserved and changed-source
+Ford decisions explicitly stale. The candidate is not deployment-ready: the V10
+reference needs a new exact-binding review. A bound structural graph audit now
+guards instruction-quality approvals against incomplete dependencies and closed
+cycles; it does not satisfy original-reviewed complete-graph acceptance by itself.
+The old library and approvals have not been silently replaced. See the latest
+B3 candidate publication and graph checkpoint.
 
 **Depends on:** B2. **Model:** GPT-6 Astra / High, because branched diagnostics,
 cross-page context and completeness judgments are the most demanding part of

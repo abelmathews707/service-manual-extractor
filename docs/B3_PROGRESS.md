@@ -12,8 +12,11 @@ Latest scope repair: all seven dependency PDFs (19 pages) were reviewed in the
 app checkpoint. The excluded symptom chart was a false positive: an oil-consumption
 quantity was counted as an engine. A narrowly tested capture fix and separate
 full-source candidate recapture now resolve that cause. The accepted library is
-unchanged; candidate publication/review reconciliation and full procedure acceptance
-are still next. See the final scope-repair section, not historical PDF requests.
+unchanged. A separate candidate library is now built with all old review events
+preserved and the two changed-source Ford events explicitly stale. A bound graph
+audit now detects missing dependencies and closed cycles, without granting approval.
+Complete original-reviewed procedure acceptance remains pending. See the candidate
+publication and graph checkpoint below, not historical PDF requests.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b3`.
 Branch: `codex/procedure-structure-b3`, based on accepted B2
 `2945f7c9a73e3d6c87b2f4b160501b35d49955e0`.
@@ -492,3 +495,49 @@ chart in selected retrieval. Then inventory a bounded chart path and retain all
 required prerequisites and branches for original-layout/complete-graph comparison.
 No additional PDF request is made by this checkpoint. B3 remains incomplete.
 Recommended development model remains GPT-6 Astra / High; B4 remains later work.
+
+## Candidate publication and graph audit — 2026-10-04
+
+`acceptance/b3_publish_candidate.py` publishes only to a new disposable directory.
+The real `candidate-library-v1` generation is
+`88c2c1548b715681f1899c633066124e50f53c640b1a7226f912bdc0127be48d`, with six packages,
+72 scopes and 850 shards. All eight previous applicability events are preserved;
+the two Ford events are stale against the changed Ford evidence revision. The old
+snapshot is retained in `evidence-history.json`. No review event was added, no
+content-quality or link approval was transferred, and the accepted library was
+not replaced. **The candidate is not a deployment replacement:** its V10 reference
+page is deliberately withheld until its exact binding receives a new review.
+
+`search-read-verification-v2.json` independently reruns search on the actual new
+generation. Before each shard's bytes are read, metadata must admit every unit
+and exclude the opposite manufacturer. Diesel reads five allowed shards; each
+of the three GM fixtures reads one; V10 and CNG read zero. Only the diesel fixture
+admits the repaired symptom chart. Seven authored publication regressions include
+wrong-brand requests, mixed shards, same-brand wrong-scope content, wrong-engine
+admission and an existing-output overwrite guard. The helper now also checks the
+baseline pointer/review bytes before and after any subsequent publication run;
+the first build's historical report predates that explicit byte-comparison check.
+
+`sme/procedure_graph.py` adds a bound-dependency structural assessment. It checks
+required branches, incomplete context/tools/targets, reference-only conditional
+paths, unsupported nested execution order, and whether each represented flow
+component has an explicit reachable terminal. Closed cycles are incomplete;
+cycles with an explicit exit are retained without executing/evaluating conditions.
+The quality validator uses the same assessment before accepting structured or
+diagnostic instruction reviews. Readable-reference approvals remain separate.
+The assessment is **not** proof that the original has been completely extracted,
+a termination guarantee for real vehicles, or any diagnostic approval.
+
+Nine authored graph regressions pass, including missing alternatives, incomplete
+tools/outcomes, closed loops, repeats with exits and independent quality gates.
+Full extractor suite: **323 tests, zero failures, two optional skips**; Ruff passes.
+Repair Buddy exposes the assessment alongside each procedure/decision and in the
+one-hop reader, with explicit limitations and no extra original reads.
+
+Full real-procedure acceptance remains open. The Ford symptom page contains
+fifteen routing charts, not a self-contained diagnostic procedure. The original
+GM page-87 example still requires its system check, coil test, next-page steps,
+VIN-specific readings and external failure destinations. None may be discarded
+or relabeled a successful terminal merely to pass B3. Existing bounded original
+comparisons remain valid historical evidence; no diagnostic/provider activation
+or B4 work has begun.

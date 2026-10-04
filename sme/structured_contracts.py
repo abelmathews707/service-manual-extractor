@@ -413,6 +413,11 @@ def validate_quality_overlay(value, record_history):
             if event['intended_use'] != 'readable_reference' and any(
                     item['completeness']['state'] != 'complete' for item in bound):
                 raise ContractError('quality approval depends on incomplete context')
+            if event['intended_use'] != 'readable_reference' and record['type'] in (
+                    'procedure_step', 'diagnostic_node', 'diagnostic_edge'):
+                from .procedure_graph import graph_completeness
+                if graph_completeness(record['id'], bound)['state'] != 'complete':
+                    raise ContractError('instruction approval requires a complete bounded graph')
             if event['purpose'] == 'production' and event['reviewer']['kind'] != 'human':
                 raise ContractError('agent engineering review is not production human approval')
         events[event['id']] = event
