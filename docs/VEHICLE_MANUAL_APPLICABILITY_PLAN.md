@@ -967,6 +967,11 @@ bindings, bounded ordered-step/tool extraction with source hierarchy, and applic
 are implemented. Complete real-procedure
 extraction/graph acceptance remains pending; see [B3 checkpoint](B3_PROGRESS.md)
 and [reviewed continuation contract](CONTINUATION_REVIEW.md).
+**Owner decision, 2026-10-04:** use bounded engineering acceptance (option 1)
+for B3. The former full-required-dependency acceptance is deferred to **T1** below.
+This changes the development milestone boundary, not record completeness or
+diagnostic-quality approval. Historical complete-graph requirements below must
+be read in that light; B3 completion will not claim those deferred checks passed.
 User-supplied PDF layout review and real one-hop readable-reference acceptance
 have now passed; they do not complete conditional-graph or diagnostic acceptance.
 Source-quoted alternatives/repeats now have explicit source targets or unresolved
@@ -1008,10 +1013,31 @@ reference must independently recheck target vehicle applicability and quality;
 an eligible starting procedure never grants access to an excluded target.
 Partial graphs remain inspectable originals, not approved diagnostic sequences.
 
-**Pass:** complete reviewed graphs retain every edge/condition on the benchmark;
-missing branches and wrong-engine rows cause an incomplete/unapproved result;
-source links and original reading remain available regardless of extraction
-success. No general diagnostic-readiness claim follows from page indexing.
+**Frozen bounded benchmark:** use the already original-compared Ford diesel
+QT1–QT3 decision sections, Ford diesel drive-cycle steps 1–8 and their three
+nested substeps/eight quoted conditional paths, and GM 2002 4.3L VIN W page-87
+step 3 with its temperature warning and both alternatives. The GM case is one
+explicitly bounded step, NOT the whole injector-balance procedure. Keep its
+system-check/coil-test prerequisites, page-88 continuation and other required
+context explicitly unresolved. Retain the V10/CNG/three-GM vehicle exclusions,
+original reading and real reviewed one-hop reference/mutation cases. Use the
+accepted immutable library for this benchmark; the new corrected-evidence
+candidate remains a separate staleness/vehicle-boundary test, not a replacement.
+
+**Pass (bounded B3 engineering):** independently transcribed expectations match
+every evaluated instruction, warning, condition, number/unit, internal branch and
+quoted path in that frozen set. Preserve internal structure without inventing
+execution order. Inventory every known boundary: prerequisites, unresolved internal
+targets, unsupported grouping and external tests must remain explicitly blocked or
+readable-reference-only. Missing branches and wrong-engine content fail the test;
+do not relabel an unresolved handoff as success. Original comparison/links remain
+available. Regression tests prove excluded text is not read, stale/missing/revoked
+links are withheld, and incomplete records cannot gain instruction-quality approval.
+An engineering acceptance report may pass while individual records/graphs remain
+incomplete; it must state both facts and list the deferred coverage. No automatic
+approval event, diagnostic readiness, complete real-world workflow or general
+vehicle-coverage claim follows. Complete authored graphs test the graph machinery;
+they are never substituted for real-manual completeness evidence.
 
 ### B4 — Prepare common evidence tools for later AI and evaluate
 
@@ -1061,6 +1087,35 @@ integration tasks. Passing B4 approves bounded retrieval, not the correctness
 of generated diagnoses or general vehicle coverage.
 
 ### After B4 — Remaining RAG milestones, separately selected
+
+#### T1 — Intensive full-dependency diagnostic testing (deferred option 2)
+
+Owner requested this future work on 2026-10-04. Schedule/select its detailed scope
+later, after bounded B3/B4; this entry does not start it or create an automation.
+Run it with representative M3 end-to-end testing before making diagnostic-readiness
+or production-coverage claims for the tested concerns. It is independent of M4's
+retrieval-quality comparison: better semantic matching cannot replace this review.
+
+For selected Ford and GM concerns, follow every required prerequisite and test
+continuation, including cross-page/manual links, until the complete required
+workflow is reviewed. Compare all branches, warnings, tools, connector/diagram
+references, readings/units, engine restrictions, conditional/repeat paths and
+repair-verification outcomes against originals. Review applicability, content
+quality and link associations separately; human production approval stays separate
+from agent engineering checks. Include wrong-vehicle, missing source, broken link,
+changed/revoked/stale review and contradictory-result tests through the actual app
+and later evidence tools. Track exact covered vehicles/procedures and unresolved
+gaps rather than claiming every manual has been validated.
+
+**Pass:** every required dependency on a claimed complete test path is independently
+eligible, current, original-reviewed and approved for its intended use; no blocked
+handoff is passed off as a completed diagnosis. Missing dependencies still require
+abstention. This preserves the stronger option-2 goal for intensive testing rather
+than silently dropping it to finish B3. Recommended development model: retain
+GPT-6 Astra / High as a provisional judgment; reassess available models when T1
+is actually selected. No runtime model choice is implied.
+
+#### M3–M4 — Integration and retrieval evaluation
 
 - **M3, grounded assistant loop:** assemble saved vehicle/case facts with the
   approved evidence, implement the provider call and complete-request token

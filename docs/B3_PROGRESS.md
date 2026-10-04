@@ -1,5 +1,14 @@
 # B3 — Procedures and diagnostic structure
 
+**Current owner decision (2026-10-04):** option 1, bounded engineering acceptance,
+is approved. The controlling plan now freezes the existing Ford QT1–QT3,
+drive-cycle/nested/conditional and GM page-87 step-3 benchmarks. Every known
+unresolved prerequisite/continuation stays blocked or reference-only; individual
+records remain incomplete and diagnostic approval is unchanged. Full required-link
+review is retained as deferred **T1 intensive diagnostic testing**, not discarded.
+This supersedes historical requests below to finish every required continuation
+before B3 can close. B3 remains in progress until the revised gate is verified.
+
 2026-10-04: B3 implementation is in progress. Native extraction, reviewed reference
 bindings and application one-hop traversal are implemented; full B3 acceptance remains pending.
 Latest checkpoint: user-supplied PDFs resolve the earlier visual-review blocker.
@@ -112,6 +121,10 @@ The exact extractor is pinned in that application's lock file. Application final
 integration results and remaining gates are recorded in its B3 progress document.
 
 ## Remaining B3 pass gates
+
+Historical full-procedure gates, now deferred where they exceed the frozen B3
+benchmark to T1 by the owner's 2026-10-04 decision. For current acceptance use
+the bounded pass criteria in `VEHICLE_MANUAL_APPLICABILITY_PLAN.md`.
 
 1. Freeze and original-review at least one complete applicable procedure/graph,
    including tools, warnings, prerequisites and every required continuation.
@@ -541,3 +554,30 @@ VIN-specific readings and external failure destinations. None may be discarded
 or relabeled a successful terminal merely to pass B3. Existing bounded original
 comparisons remain valid historical evidence; no diagnostic/provider activation
 or B4 work has begun.
+
+## Owner-approved bounded gate — 2026-10-04
+
+The owner selected option 1 and explicitly retained option 2 for later intensive
+testing. The controlling plan now freezes the existing Ford QT1–QT3, drive-cycle
+and GM page-87 step-3 examples; T1 retains complete required-dependency review.
+`acceptance/b3_bounded_acceptance.py` re-extracts those examples using the existing
+independent transcriptions and immutable originals. It compares every source and
+semantic field to the saved reviewed examples; only extraction-version identifiers
+and the hashes derived from them may differ, and those differences are reported.
+No review approval carries over to regenerated records.
+
+Local output `bounded-acceptance-v2` passes the extractor gate: 21 Quick Test,
+17 drive-cycle and seven GM records (45 total). All 35 procedure/node/edge records
+remain incomplete. Seventy in-memory attempts to approve them for structured
+reference or diagnostic instruction are correctly rejected; no events are saved.
+`boundaries.json` retains Quick Test references/context, eight quoted conditional
+paths and the GM prerequisite/continuation boundary. The earlier v1 output is a
+failed historical run that rejected extraction-version differences; it is not
+the accepted output. Do not overwrite either version.
+
+Six new authored acceptance tests cover altered wording/branches/source revision,
+explicit extraction-version reporting, incomplete-to-complete relabeling, unrelated
+validation errors and output overwrite refusal. Full suite: 329 tests, zero
+failures, two optional skips; Ruff passes. Application verification of the exact
+regenerated records is next. This is bounded engineering acceptance, never a
+claim that the real linked diagnostic workflows are complete or approved.
