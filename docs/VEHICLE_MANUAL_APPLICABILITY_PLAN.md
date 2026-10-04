@@ -1,9 +1,9 @@
 # One manual library, organized by vehicle
 
 Status: A1–A10 and B1 complete within their bounded engineering acceptances;
-B2 is complete within bounded engineering acceptance; B3 is in progress and B4
-has not started. See [B3 progress and remaining gates](B3_PROGRESS.md).
-Reconciled with the owner on 2026-09-28.
+B2 and B3 are complete within bounded engineering acceptance; B4 has not started.
+See [B3 acceptance and deferred work](B3_PROGRESS.md).
+Reconciled with the owner on 2026-09-28; B3 boundary approved on 2026-10-04.
 Current branch: `codex/procedure-structure-b3` in both repositories;
 pushed feature work, not merged or activated in the live database.
 Original planning branch: `codex/vehicle-manual-library-plan`, based on merged
@@ -527,7 +527,8 @@ sections below retain the original deliverables/pass gates as implementation
 history, not unfinished work. B1 is complete within the contracts, reviewed
 fixtures and disposable integration gate recorded in [B1 completion](B1_PROGRESS.md).
 B2 is complete within its stated limits; see [its checkpoint](B2_PROGRESS.md).
-B3 is in progress; its complete-procedure acceptance remains pending. B4 has not started.
+B3 passed the owner-approved bounded gate on 2026-10-04. Complete required-procedure
+closure remains deferred T1 intensive testing. B4 has not started.
 Each task must report changed files,
 tests/evidence, remaining issues, and the next step with its model recommendation.
 Stop at that step's pass gate. A pass gate is not permission to merge or release.
@@ -568,6 +569,7 @@ inventory and rendering work should not require it.
 | B2 | Typed specifications and part-reference extraction | Extractor; Repair Buddy reader | GPT-6 Sol / High |
 | B3 | Procedures, diagnostic branches and context-preserving units | Extractor; Repair Buddy reader | GPT-6 Astra / High |
 | B4 | Shared web/CLI evidence retrieval, approval enforcement and end-to-end evaluation | Both repos | GPT-6 Sol / High |
+| T1 (deferred) | Intensive full required-dependency testing for selected diagnostic concerns | Both repos + original review | GPT-6 Astra / High, reassess when selected |
 
 ### A1 — Reconcile what is available and choose acceptance examples
 
@@ -962,16 +964,20 @@ Incorrect or unreviewed records cannot be promoted to actionable evidence.
 
 ### B3 — Extract procedures and diagnostic structure
 
-**Status:** in progress; native decision extraction, reviewed cross-unit reference
+**Status:** complete within owner-approved bounded engineering acceptance on
+2026-10-04. Native decision extraction, reviewed cross-unit reference
 bindings, bounded ordered-step/tool extraction with source hierarchy, and application one-hop traversal
-are implemented. Complete real-procedure
-extraction/graph acceptance remains pending; see [B3 checkpoint](B3_PROGRESS.md)
+are implemented. Full real-workflow
+extraction/graph acceptance remains deferred to T1; see [B3 checkpoint](B3_PROGRESS.md)
 and [reviewed continuation contract](CONTINUATION_REVIEW.md).
 **Owner decision, 2026-10-04:** use bounded engineering acceptance (option 1)
 for B3. The former full-required-dependency acceptance is deferred to **T1** below.
 This changes the development milestone boundary, not record completeness or
 diagnostic-quality approval. Historical complete-graph requirements below must
-be read in that light; B3 completion will not claim those deferred checks passed.
+be read in that light; B3 completion does not claim those deferred checks passed.
+`bounded-acceptance-v2` and the app's `app-verification-v13.json` pass this frozen
+gate. All 45 regenerated records preserve source and semantic fields; all 35
+incomplete procedure/branch records still reject instruction-quality promotion.
 User-supplied PDF layout review and real one-hop readable-reference acceptance
 have now passed; they do not complete conditional-graph or diagnostic acceptance.
 Source-quoted alternatives/repeats now have explicit source targets or unresolved

@@ -7,9 +7,10 @@ unresolved prerequisite/continuation stays blocked or reference-only; individual
 records remain incomplete and diagnostic approval is unchanged. Full required-link
 review is retained as deferred **T1 intensive diagnostic testing**, not discarded.
 This supersedes historical requests below to finish every required continuation
-before B3 can close. B3 remains in progress until the revised gate is verified.
+before B3 can close. **B3 is now complete within this bounded acceptance.**
+`bounded-acceptance-v2` and `app-verification-v13.json` pass; see the final section.
 
-2026-10-04: B3 implementation is in progress. Native extraction, reviewed reference
+Historical pre-decision checkpoint, 2026-10-04: B3 implementation was in progress. Native extraction, reviewed reference
 bindings and application one-hop traversal are implemented; full B3 acceptance remains pending.
 Latest checkpoint: user-supplied PDFs resolve the earlier visual-review blocker.
 A real association now has separate engineering readable-reference approvals in
@@ -581,3 +582,36 @@ validation errors and output overwrite refusal. Full suite: 329 tests, zero
 failures, two optional skips; Ruff passes. Application verification of the exact
 regenerated records is next. This is bounded engineering acceptance, never a
 claim that the real linked diagnostic workflows are complete or approved.
+
+## B3 bounded completion — 2026-10-04
+
+Repair Buddy's `app-verification-v13.json` passes the exact regenerated benchmark
+with extractor implementation `f1fe9a29f4240e4f27b1232b5a7911e18048c3b2`.
+It rechecks the frozen expected-file hashes, boundary inventory and all 45 record
+comparisons before testing the application. Ford QT1–QT3, eight drive-cycle roots,
+three substeps, eight quoted conditional paths and the bounded GM step preserve
+their compared wording and incomplete/reference-only status. Real one-hop reference
+tests continue to reject missing, changed, stale/revoked and excluded targets.
+The previously approved older readable-reference pair stays separately versioned;
+its approvals are not applied to these regenerated records.
+
+The full accepted-library regression passes 72 scopes/284,592 memberships,
+Ford/three GM cases, the V10 fixture's table/diagrams, 280 owner links, database
+integrity and unchanged 23 legacy tables. Extractor: 329 tests, two optional skips,
+zero failures. App: 297 tests, zero failures. Ruff passes in both repositories.
+Final documentation-only revisions do not change the tested implementation or
+search transform; keep the app's exact dependency pin current.
+
+This closes **bounded B3 engineering only**. Complete real-procedure acceptance
+remains pending T1; no diagnostic approval, production certification, new manual
+scope approval, live-library promotion, merge or release occurred. The disposable
+corrected-evidence candidate still requires an exact V10 re-review before replacing
+the accepted library. Licensed inputs/reports remain local and unchanged.
+
+Next: B4, shared vehicle-scoped web/CLI evidence packets, on explicit selection.
+Pass criteria: equal requests/revisions yield the same evidence IDs, source checks,
+intended-use quality and context limits; excluded or stale content never enters
+packets; unresolved prerequisites cannot be promoted to diagnostic evidence.
+Retain insufficient-evidence responses when required context does not fit or is
+unreviewed. Provider integration is M3 and semantic benefit evaluation is M4;
+neither is implied by B4. Recommended development model: GPT-6 Sol / High.
