@@ -153,7 +153,8 @@ This is a guard on reviewed recipes, not automatic approval of arbitrary rows.
     # an engine displacement. Rich/negative/unresolved cues still abstain.
     fuels = {value.casefold() for value in re.findall(r'\b(diesel|gasoline|CNG)\b', text, re.I)}
     rich_cue = re.search(r'\b(?:\d{1,2}(?:\.\d)?\s*L|VIN|RPO|Series|(?:19|20)\d{2}|'
-                         r'not|non|except|excluding|without)\b', text, re.I)
+                         r'not|non|never|except|exclud(?:e[ds]?|ing)|without|other\s+than|'
+                         r'unsupported|inapplicable|incompatible|prohibited)\b', text, re.I)
     if resolved and not has_constraint and len(fuels) == 1 and not rich_cue:
         configs = {item['id']: item for item in vocabulary['configurations']}
         engines = {item['id']: item for item in vocabulary['engines']}

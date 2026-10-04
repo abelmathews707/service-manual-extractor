@@ -99,7 +99,9 @@ class ProcedureExtractionTests(unittest.TestCase):
         self.assertTrue(_covers_configurations('Diesel control system', self.vocabulary,
                                                 [self.config]))
         for statement in ('Gasoline control system', 'Except diesel control systems',
-                          'Not diesel', 'Diesel and gasoline', 'Diesel VIN unknown'):
+                          'Not diesel', 'Diesel and gasoline', 'Diesel VIN unknown',
+                          'Diesel is excluded', 'Other than diesel', 'Diesel unsupported',
+                          'Diesel prohibited', 'Never diesel'):
             self.assertFalse(_covers_configurations(statement, self.vocabulary, [self.config]))
         self.assertFalse(_covers_configurations('Diesel control system', self.vocabulary,
                                                  [self.config, other]))

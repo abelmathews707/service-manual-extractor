@@ -113,7 +113,7 @@ def extract_html_ordered_steps(data, binding, vocabulary, configurations, decisi
                     'reversed' in container.attrs:
                 raise ContractError('only explicit forward decimal/letter lists are supported')
             start = container.attrs.get('start', '1')
-            if not start.isdecimal() or int(start) != expected:
+            if not re.fullmatch(r'[0-9]+', start) or int(start) != expected:
                 raise ContractError('printed step order has a gap, reset or unsupported start')
             children = [node for node in container.children if isinstance(node, Node)]
             if not children or any(node.tag != 'li' for node in children) or any(
@@ -121,7 +121,7 @@ def extract_html_ordered_steps(data, binding, vocabulary, configurations, decisi
                 raise ContractError('ordered list contains unassigned instruction content')
             for node in children:
                 number = node.attrs.get('value', str(expected))
-                if not number.isdecimal() or int(number) != expected:
+                if not re.fullmatch(r'[0-9]+', number) or int(number) != expected:
                     raise ContractError('printed step order has a gap or repeated number')
                 original = compact(text_of(node))
                 if not original or len(steps) >= 1024:

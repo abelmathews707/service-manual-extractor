@@ -68,6 +68,7 @@ class OrderedProcedureTests(unittest.TestCase):
                      HTML.replace(b'start="2"', b'start="1"'),
                      HTML.replace(b'start="1"', b'start="1" reversed'),
                      HTML.replace(b'<li>Read', b'<li value="9">Read'),
+                     HTML.replace(b'start="2"', 'start="２"'.encode()),
                      HTML.replace(b'<li>Read', b'<p>Unassigned</p><li>Read')):
             with self.assertRaises(ContractError):
                 self.extract(data)

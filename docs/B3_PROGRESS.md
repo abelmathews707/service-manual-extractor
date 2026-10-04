@@ -177,14 +177,14 @@ paths remain incomplete. The app exposes hierarchy links and ancestor context.
 
 The Ford drive-cycle comparison now includes eight root steps, three separately
 recorded substeps and six context records (17 total). Current local-only output:
-`nested-records-v2`, using `ordered-expected-v1.json` plus `nested-expected-v1.json`.
-`nested-records-v1` is historical. Nothing replaces the accepted earlier records.
+`nested-records-v3`, using `ordered-expected-v1.json` plus `nested-expected-v1.json`.
+`nested-records-v1`/`v2` are historical. Nothing replaces the accepted earlier records.
 
 A real name-to-entry candidate links drive-cycle step 8 to Quick Test `pptQT1`
 in `V3D3001.htm`. Both units independently belong to the confirmed diesel scope.
 `acceptance/b3_link_candidate.py` compares separately transcribed source markup and
 creates only a **proposal** with all comparison/approval checkboxes false. Current
-output is `link-candidate-v2`, with `quick-test-expected-v1.json`; there are zero
+output is `link-candidate-v3`, with `quick-test-expected-v1.json`; there are zero
 content-quality or link approvals. The first candidate attempt was rejected before
 writing output because of the fuel-heading boundary described below.
 
@@ -199,6 +199,8 @@ an already confirmed parent to matching fuel, while rich/negative/unresolved hin
 still abstain; a procedure must match **every** declared configuration, not merely
 return one matching configuration from the table-row narrower. Authored regressions
 cover both. No source applicability event was broadened or automatically approved.
+Additional guards reject negative fuel wording (including exclusions and unsupported
+fuels) and non-ASCII OL/LI numbers that browsers may not interpret as printed numbers.
 
 Extractor suite: 260 tests, zero failures, two optional Node skips; Ruff passes.
 App suite: 293 tests pass with the real extractor fixtures; Ruff passes. Final
