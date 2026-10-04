@@ -524,7 +524,8 @@
         "kind": {
           "enum": [
             "table",
-            "figure"
+            "figure",
+            "text"
           ]
         },
         "caption_original": {

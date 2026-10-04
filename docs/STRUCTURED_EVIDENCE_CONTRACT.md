@@ -33,7 +33,7 @@ an image was read correctly.
 | Diagnostic edge | Source/target node, label, condition | A lost/duplicate required branch fails complete-node validation. |
 | Tool | Name, required operation, optional printed identifier | Do not turn an illustrative drawing label into a verified part identity. |
 | Warning | Warning/caution/note and original instruction | Preserve the exact governing scope, not a universal instruction inferred from a nearby note. |
-| Region | Table/figure and original caption | An illustrative test example is not a universal specification. |
+| Region | Table/figure and original caption, or a text context region | An illustrative test example is not a universal specification. Text context is not relabelled as a table or warning. |
 | Relationship | Prerequisite/next step/diagram/specification/cross-reference target and condition | Required context must resolve and cover every declared vehicle configuration. |
 
 `complete`, `incomplete`, and `ambiguous` are explicit states. The latter two

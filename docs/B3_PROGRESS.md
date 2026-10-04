@@ -100,8 +100,8 @@ integration results and remaining gates are recorded in its B3 progress document
 
 1. Freeze and original-review at least one complete applicable procedure/graph,
    including tools, warnings, prerequisites and every required continuation.
-2. Extract explicit ordered steps/tools and distinguish conditional alternatives;
-   current HTML instruction groups deliberately require further review.
+2. Extend bounded ordered-step/tool extraction to separately represented nested and
+   conditional alternatives; unsupported instruction groups deliberately remain incomplete.
 3. Apply the implemented reviewed-reference bindings and one-hop app traversal to
    the real benchmark. Complete graph expansion/conditional-edge completeness is
    still pending; readable-reference navigation does not satisfy that gate alone.
@@ -135,3 +135,33 @@ App: 291 tests pass including six real-dependency tests on authored temporary
 two-page data; Ruff passes. App-route tests prove excluded targets do not load
 original bytes, and revocation during lookup discards the target result. These are
 engineering regressions, not the still-pending complete real-procedure comparison.
+
+## Ordered-source checkpoint — 2026-10-04
+
+`sme/ordered_procedure.py` reads explicitly selected native decimal OL/LI sequences,
+including split lists with `start`/`value` numbering, and source-quoted required tools.
+It refuses gaps, resets, reordered/duplicate recipes, unassigned list content, OCR
+and conflicting vehicle restrictions. Only a flat sequence with reviewed recipe
+coverage receives next-step edges. Nested lists, conditional/reference language,
+unreviewed coverage and unbound figures preserve wording but withhold completeness;
+the parser does not invent conditional execution order. Required tools are selected
+from the same source; optional/global equipment is not automatically made mandatory.
+The region schema additionally permits `text` for plain prerequisite/context blocks.
+
+`acceptance/b3_ordered_extract.py` checks the already confirmed 2003 Ford diesel
+`V3D2018.htm` drive-cycle page (`unit_7f9e2dc4e80b9a5215d971cdca9b960c`). Eight
+numbered steps and six context records exactly match a separate original-source
+transcription, including caution, PTO requirement, temperature, manual-transmission
+alternatives and conditional repeat instructions. This is not a V10 source.
+All steps remain incomplete because nested/conditional paths and Quick Test require
+additional review. No diagnostic edges or quality approvals are manufactured.
+
+Current local-only output is `ordered-records-v2` under the existing B3 acceptance
+root, compared with `ordered-expected-v1.json`. `ordered-records-v1` is historical.
+The comparison is agent engineering review, not independent human validation.
+Eight more authored tests pass; full extractor suite: 254 tests, two optional Node
+skips, Ruff clean. Existing GM and Ford decision records remain unchanged.
+
+Next: review/represent nested alternatives and required continuation targets, use
+real source/target mappings through the app, and complete the original-reviewed full
+procedure/graph gate. Do not label this partial ordered example as B3 completion.

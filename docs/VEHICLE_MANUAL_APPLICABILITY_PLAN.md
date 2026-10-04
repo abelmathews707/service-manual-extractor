@@ -963,7 +963,8 @@ Incorrect or unreviewed records cannot be promoted to actionable evidence.
 ### B3 — Extract procedures and diagnostic structure
 
 **Status:** in progress; native decision extraction, reviewed cross-unit reference
-bindings and application one-hop traversal are implemented. Complete real-procedure
+bindings, bounded ordered-step/tool extraction and application one-hop traversal
+are implemented. Complete real-procedure
 extraction/graph acceptance remains pending; see [B3 checkpoint](B3_PROGRESS.md)
 and [reviewed continuation contract](CONTINUATION_REVIEW.md).
 
