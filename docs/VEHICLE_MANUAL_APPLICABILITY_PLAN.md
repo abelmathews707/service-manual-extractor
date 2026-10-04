@@ -962,9 +962,10 @@ Incorrect or unreviewed records cannot be promoted to actionable evidence.
 
 ### B3 — Extract procedures and diagnostic structure
 
-**Status:** in progress; native decision extraction and continuation checks are
-implemented. Complete real-procedure extraction and application traversal remain
-pending; see [B3 checkpoint](B3_PROGRESS.md).
+**Status:** in progress; native decision extraction, reviewed cross-unit reference
+bindings and application one-hop traversal are implemented. Complete real-procedure
+extraction/graph acceptance remains pending; see [B3 checkpoint](B3_PROGRESS.md)
+and [reviewed continuation contract](CONTINUATION_REVIEW.md).
 
 **Depends on:** B2. **Model:** GPT-6 Astra / High, because branched diagnostics,
 cross-page context and completeness judgments are the most demanding part of

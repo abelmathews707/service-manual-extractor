@@ -1,7 +1,7 @@
 # B3 — Procedures and diagnostic structure
 
-2026-10-03: B3 implementation is in progress. The first extraction and continuation
-boundary checkpoint is implemented; full B3 acceptance remains pending.
+2026-10-04: B3 implementation is in progress. Native extraction, reviewed reference
+bindings and application one-hop traversal are implemented; full B3 acceptance remains pending.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b3`.
 Branch: `codex/procedure-structure-b3`, based on accepted B2
 `2945f7c9a73e3d6c87b2f4b160501b35d49955e0`.
@@ -102,11 +102,36 @@ integration results and remaining gates are recorded in its B3 progress document
    including tools, warnings, prerequisites and every required continuation.
 2. Extract explicit ordered steps/tools and distinguish conditional alternatives;
    current HTML instruction groups deliberately require further review.
-3. Persist reviewed cross-page/manual target bindings, integrate scoped traversal
-   using the resolver, and handle bounded expansion/cycles without dropped branches.
+3. Apply the implemented reviewed-reference bindings and one-hop app traversal to
+   the real benchmark. Complete graph expansion/conditional-edge completeness is
+   still pending; readable-reference navigation does not satisfy that gate alone.
 4. Compare complete graphs and every safety-relevant field against original-reviewed
    expectations; test missing/changed targets, stale/revoked dependencies and excluded
    text loads through the real application path. Retain original reading throughout.
 
 Do not mark B3 complete from the partial examples above. Continue with GPT-6 Astra
 / High. B4 and diagnostic/provider activation remain later work.
+
+## Reviewed-link checkpoint — 2026-10-04
+
+`sme/continuation_review.py` adds explicitly proposed/approved/revoked source-to-target
+bindings, exact endpoint hashes, source quotations and reviewed configurations.
+Its append-only, revision-checked log is separate from applicability and content
+quality. Changed targets cannot silently redirect an approved association. The
+target resolver checks its independent confirmed scope before text loading, current
+readable-reference quality/dependencies, and the reviewed destination hash.
+See [the contract and authoring workflow](CONTINUATION_REVIEW.md).
+
+Repair Buddy now uses that boundary for one-hop reference navigation, rechecking
+the starting review before responding. Possible matches, reference-only membership
+and unfiltered browsing cannot admit a continuation. Each further click rechecks
+eligibility; no recursive expansion means cycles cannot auto-run. The original
+reader remains separate and available for explicit comparison. Required tool
+context is now included alongside warning context. No real-manual review approvals
+were added and diagnostic readiness remains false.
+
+Extractor: 246 tests pass (two optional Node-dependent skips); Ruff passes.
+App: 291 tests pass including six real-dependency tests on authored temporary
+two-page data; Ruff passes. App-route tests prove excluded targets do not load
+original bytes, and revocation during lookup discards the target result. These are
+engineering regressions, not the still-pending complete real-procedure comparison.
