@@ -6,6 +6,8 @@ Latest checkpoint: user-supplied PDFs resolve the earlier visual-review blocker.
 A real association now has separate engineering readable-reference approvals in
 `reviewed-reference-v1`; complete/diagnostic approval remains withheld. See the
 final section below before relying on older outstanding-review notes.
+Conditional source-reference paths are now represented separately; see the latest
+checkpoint at the end. They do not satisfy complete execution-graph acceptance.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b3`.
 Branch: `codex/procedure-structure-b3`, based on accepted B2
 `2945f7c9a73e3d6c87b2f4b160501b35d49955e0`.
@@ -272,3 +274,47 @@ with independent scope and quality; unavailable references stay explicit. Pass a
 complete real-procedure/graph comparison with no dropped warning, value, qualifier,
 instruction or branch before declaring B3 complete. B4 remains later work.
 Recommended model: GPT-6 Astra / High (task judgment, not a measured comparison).
+
+## Conditional source paths — 2026-10-04
+
+`source_paths` optionally extends procedure steps with source-quoted alternatives
+and repeats, explicit same-unit targets or unresolved reasons. The manufacturer-neutral
+`sme.procedure_paths` helper binds reviewed recipes; it does not guess natural-language
+logic or execute instructions. The semantic validator rejects invented/detached/ambiguous
+quotations, wrong-type/missing/cross-unit or wrong-vehicle targets, duplicate paths,
+and claims of complete/unconditional execution. Path sources/targets enter quality
+dependency hashes, including bounded self/repeat references.
+
+Reinspection of the user's Drive Cycles PDF confirmed the local-only
+`conditional-path-recipe-v1.json`. Eight paths retain the two printed manual-transmission
+alternatives and six repeat references. Two targets remain unresolved because the
+interrupted/incomplete modes depend on actual execution history. Unqualified base
+wording is not silently relabelled as automatic-transmission instructions. The
+complete original wording, values, caution, note and PTO requirement remain present.
+
+`acceptance/b3_ordered_extract.py --source-paths <recipe>` now optionally binds those
+paths after the existing scope/hash/original-field comparisons. It requires nested
+labels and the unchanged visually reviewed PDF hash. Current output is
+`conditional-records-v1` under the existing local B3 acceptance root: 17 records,
+eight root steps, three substeps, six context records, eight paths, zero approvals.
+Use a new output directory, `--nested-expected nested-expected-v1.json`, and the
+existing `ordered-expected-v1.json` (absolute paths). The recipe is reviewed source
+mapping, not independent proof that the parser can discover arbitrary conditions.
+
+The app's reader and one-hop continuation view display conditional quotations,
+source anchors and unresolved targets with explicit non-execution labels. No
+condition is evaluated and no path is followed automatically. Prior
+`reviewed-reference-v1` remains unchanged and valid only for its old snapshots;
+its content review and association both resolve **stale** against the newly
+enriched source. No approvals were copied into the new records.
+
+Verification: 277 extractor tests, zero failures, two optional Node skips; 295 app
+tests including real extractor fixtures, zero failures. Ruff/diff checks clean.
+The app's final pinned real-library check is recorded in its progress document.
+No source/PDF edits, live activation, merge or toolkit changes.
+
+Remaining B3: review/extract QT2/QT3 and independently resolve required continuations;
+establish complete branch coverage and compare at least one complete applicable real
+procedure/graph. The present paths are inspectable reference structure, not approved
+execution edges, exhaustive alternative coverage or finished B3. B4 and AI/provider
+activation remain later work. Continue with GPT-6 Astra / High.

@@ -969,6 +969,9 @@ extraction/graph acceptance remains pending; see [B3 checkpoint](B3_PROGRESS.md)
 and [reviewed continuation contract](CONTINUATION_REVIEW.md).
 User-supplied PDF layout review and real one-hop readable-reference acceptance
 have now passed; they do not complete conditional-graph or diagnostic acceptance.
+Source-quoted alternatives/repeats now have explicit source targets or unresolved
+reasons, with reader display and quality dependencies. Complete executable-graph
+coverage remains pending; the new reference paths are not diagnostic approval.
 
 **Depends on:** B2. **Model:** GPT-6 Astra / High, because branched diagnostics,
 cross-page context and completeness judgments are the most demanding part of

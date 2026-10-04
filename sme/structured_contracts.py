@@ -124,6 +124,9 @@ def _references(record):
         links.extend((identifier, kind) for identifier in payload.get(field, ()))
     if 'parent_record_id' in payload:
         links.append((payload['parent_record_id'], 'procedure_step'))
+    for path in payload.get('source_paths', ()):
+        links.append((path['source_record_id'], None))
+        links.extend((identifier, 'procedure_step') for identifier in path['target_record_ids'])
     for field in ('from_record_id', 'to_record_id', 'target_record_id'):
         if field in payload:
             links.append((payload[field], 'diagnostic_node'
@@ -295,7 +298,33 @@ def validate_records(value, vocabulary, evidence_sets, *, source_texts=None):
             if any(edge['completeness']['state'] != 'complete' for edge in edges):
                 raise ContractError('complete node depends on an incomplete branch')
     _validate_step_hierarchy(records)
+    _validate_source_paths(records)
     return value
+
+
+def _validate_source_paths(records):
+    """Source-quoted alternatives/repeats are references, never executable edges."""
+    for record in records.values():
+        paths = record['payload'].get('source_paths', ())
+        if not paths:
+            continue
+        if record['completeness']['state'] == 'complete' or record['payload']['next_record_ids']:
+            raise ContractError('conditional source paths cannot claim complete execution order')
+        for path in paths:
+            source = records[path['source_record_id']]
+            if source['type'] not in ('procedure_step', 'warning', 'region') or \
+                    source['id'] not in [record['id'], *record['context_record_ids']]:
+                raise ContractError('conditional quotation is outside its step/governing context')
+            if source['original_text'].count(path['quotation']) != 1 or any(
+                    not path[field].strip() or path[field] not in path['quotation']
+                    for field in ('condition_original', 'instruction_original')):
+                raise ContractError('conditional wording is missing, changed or ambiguous')
+            if bool(path['target_record_ids']) == bool(path['unresolved_reason'].strip()):
+                raise ContractError('conditional target must resolve or state why it is unresolved')
+            for other in [source, *(records[i] for i in path['target_record_ids'])]:
+                if any(other['binding'][key] != record['binding'][key] for key in
+                       ('source_id', 'unit_id', 'original_sha256')):
+                    raise ContractError('conditional source paths cannot cross original units')
 
 
 def dependency_bindings(record_id, records):

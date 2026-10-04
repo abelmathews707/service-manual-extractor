@@ -362,6 +362,24 @@
         }
       }
     },
+    "source_path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "source_record_id", "quotation", "condition_original",
+                   "instruction_original", "target_record_ids", "unresolved_reason"],
+      "properties": {
+        "kind": {"enum": ["alternative", "repeat"]},
+        "source_record_id": {"$ref": "#/$defs/rid"},
+        "quotation": {"type": "string", "minLength": 1},
+        "condition_original": {"type": "string", "minLength": 1},
+        "instruction_original": {"type": "string", "minLength": 1},
+        "target_record_ids": {
+          "type": "array", "maxItems": 1024, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/rid"}
+        },
+        "unresolved_reason": {"type": "string"}
+      }
+    },
     "procedure_step": {
       "type": "object",
       "additionalProperties": false,
@@ -372,6 +390,10 @@
         "next_record_ids"
       ],
       "properties": {
+        "source_paths": {
+          "type": "array", "minItems": 1, "maxItems": 64, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/source_path"}
+        },
         "step_label": {"type": "string", "minLength": 1},
         "numbering_style": {"enum": ["1", "a", "A"]},
         "parent_record_id": {"type": "string", "pattern": "^record_[0-9a-f]{32}$"},

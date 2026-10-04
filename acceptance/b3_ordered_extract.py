@@ -13,11 +13,12 @@ from sme.html_content import TreeParser, decode_html, parse_html, text_of
 from sme.library_export import open_current, search_export
 from sme.ordered_procedure import extract_html_ordered_steps
 from sme.procedure_extract import _record
+from sme.procedure_paths import attach_source_paths
 from sme.structured_contracts import new_quality_overlay, validate_records
 from sme.structured_extract import _selector, compact
 
 
-def run(b1, output, expected, *, nested_expected=None):
+def run(b1, output, expected, *, nested_expected=None, path_recipe=None):
     vocabulary, review = read(b1 / 'vocabulary.json'), read(b1 / 'review.json')
     generation, index = open_current(str(b1 / 'library'),
                                       current_review_revision=review['revision'])
@@ -85,12 +86,43 @@ def run(b1, output, expected, *, nested_expected=None):
                 parent['payload']['instruction'] != nested_expected['parent_instruction'] or
                 any(r['payload']['parent_record_id'] != parent['id'] for r in children)):
             raise ContractError('nested steps differ from independently recorded source structure')
+    path_count = 0
+    if path_recipe is not None:
+        if nested_expected is None:
+            raise ContractError('source path comparison requires printed nested labels')
+        if hashlib.sha256(Path(path_recipe['pdf_path']).read_bytes()).hexdigest() != \
+                path_recipe['pdf_sha256']:
+            raise ContractError('visually reviewed source-path PDF changed')
+        by_label = {r['payload']['step_label']: r for r in all_steps}
+        recipes = {}
+        for item in path_recipe['paths']:
+            owner = by_label[item['owner_label']]
+            source_ref = item['source']
+            if set(source_ref) == {'step_label'}:
+                source_record = by_label[source_ref['step_label']]
+            elif set(source_ref) == {'context_index'} and \
+                    type(source_ref['context_index']) is int and \
+                    0 <= source_ref['context_index'] < len(context):
+                source_record = context[source_ref['context_index']]
+            else:
+                raise ContractError('source-path recipe has an unknown source reference')
+            path = {key: item[key] for key in ('kind', 'quotation', 'condition_original',
+                                              'instruction_original', 'unresolved_reason')}
+            path.update(source_record_id=source_record['id'],
+                        target_record_ids=[by_label[label]['id']
+                                           for label in item['target_labels']])
+            recipes.setdefault(owner['id'], []).append(path)
+            path_count += 1
+        bundle = attach_source_paths(bundle, recipes, vocabulary, decisions)
+        validate_records(bundle, vocabulary, [source], source_texts={unit['id']: compact(
+            parse_html(data, citation['path'], ford_legacy=True)['text'])})
     folder = output / unit['id']
     folder.mkdir(parents=True, exist_ok=True)
     write_once(folder / 'records.json', bundle)
     write_once(folder / 'quality.json', new_quality_overlay())
     report = {'unit_id': unit['id'], 'records': len(bundle['records']), 'steps': len(steps),
               'substeps': len(children),
+              'source_paths': path_count,
               'context_records': len(context), 'comparison': 'exact original transcription passed',
               'vehicle': 'confirmed Ford diesel, not V10', 'state': 'incomplete',
               'quality_approvals': 0, 'diagnostic_ready': False}
@@ -104,7 +136,10 @@ if __name__ == '__main__':
     parser.add_argument('output', type=Path)
     parser.add_argument('expected', type=Path)
     parser.add_argument('--nested-expected', type=Path)
+    parser.add_argument('--source-paths', type=Path)
     args = parser.parse_args()
     nested = read(args.nested_expected) if args.nested_expected else None
-    print(json.dumps(run(args.b1_root, args.output, read(args.expected), nested_expected=nested),
+    paths = read(args.source_paths) if args.source_paths else None
+    print(json.dumps(run(args.b1_root, args.output, read(args.expected), nested_expected=nested,
+                         path_recipe=paths),
                      indent=2))

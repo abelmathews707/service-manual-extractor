@@ -66,6 +66,38 @@ cycle. The app displays parent/substep links and retains ancestor warnings/tools
 Printed grouping is **not approved execution order**. Conditional alternatives,
 repeats and unresolved continuations still keep these examples incomplete.
 
+### Conditional source references (B3)
+
+An optional nonempty `procedure_step.payload.source_paths` list separates printed
+`alternative` and `repeat` references. Each path carries its governing
+`source_record_id`, an exact unique `quotation` from that record,
+`condition_original` and `instruction_original` substrings of the quotation,
+and explicit `target_record_ids`. An empty target list requires a nonempty
+`unresolved_reason`; resolved source targets cannot also claim an unresolved reason.
+Paths are limited to 64 per owning step and 1,024 distinct targets per path.
+
+The quotation must belong to the owning step or one of its already-bound context
+records. All targets must be procedure steps in the same original unit and cover
+every declared vehicle configuration. Cross-page targets still use the independent
+continuation-review workflow. The path source and target hashes become transitive
+quality dependencies, so changing either stales the owning reference review.
+Self/repeat cycles are bounded dependency references, never automatic traversal.
+
+`sme.procedure_paths.attach_source_paths` consumes a caller-validated native bundle
+and manually original-reviewed quotation/target recipes. It requires confirmed
+scope before examining recipe wording, preserves all original records, clears
+unconditional next-step edges and keeps all procedure steps incomplete. Existing
+flat/nested records without this optional field stay valid. This is deterministic
+recipe binding, not a general natural-language conditional parser.
+
+The reader displays both the extracted condition/instruction and the full governing
+quotation, with source-step anchors or an unresolved reason. Unqualified base wording
+is retained, not relabelled as the inferred opposite of a printed alternative.
+Repeat counts remain verbatim; no execution count, dynamic interrupted-step target,
+vehicle transmission, predicate evaluation or default branch is inferred.
+Source paths cannot coexist with complete step state or unconditional next-step IDs.
+Even resolved source anchors are not complete diagnostic edges or content approval.
+
 ## Separate quality log
 
 `structured-quality-review/v1` uses `structured-quality-policy/v1`. Its append-only
