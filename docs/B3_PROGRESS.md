@@ -313,8 +313,62 @@ tests including real extractor fixtures, zero failures. Ruff/diff checks clean.
 The app's final pinned real-library check is recorded in its progress document.
 No source/PDF edits, live activation, merge or toolkit changes.
 
-Remaining B3: review/extract QT2/QT3 and independently resolve required continuations;
+Remaining B3 at that checkpoint: review/extract QT2/QT3 and independently resolve required continuations;
 establish complete branch coverage and compare at least one complete applicable real
 procedure/graph. The present paths are inspectable reference structure, not approved
 execution edges, exhaustive alternative coverage or finished B3. B4 and AI/provider
 activation remain later work. Continue with GPT-6 Astra / High.
+
+## Quick Test sections and reference inventory — 2026-10-04
+
+QT1, QT2 and QT3 are now extracted together into a single independently scoped
+source-unit bundle. `extract_html_decisions` accepts an explicit bounded list of
+anchors, retains separate questions/context/Yes-No branches and rejects missing,
+duplicate or overlapping sections. The single-section extractor also inventories
+references inside instruction groups/notes, previously reported only as missing
+context. Original hrefs and governing wording are retained without opening targets.
+Exact same-document fragments can identify candidate decision records, but never
+become approved associations, execution edges or complete diagnostic instructions.
+
+`acceptance/b3_quick_test.py` compares extraction with a separately transcribed,
+local-only expectation and SHA-bound PDF inspection witness. Both pages of the
+user-supplied Quick Test PDF were visually checked, including QT3's question on
+page one and its Yes/No table on page two. The helper does not perform visual
+inspection itself or grant approval. Source applicability is confirmed before
+PDF/original reads. Destination classification uses existing metadata only.
+
+Local output under `b3-acceptance-2026-10-03/quick-test-records-v1` contains:
+
+- 21 records, three decision sections and all six printed branch answers;
+- nine hyperlink occurrences: two same-page candidate destinations and seven
+  distinct other pages, all independently confirmed for the selected Ford diesel
+  in the current index; destination content quality is still unreviewed;
+- all original preparation instructions, conditional wording, scan-tool references,
+  notes and recorded-data requirements preserved in instruction/context groups;
+- zero destination-original reads, quality approvals or association approvals.
+
+`quick-test-all-expected-v1.json`, `reference-inventory.json` and the detailed
+`quick-test-verification.json` remain outside Git, with licensed source wording.
+OASIS/TSB material is still an unresolved named dependency, not a discovered link.
+Grouping/tools/conditional execution and full prerequisite coverage are unapproved.
+The older reviewed-reference and conditional-step snapshots are unchanged; existing
+approvals have not been transferred to these newly extracted records.
+
+Verification: 286 extractor tests passed with two optional Node skips; Ruff and
+diff checks clean. Added regressions cover all selected sections, context references,
+exact branch comparison, invalid/missing targets, independent destination metadata
+and scope denial before original reads. The app's new `--quick-test-records` option
+checks all structured cards and source wording, no destination traversal, and
+zero-original-read rejection for GM and gasoline V10. See its B3 progress document
+for final exact-pin full-library verification. No original/PDF edits, live activation,
+merge, release or toolkit change.
+
+Next B3 checkpoint: independently review the seven destination pages and their
+required context; bind only justified associations, with content quality approved
+separately. Convert instruction groups/alternatives into reviewed source structure
+without guessing execution order. Then compare a complete applicable real procedure
+and every conditional branch with the originals, retaining incomplete abstention
+where a target or external prerequisite is unavailable. B3 remains incomplete;
+B4 shared web/CLI evidence packets and AI/provider activation remain later work.
+Recommended development model remains GPT-6 Astra / High (task judgment, not a
+measured model comparison). Preserve the reported-usage stop thresholds.

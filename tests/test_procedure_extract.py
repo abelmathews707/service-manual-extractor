@@ -11,6 +11,7 @@ from sme.html_content import parse_html
 from sme.procedure_extract import (
     _covers_configurations,
     extract_html_decision,
+    extract_html_decisions,
     extract_native_decision,
 )
 from sme.structured_contracts import validate_records
@@ -76,6 +77,72 @@ class ProcedureExtractionTests(unittest.TestCase):
         self.assertIn('Note: isolate supply.', step['payload']['instruction'])
         self.assertIn('If configured, use adapter.', step['payload']['instruction'])
         self.assertEqual(step['completeness']['state'], 'incomplete')
+
+    def test_context_references_are_inventoried_without_losing_note(self):
+        data = HTML.replace(b'<div class="question">',
+                            b'<ul><p>If unavailable, refer to <a href="setup.htm">setup</a>.</p>'
+                            b'<li>Read <a href="tool.htm">tool instructions</a>.</li></ul>'
+                            b'<div class="question">')
+        bundle, links = self.html(data)
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]['label'], 'context')
+        self.assertEqual(links[0]['targets'], ['setup.htm', 'tool.htm'])
+        owner = next(r for r in bundle['records'] if r['id'] == links[0]['record_id'])
+        self.assertIn('If unavailable, refer to setup.', owner['original_text'])
+        self.assertEqual(links[0]['state'], 'unresolved')
+
+    def multiple(self, data, anchors=('test1', 'test2')):
+        bundle, inventory = extract_html_decisions(
+            data, self.binding, self.vocabulary, [self.config], self.decisions, anchors=anchors,
+            missing_context=['Authored prerequisite not reviewed'])
+        validate_records(bundle, self.vocabulary, [self.evidence], source_texts={
+            self.binding['unit_id']: ' '.join(parse_html(data, 'authored.html')['text'].split())})
+        return bundle, inventory
+
+    def test_multiple_sections_keep_distinct_questions_and_all_branches(self):
+        first = HTML.replace(b'Record absent.', b'Go to <a href="#test2">second</a>.')
+        second = HTML.replace(b'name="test1"', b'id="test2"').replace(
+            b'Is the signal present?', b'Is the fixture ready?')
+        data = first.replace(b'</body></html>', b'') + second.replace(b'<html><body>', b'')
+        bundle, inventory = self.multiple(data)
+        decisions = [r for r in bundle['records'] if r['payload'].get('node_kind') == 'decision']
+        self.assertEqual([r['original_text'] for r in decisions],
+                         ['Is the signal present?', 'Is the fixture ready?'])
+        self.assertEqual(len([r for r in bundle['records'] if r['type'] == 'diagnostic_edge']), 4)
+        link = inventory['references'][0]
+        self.assertEqual(link['candidates'][0]['record_id'], decisions[1]['id'])
+        self.assertEqual(link['state'], 'unresolved')
+        self.assertFalse(inventory['diagnostic_ready'])
+        self.assertTrue(all(r['completeness']['state'] == 'incomplete' for r in decisions))
+        # Source-anchor candidates never introduce execution edges between sections.
+        self.assertFalse(any(r['type'] == 'diagnostic_edge' and
+                             r['payload']['to_record_id'] == decisions[1]['id']
+                             for r in bundle['records']))
+
+    def test_external_similar_and_unselected_targets_are_not_local_candidates(self):
+        filename = self.binding['citation']['path'].rsplit('/', 1)[-1]
+        for href, matches in ((filename + '#test1', True), ('#test1', True),
+                              ('#missing', False), ('other.htm#test1', False),
+                              ('https://example.invalid/' + filename + '#test1', False),
+                              (filename + '?version=other#test1', False),
+                              ('../' + filename + '#test1', False), ('http://[bad', False)):
+            data = HTML.replace(b'Record absent.', ('See <a href="' + href +
+                                                   '">reference</a>.').encode())
+            _, inventory = self.multiple(data, anchors=['test1'])
+            self.assertEqual(bool(inventory['references'][0]['candidates'][0]['record_id']),
+                             matches, href)
+
+    def test_multiple_sections_fail_closed_on_missing_or_duplicate_selection(self):
+        for anchors in ([], ['test1', 'test1'], ['test1', 'missing'], [''], 'test1'):
+            with self.assertRaises(ContractError):
+                self.multiple(HTML, anchors=anchors)
+
+    def test_multiple_sections_check_scope_before_parsing(self):
+        self.decisions[self.config]['state'] = 'excluded'
+        with patch('sme.procedure_extract.TreeParser') as parser:
+            with self.assertRaises(ContractError):
+                self.multiple(HTML)
+            parser.assert_not_called()
 
     def test_scope_checked_before_html_parse_and_ocr_abstains(self):
         self.decisions[self.config]['state'] = 'excluded'

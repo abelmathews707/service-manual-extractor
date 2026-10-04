@@ -9,6 +9,14 @@ is `/Users/asokmathews/Documents/repair-buddy-b3`. Accepted B2 worktrees remain
 unchanged. Monitor both usage limits. The B2 completion record below is the accepted
 implementation baseline; the current B3 checkpoint does not complete that step.
 
+Latest B3 continuation (2026-10-04): all three Quick Test sections now share one
+local candidate bundle, with 21 records, six branches and nine inventoried hyperlink
+destinations. Both saved PDF pages were visually compared. Two same-page targets are
+source-anchor candidates only; seven other pages have independently confirmed diesel
+scope but unreviewed content. No new approvals or destination reads. Next: review those
+dependencies and full graph coverage; do not restart QT2/QT3 extraction. Local output
+is `b3-acceptance-2026-10-03/quick-test-records-v1`. B3 remains incomplete.
+
 Latest work: B1 is complete within bounded engineering acceptance; read
 [B1_PROGRESS.md](B1_PROGRESS.md) and
 [STRUCTURED_EVIDENCE_CONTRACT.md](STRUCTURED_EVIDENCE_CONTRACT.md). Its reviewed

@@ -8,6 +8,7 @@ and conditional alternatives stay incomplete. This module does not fetch links.
 import hashlib
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from .contract import ContractError
 from .html_content import Node, TreeParser, decode_html, text_of
@@ -109,7 +110,8 @@ def extract_html_decision(data, binding, vocabulary, configurations, decisions, 
         raise ContractError('procedure anchor is missing or duplicated')
     start = starts[0]
     end = next((i for i in range(start + 1, len(nodes))
-                if nodes[i].tag == 'a' and nodes[i].attrs.get('name')), len(nodes))
+                if nodes[i].tag == 'a' and
+                (nodes[i].attrs.get('name') or nodes[i].attrs.get('id'))), len(nodes))
     section = nodes[start + 1:end]
     headings = [node for node in section if node.tag in ('h3', 'h4')]
     questions = [node for node in section if node.attrs.get('class', '').lower() == 'question']
@@ -143,6 +145,7 @@ def extract_html_decision(data, binding, vocabulary, configurations, decisions, 
             continue
         selected.append(node)
     context = []
+    context_references = []
     missing = list(missing_context)
     if not configurations:
         missing.append('Vehicle applicability has not been established')
@@ -161,9 +164,14 @@ def extract_html_decision(data, binding, vocabulary, configurations, decisions, 
                                    {'sequence': len(context), 'instruction': original,
                                     'tool_ids': [], 'next_record_ids': []}, missing=[grouping]))
             missing.append(grouping)
-        if any(child.tag == 'a' and child.attrs.get('href') for child in node.walk()) or \
-                re.search(r'\b(?:refer\s+to|see\s+|manufacturer.s\s+instruction)', original, re.I):
+        links = [child.attrs['href'] for child in node.walk()
+                 if child.tag == 'a' and child.attrs.get('href')]
+        if links or re.search(
+                r'\b(?:refer\s+to|see\s+|manufacturer.s\s+instruction)', original, re.I):
             missing.append('Instruction context contains an unreviewed reference')
+            context_references.append({'record_id': context[-1]['id'], 'label': 'context',
+                                       'source_unit_id': binding['unit_id'],
+                                       'targets': links, 'state': 'unresolved'})
     cells = [child for child in rows[1].children if isinstance(child, Node)
              and child.tag in ('td', 'th')]
     if len(cells) != 2:
@@ -176,8 +184,60 @@ def extract_html_decision(data, binding, vocabulary, configurations, decisions, 
         branches.append((label, text, {'kind': 'html', 'selector': _selector(cell)},
                          [node.attrs['href'] for node in cell.walk()
                           if node.tag == 'a' and node.attrs.get('href')]))
-    return _graph(binding, vocabulary, configurations, compact(text_of(question)),
-                  {'kind': 'html', 'selector': _selector(question)}, branches, context, missing)
+    bundle, continuations = _graph(
+        binding, vocabulary, configurations, compact(text_of(question)),
+        {'kind': 'html', 'selector': _selector(question)}, branches, context, missing)
+    return bundle, [*continuations, *context_references]
+
+
+def extract_html_decisions(data, binding, vocabulary, configurations, decisions, *,
+                           anchors, missing_context=(), allow_unmapped=False):
+    """Combine explicitly selected sections, without treating candidates as edges.
+
+    Only exact same-document fragments can name extracted candidate decisions.
+    Cross-document targets are retained verbatim, never fetched or approved. The
+    returned reference inventory is review metadata, not an executable graph.
+    """
+    _scope(binding, configurations, decisions, allow_unmapped=allow_unmapped)
+    if not isinstance(anchors, (list, tuple)) or not 1 <= len(anchors) <= 128 or \
+            any(not isinstance(anchor, str) or not anchor.strip() for anchor in anchors) or \
+            len(set(anchors)) != len(anchors):
+        raise ContractError('decision anchors must be a bounded, nonempty unique list')
+    records, sections, references = [], [], []
+    for anchor in anchors:
+        bundle, links = extract_html_decision(
+            data, binding, vocabulary, configurations, decisions, anchor=anchor,
+            missing_context=missing_context, allow_unmapped=allow_unmapped)
+        decision = next(r for r in bundle['records']
+                        if r['payload'].get('node_kind') == 'decision')
+        sections.append({'anchor': anchor, 'decision_record_id': decision['id'],
+                         'record_ids': [r['id'] for r in bundle['records']]})
+        records.extend(bundle['records'])
+        references.extend(dict(link, section_anchor=anchor) for link in links)
+    if len({r['id'] for r in records}) != len(records):
+        raise ContractError('selected decision sections overlap')
+    by_anchor = {section['anchor']: section['decision_record_id'] for section in sections}
+    by_id = {record['id']: record for record in records}
+    citation = binding['citation']
+    filename = citation.get('path', '').rsplit('/', 1)[-1]
+    for reference in references:
+        reference['original_text'] = by_id[reference['record_id']]['original_text']
+        reference['candidates'] = []
+        for href in reference['targets']:
+            try:
+                target = urlsplit(href)
+                same_document = not (target.scheme or target.netloc or target.query) and \
+                    target.path in ('', filename) and bool(target.fragment)
+                identifier = by_anchor.get(target.fragment) if same_document else None
+            except ValueError:
+                identifier = None
+            reference['candidates'].append({
+                'href': href, 'record_id': identifier,
+                'reason': 'Same-document source anchor only; association and quality unreviewed'
+                if identifier else
+                'Destination requires independent scope, source and quality review'})
+    return seal_records(records), {'sections': sections, 'references': references,
+                                    'diagnostic_ready': False}
 
 
 def extract_native_decision(text, binding, vocabulary, configurations, decisions, *,

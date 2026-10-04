@@ -972,6 +972,10 @@ have now passed; they do not complete conditional-graph or diagnostic acceptance
 Source-quoted alternatives/repeats now have explicit source targets or unresolved
 reasons, with reader display and quality dependencies. Complete executable-graph
 coverage remains pending; the new reference paths are not diagnostic approval.
+QT1–QT3 now have a combined PDF-compared candidate bundle and a full hyperlink
+inventory (two same-page candidates, seven independently scoped other pages).
+Target quality/association review and complete real-graph acceptance remain open;
+see the latest B3 checkpoint before repeating extraction work.
 
 **Depends on:** B2. **Model:** GPT-6 Astra / High, because branched diagnostics,
 cross-page context and completeness judgments are the most demanding part of
