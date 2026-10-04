@@ -2,6 +2,10 @@
 
 2026-10-04: B3 implementation is in progress. Native extraction, reviewed reference
 bindings and application one-hop traversal are implemented; full B3 acceptance remains pending.
+Latest checkpoint: user-supplied PDFs resolve the earlier visual-review blocker.
+A real association now has separate engineering readable-reference approvals in
+`reviewed-reference-v1`; complete/diagnostic approval remains withheld. See the
+final section below before relying on older outstanding-review notes.
 Worktree: `/Users/asokmathews/Documents/service-manual-extractor-b3`.
 Branch: `codex/procedure-structure-b3`, based on accepted B2
 `2945f7c9a73e3d6c87b2f4b160501b35d49955e0`.
@@ -208,3 +212,63 @@ real-library HTTP results are recorded in the app B3 handoff after its exact pin
 is updated. B3 remains in progress. Next: obtain original-layout review, represent
 conditional alternatives/repeat paths, resolve required targets and pass a complete
 real-procedure comparison. Recommended model remains GPT-6 Astra / High.
+
+## User-supplied PDF review and real reference acceptance — 2026-10-04
+
+The user saved `Drive Cycles.pdf` and `Powertrain Control Module (PCM) Quick Test.pdf`
+in `/Users/asokmathews/Documents/repair-buddy-b3`. All four pages were rendered with
+Poppler and visually inspected. They establish the previously missing layout
+comparison without retrying or working around the blocked HTML browser URL.
+The PDFs remain local, untracked and unchanged; never stage them in Git.
+
+The source's eight root steps, three lettered children and six context records
+match the rendered drive-cycle section. Both bullets in its conditional note are
+retained. The second page is separate PID/pending-DTC reference material. QT1's
+heading, note, eight inspection bullets, question and Yes/No outcomes match its
+extracted records. QT2/QT3 are visible but not approved by this bounded review;
+QT3's branch table crosses the PDF page break.
+
+`acceptance/b3_review_reference.py` validates a manually declared visual-review
+witness, rechecks both endpoints' current confirmed scope before original reads,
+checks original hashes/record validity, and creates a **new** acceptance root.
+The witness binds exact PDF hashes/pages, bundle revisions and every transitive
+endpoint dependency. It is declared agent engineering review, not authenticated
+human signoff or an automatic visual-comparison algorithm. The helper cannot
+approve diagnostic instructions, production use or vehicle applicability.
+
+Local-only outputs under the existing B3 acceptance root:
+
+- `visual-review-v1.json`: actual comparison findings and frozen identities.
+- `reviewed-reference-v1`: unchanged record snapshots, two independent
+  `readable_reference` / `engineering` quality approvals, and one association
+  approval appended after the original proposal. `link-candidate-v3` is unchanged.
+- `app-verification-v6.json`: passed real-library HTTP comparison and isolated
+  mutation checks. App handoff records the final pinned rerun separately.
+
+The approved association is a readable reference to the named Quick Test page's
+first section. It does **not** establish that rerunning Quick Test requires QT1
+as an executable entry point. Historical record snapshots still contain their
+old visual-review missing-context label; the separate witness resolves that
+specific review but does not rewrite or promote those snapshots. All other
+conditional, prerequisite and downstream completeness limitations remain.
+
+The real app route opens exactly the two original endpoints and preserves all
+target wording, governing context and both branches. GM/V10 requests load zero
+originals. Revoked links and changed source context load zero target originals.
+Missing typed targets, changed target context and revoked target quality return
+409 with no destination instructions: the eligible target original is read for
+validation in those cases, so these are not claimed as zero-read scenarios.
+All mutations use temporary copies; accepted reviews are unchanged.
+
+Verification: 268 extractor tests, zero failures, two optional Node skips; 293 app
+tests, zero failures; Ruff/diff checks clean. Existing 72 scopes/284,592 memberships,
+Ford/GM original readers, V10 reference/diagrams, 23 legacy tables and 280 owner-guide
+links remain verified. No product runtime change, live activation, merge or toolkit
+change was required for this acceptance checkpoint.
+
+Next B3 work: separately represent the visually confirmed transmission alternatives,
+repeat paths and governing conditions. Review QT2/QT3 and each needed external target
+with independent scope and quality; unavailable references stay explicit. Pass a
+complete real-procedure/graph comparison with no dropped warning, value, qualifier,
+instruction or branch before declaring B3 complete. B4 remains later work.
+Recommended model: GPT-6 Astra / High (task judgment, not a measured comparison).

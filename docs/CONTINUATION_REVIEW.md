@@ -84,3 +84,18 @@ the independently versioned extractor checkout. Those tests create two authored
 temporary units and use the real extractor validator and quality resolver, including
 changed-warning dependency and revoked-quality cases. They do not approve real
 manuals and do not replace the pending original-reviewed full-procedure benchmark.
+
+### Local B3 visual-review acceptance helper
+
+After inspecting user-supplied rendered originals, use
+`python -m acceptance.b3_review_reference B1_ROOT CANDIDATE_ROOT WITNESS_JSON NEW_OUTPUT_ROOT`.
+This is a bounded engineering acceptance helper, not a general approval UI.
+The local `b3-visual-reference-review/v1` witness declares PDF paths/hashes/reviewed
+pages, exact bundle revisions and transitive dependency bindings for each endpoint,
+reviewer/time/reason and explicit comparison checks. It records a visual comparison
+already performed; computing hashes or running this command does not perform one.
+The helper revalidates original sources and independently confirmed vehicle scopes,
+then writes separate readable-reference quality events and an association approval.
+Incomplete context/branches must remain false, and the old candidate is untouched.
+Review logs, PDF copies and manual quotations stay outside Git. See
+[B3 progress](B3_PROGRESS.md) for the real example and remaining diagnostic gates.

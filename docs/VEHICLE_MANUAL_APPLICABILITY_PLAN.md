@@ -967,6 +967,8 @@ bindings, bounded ordered-step/tool extraction with source hierarchy, and applic
 are implemented. Complete real-procedure
 extraction/graph acceptance remains pending; see [B3 checkpoint](B3_PROGRESS.md)
 and [reviewed continuation contract](CONTINUATION_REVIEW.md).
+User-supplied PDF layout review and real one-hop readable-reference acceptance
+have now passed; they do not complete conditional-graph or diagnostic acceptance.
 
 **Depends on:** B2. **Model:** GPT-6 Astra / High, because branched diagnostics,
 cross-page context and completeness judgments are the most demanding part of
