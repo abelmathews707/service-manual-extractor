@@ -372,6 +372,13 @@
         "next_record_ids"
       ],
       "properties": {
+        "step_label": {"type": "string", "minLength": 1},
+        "numbering_style": {"enum": ["1", "a", "A"]},
+        "parent_record_id": {"type": "string", "pattern": "^record_[0-9a-f]{32}$"},
+        "substep_record_ids": {
+          "type": "array", "minItems": 0, "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^record_[0-9a-f]{32}$"}
+        },
         "sequence": {
           "type": "integer",
           "minimum": 1

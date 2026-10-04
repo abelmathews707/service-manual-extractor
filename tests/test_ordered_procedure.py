@@ -9,7 +9,14 @@ from test_structured_contracts import fixtures
 from sme.contract import ContractError
 from sme.html_content import TreeParser, parse_html
 from sme.ordered_procedure import extract_html_ordered_steps
-from sme.structured_contracts import validate_records
+from sme.structured_contracts import (
+    append_quality_event,
+    dependency_bindings,
+    new_quality_overlay,
+    quality_state,
+    seal_records,
+    validate_records,
+)
 from sme.structured_extract import _selector
 
 HTML = b'''<html><body><h2>Authored fixture check</h2>
@@ -97,6 +104,65 @@ class OrderedProcedureTests(unittest.TestCase):
         self.assertTrue(all(r['completeness']['state'] == 'incomplete' for r in steps))
         self.assertIn('Step figure/diagram requires bound context review',
                       steps[0]['completeness']['missing'])
+
+    def nested(self):
+        data = HTML.replace(b'Read the fixture.', b'Read the fixture:<ol type="a" start="1">'
+                            b'<li>Use the meter.</li></ol><ol type="a" start="2">'
+                            b'<li>Record the reading.</li></ol>')
+        return self.extract(data, extract_nested=True)
+
+    def test_nested_labels_and_parent_instruction_preserve_the_original_structure(self):
+        records = self.nested()
+        steps = [r for r in records if r['type'] == 'procedure_step']
+        self.assertEqual([r['payload']['step_label'] for r in steps], ['1', '2', '2.a', '2.b', '3'])
+        parent, child = steps[1:3]
+        self.assertEqual(parent['payload']['instruction'], 'Read the fixture:')
+        self.assertIn(child['original_text'], parent['original_text'])
+        self.assertEqual(child['payload']['parent_record_id'], parent['id'])
+        self.assertEqual(parent['payload']['substep_record_ids'], [r['id'] for r in steps[2:4]])
+        self.assertTrue(all(r['completeness']['state'] == 'incomplete' for r in steps))
+
+    def test_hierarchy_dropped_children_wrong_parent_labels_and_cycles_fail(self):
+        records = self.nested()
+        parent = next(r for r in records if r.get('payload', {}).get('step_label') == '2')
+        for mutate in (
+                lambda p: p['payload']['substep_record_ids'].pop(),
+                lambda p: p['payload']['substep_record_ids'].reverse(),
+                lambda p: p['payload'].update(step_label='wrong'),
+                lambda p: p['payload'].update(parent_record_id=p['id'])):
+            changed = copy.deepcopy(records)
+            mutate(next(r for r in changed if r['id'] == parent['id']))
+            with self.assertRaises(ContractError):
+                validate_records(seal_records(changed), self.vocabulary, [self.evidence])
+
+    def test_child_change_stales_parent_review_and_child_depends_on_parent(self):
+        from test_structured_contracts import CHECKS, TIMESTAMP
+        records = self.nested()
+        parent = next(r for r in records if r.get('payload', {}).get('step_label') == '2')
+        child = next(r for r in records if r.get('payload', {}).get('step_label') == '2.a')
+        bound = {r['record_id'] for r in dependency_bindings(child['id'], records)}
+        self.assertIn(parent['id'], bound)
+        overlay = new_quality_overlay()
+        for action in ('propose', 'approve'):
+            overlay = append_quality_event(
+                overlay, records, record_id=parent['id'], action=action,
+                intended_use='readable_reference', purpose='engineering',
+                reviewer={'id': 'authored nested test', 'kind': 'agent'}, timestamp=TIMESTAMP,
+                reason='Authored source comparison', checks=CHECKS,
+                prior_event_id=overlay['events'][-1]['id'] if overlay['events'] else None)
+        changed = copy.deepcopy(records)
+        next(r for r in changed if r['id'] == child['id'])['conditions'].append('Changed condition')
+        state = quality_state(parent['id'], seal_records(changed)['records'], overlay,
+                              intended_use='readable_reference', purpose='engineering',
+                              history=records)
+        self.assertEqual(state['state'], 'stale')
+
+    def test_nested_numbering_gaps_and_unknown_styles_abstain(self):
+        for inner in (b'<ol type="a" start="2"><li>Read.</li></ol>',
+                      b'<ol type="i"><li>Read.</li></ol>'):
+            with self.assertRaises(ContractError):
+                self.extract(HTML.replace(b'Read the fixture.', b'Read:' + inner),
+                             extract_nested=True)
 
     def test_scope_and_ocr_are_checked_before_parsing(self):
         for change in ('scope', 'ocr'):

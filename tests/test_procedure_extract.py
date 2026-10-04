@@ -8,7 +8,11 @@ from test_structured_contracts import fixtures
 
 from sme.contract import ContractError
 from sme.html_content import parse_html
-from sme.procedure_extract import extract_html_decision, extract_native_decision
+from sme.procedure_extract import (
+    _covers_configurations,
+    extract_html_decision,
+    extract_native_decision,
+)
 from sme.structured_contracts import validate_records
 
 HTML = b'''<html><body><a name="test1"></a><h4>Authored decision</h4>
@@ -89,6 +93,27 @@ class ProcedureExtractionTests(unittest.TestCase):
             self.html(HTML.replace(b'Record absent.', b'For 6.0L gasoline record absent.'))
         with self.assertRaises(ContractError):
             self.html(HTML.replace(b'Is the signal present?', b'Is this a 6.0L gasoline signal?'))
+
+    def test_fuel_only_context_narrows_confirmed_parent_without_guessing_engine(self):
+        other = self.vocabulary['configurations'][1]['id']
+        self.assertTrue(_covers_configurations('Diesel control system', self.vocabulary,
+                                                [self.config]))
+        for statement in ('Gasoline control system', 'Except diesel control systems',
+                          'Not diesel', 'Diesel and gasoline', 'Diesel VIN unknown'):
+            self.assertFalse(_covers_configurations(statement, self.vocabulary, [self.config]))
+        self.assertFalse(_covers_configurations('Diesel control system', self.vocabulary,
+                                                 [self.config, other]))
+
+    def test_multi_configuration_procedure_cannot_keep_partial_engine_matches(self):
+        other = self.vocabulary['configurations'][1]['id']
+        decisions = self.decisions | {other: {'state': 'confirmed',
+                                              'configuration_id': other,
+                                              'unit_id': self.binding['unit_id']}}
+        with self.assertRaises(ContractError):
+            extract_html_decision(HTML.replace(b'Is the signal present?',
+                                               b'Is the 6.0L diesel signal present?'),
+                                  self.binding, self.vocabulary, [self.config, other], decisions,
+                                  anchor='test1')
 
     def test_native_numbered_conditional_step_preserves_both_paths(self):
         text = '3. Read fixture meter. Is voltage below 4 V? If yes, go to next step. '

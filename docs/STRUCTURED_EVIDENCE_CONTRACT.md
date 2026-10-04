@@ -28,7 +28,7 @@ an image was read correctly.
 | --- | --- | --- |
 | Specification | Subject, quantity, condition-bound original values/units; optional normalized ranges/units | A missing normalized value is absent, not zero. Never separate a number from its headers/notes. |
 | Part reference | Original identifier, namespace, relationship | Mention is not fitment. Fitment requires explicit configuration IDs; supersession requires its printed target. |
-| Procedure step | Sequence, instruction, tool and next-step IDs | Missing prerequisites or unresolved continuation makes it incomplete. |
+| Procedure step | Sequence, instruction, tool and next-step IDs; optional source hierarchy | Missing prerequisites or unresolved continuation makes it incomplete. |
 | Diagnostic node | Entry/test/decision/outcome, operation, expected results and required branch labels | A complete decision needs alternatives; a test needs readings; an outcome has no hidden outgoing edges. |
 | Diagnostic edge | Source/target node, label, condition | A lost/duplicate required branch fails complete-node validation. |
 | Tool | Name, required operation, optional printed identifier | Do not turn an illustrative drawing label into a verified part identity. |
@@ -42,6 +42,29 @@ callers must first validate the immutable package/evidence against its manifest,
 then call `validate_records` with source text and perform original visual review.
 The validator cannot authenticate a reviewer, understand a drawing, or prove
 that a human's checked boxes reflect a correct interpretation.
+
+### Source step hierarchy (B3)
+
+Optional `step_label`, `numbering_style` (`1`, `a`, `A`), `parent_record_id` and
+`substep_record_ids` preserve printed groups. A composite display label such as
+`3.a` combines its parent's label and the original letter; `sequence` is the local
+sibling number. The parent retains its entire original source region, while its
+`instruction` omits separately represented direct child lists. Children retain
+their own exact original wording and locators. No child may be silently promoted
+to a top-level instruction or detached from its governing parent.
+
+Validation requires reciprocal parent/child ownership, contiguous sibling order,
+consistent numbering style, source-unit agreement and a child quotation contained
+in its parent's original region. Hierarchy cycles and excessive depth are rejected.
+Extraction supports up to eight nested levels and 1,024 steps; unsupported ordering
+needs review. Legacy flat records remain valid without hierarchy fields.
+
+Parent and child IDs enter quality dependency bindings in both directions, so a
+changed substep stales parent review, and a child cannot lose the parent's context.
+This intentional dependency cycle is bounded by visited IDs; it is not an execution
+cycle. The app displays parent/substep links and retains ancestor warnings/tools.
+Printed grouping is **not approved execution order**. Conditional alternatives,
+repeats and unresolved continuations still keep these examples incomplete.
 
 ## Separate quality log
 

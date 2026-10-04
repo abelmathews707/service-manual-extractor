@@ -119,13 +119,67 @@ def seal_records(records):
 def _references(record):
     payload = record['payload']
     links = [(identifier, None) for identifier in record['context_record_ids']]
-    for field, kind in (('tool_ids', 'tool'), ('next_record_ids', 'procedure_step')):
+    for field, kind in (('tool_ids', 'tool'), ('next_record_ids', 'procedure_step'),
+                        ('substep_record_ids', 'procedure_step')):
         links.extend((identifier, kind) for identifier in payload.get(field, ()))
+    if 'parent_record_id' in payload:
+        links.append((payload['parent_record_id'], 'procedure_step'))
     for field in ('from_record_id', 'to_record_id', 'target_record_id'):
         if field in payload:
             links.append((payload[field], 'diagnostic_node'
                           if record['type'] == 'diagnostic_edge' else None))
     return links
+
+
+def step_number(sequence, style):
+    """The deliberately supported printed number styles, without guessing Roman numerals."""
+    if type(sequence) is not int or sequence < 1:
+        raise ContractError('invalid printed step sequence')
+    if style == '1':
+        return str(sequence)
+    if style not in ('a', 'A') or sequence > 26:
+        raise ContractError('unsupported printed substep numbering')
+    return chr(ord(style) + sequence - 1)
+
+
+def _validate_step_hierarchy(records):
+    for item in records.values():
+        if item['type'] != 'procedure_step':
+            continue
+        payload = item['payload']
+        fields = {'step_label', 'numbering_style', 'parent_record_id', 'substep_record_ids'}
+        if not fields.intersection(payload):
+            continue  # Existing flat v1 records remain valid.
+        if not {'step_label', 'numbering_style', 'substep_record_ids'} <= set(payload):
+            raise ContractError('step hierarchy metadata is incomplete')
+        parent = records.get(payload.get('parent_record_id'))
+        label = step_number(payload['sequence'], payload['numbering_style'])
+        if parent is not None:
+            if item['id'] not in parent['payload'].get('substep_record_ids', []):
+                raise ContractError('substep is not owned by its stated parent')
+            if parent['binding']['unit_id'] != item['binding']['unit_id']:
+                raise ContractError('step hierarchy cannot cross source units')
+            if item['original_text'] not in parent['original_text']:
+                raise ContractError('substep quotation is absent from the parent source region')
+            label = parent['payload'].get('step_label', '') + '.' + label
+        if payload['step_label'] != label:
+            raise ContractError('printed step label disagrees with its parent/sequence')
+        children = [records[identifier] for identifier in payload['substep_record_ids']]
+        if [child['payload']['sequence'] for child in children] != \
+                list(range(1, len(children) + 1)):
+            raise ContractError('substep order has gaps, duplicates or reordering')
+        if len({child['payload'].get('numbering_style') for child in children}) > 1:
+            raise ContractError('substep numbering style changes within a group')
+        for child in children:
+            if child['payload'].get('parent_record_id') != item['id']:
+                raise ContractError('substep has absent or conflicting parent ownership')
+        seen = {item['id']}
+        ancestor = parent
+        while ancestor is not None:
+            if ancestor['id'] in seen or len(seen) >= 32:
+                raise ContractError('step hierarchy has a cycle or excessive depth')
+            seen.add(ancestor['id'])
+            ancestor = records.get(ancestor['payload'].get('parent_record_id'))
 
 
 def validate_records(value, vocabulary, evidence_sets, *, source_texts=None):
@@ -240,6 +294,7 @@ def validate_records(value, vocabulary, evidence_sets, *, source_texts=None):
                 raise ContractError('terminal diagnostic outcome cannot hide outgoing branches')
             if any(edge['completeness']['state'] != 'complete' for edge in edges):
                 raise ContractError('complete node depends on an incomplete branch')
+    _validate_step_hierarchy(records)
     return value
 
 

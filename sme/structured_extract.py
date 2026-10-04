@@ -149,6 +149,16 @@ This is a guard on reviewed recipes, not automatic approval of arbitrary rows.
                                 r'diesel|gasoline|CNG|(?:19|20)\d{2})\b', text, re.I)
     if not has_constraint and not has_vehicle_cue:
         return configurations
+    # A fuel-only heading can narrow an already-confirmed parent without inventing
+    # an engine displacement. Rich/negative/unresolved cues still abstain.
+    fuels = {value.casefold() for value in re.findall(r'\b(diesel|gasoline|CNG)\b', text, re.I)}
+    rich_cue = re.search(r'\b(?:\d{1,2}(?:\.\d)?\s*L|VIN|RPO|Series|(?:19|20)\d{2}|'
+                         r'not|non|except|excluding|without)\b', text, re.I)
+    if resolved and not has_constraint and len(fuels) == 1 and not rich_cue:
+        configs = {item['id']: item for item in vocabulary['configurations']}
+        engines = {item['id']: item for item in vocabulary['engines']}
+        return [identifier for identifier in configurations
+                if engines[configs[identifier]['engine_id']]['fuel'].casefold() in fuels]
     if not resolved or not has_constraint:
         return []
     configs = {item['id']: item for item in vocabulary['configurations']}

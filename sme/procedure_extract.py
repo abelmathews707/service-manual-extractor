@@ -40,6 +40,11 @@ def _quote(text):
     return {'kind': 'text_quote', 'quote': text, 'prefix': '', 'suffix': ''}
 
 
+def _covers_configurations(text, vocabulary, configurations):
+    """Unlike a table row, a whole procedure cannot silently retain a partial match."""
+    return set(_row_scope(text, vocabulary, configurations)) == set(configurations)
+
+
 def _graph(binding, vocabulary, configurations, question, question_locator,
            branches, context, missing):
     records = list(context)
@@ -111,7 +116,8 @@ def extract_html_decision(data, binding, vocabulary, configurations, decisions, 
     if len(headings) != 1 or len(questions) != 1:
         raise ContractError('procedure heading/question is missing or ambiguous')
     question = questions[0]
-    if configurations and not _row_scope(compact(text_of(question)), vocabulary, configurations):
+    if configurations and not _covers_configurations(
+            compact(text_of(question)), vocabulary, configurations):
         raise ContractError('question contains conflicting/unresolved vehicle restrictions')
     question_index = next(i for i, node in enumerate(section) if node is question)
     after = section[question_index + 1:]
@@ -142,7 +148,7 @@ def extract_html_decision(data, binding, vocabulary, configurations, decisions, 
         missing.append('Vehicle applicability has not been established')
     for node in [headings[0], *selected]:
         original = compact(text_of(node))
-        if configurations and not _row_scope(original, vocabulary, configurations):
+        if configurations and not _covers_configurations(original, vocabulary, configurations):
             raise ContractError('procedure contains conflicting/unresolved vehicle restrictions')
         if node is headings[0]:
             context.append(_record('region', binding, vocabulary, configurations,
@@ -165,7 +171,7 @@ def extract_html_decision(data, binding, vocabulary, configurations, decisions, 
     branches = []
     for label, cell in zip(('Yes', 'No'), cells):
         text = compact(text_of(cell))
-        if configurations and not _row_scope(text, vocabulary, configurations):
+        if configurations and not _covers_configurations(text, vocabulary, configurations):
             raise ContractError('branch contains conflicting/unresolved vehicle restrictions')
         branches.append((label, text, {'kind': 'html', 'selector': _selector(cell)},
                          [node.attrs['href'] for node in cell.walk()
@@ -189,7 +195,7 @@ def extract_native_decision(text, binding, vocabulary, configurations, decisions
     if (match is None or text.count('?') != 1 or text.lower().count('if yes,') != 1 or
             text.lower().count('if no,') != 1):
         raise ContractError('native step has missing or ambiguous conditional branches')
-    if not _row_scope(text, vocabulary, configurations):
+    if not _covers_configurations(text, vocabulary, configurations):
         raise ContractError('native step has conflicting/unresolved vehicle restrictions')
     parts = re.fullmatch(r'(.*?)(\b(?:Does|Do|Is|Are|Did|Has|Have|Can)\b.+\?)', match[2])
     if parts is None:

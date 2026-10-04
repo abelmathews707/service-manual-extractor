@@ -165,3 +165,44 @@ skips, Ruff clean. Existing GM and Ford decision records remain unchanged.
 Next: review/represent nested alternatives and required continuation targets, use
 real source/target mappings through the app, and complete the original-reviewed full
 procedure/graph gate. Do not label this partial ordered example as B3 completion.
+
+## Nested-source and real candidate checkpoint — 2026-10-04
+
+Explicit opt-in nested extraction now retains parent/child records and composite
+labels such as `3.a`, `3.b`, `3.c`. The contract checks reciprocal ownership, exact
+child quotations within parent regions, numbering order, source units and cycles.
+Parent/child dependencies are bound to quality reviews in both directions. Printed
+grouping is not execution order: conditional/transmission alternatives and repeat
+paths remain incomplete. The app exposes hierarchy links and ancestor context.
+
+The Ford drive-cycle comparison now includes eight root steps, three separately
+recorded substeps and six context records (17 total). Current local-only output:
+`nested-records-v2`, using `ordered-expected-v1.json` plus `nested-expected-v1.json`.
+`nested-records-v1` is historical. Nothing replaces the accepted earlier records.
+
+A real name-to-entry candidate links drive-cycle step 8 to Quick Test `pptQT1`
+in `V3D3001.htm`. Both units independently belong to the confirmed diesel scope.
+`acceptance/b3_link_candidate.py` compares separately transcribed source markup and
+creates only a **proposal** with all comparison/approval checkboxes false. Current
+output is `link-candidate-v2`, with `quick-test-expected-v1.json`; there are zero
+content-quality or link approvals. The first candidate attempt was rejected before
+writing output because of the fuel-heading boundary described below.
+
+Original-layout review is outstanding: the browser blocked opening the local HTML
+original. No alternate browser/serving workaround was attempted and no visual review
+was claimed. Source-markup comparison is not a substitute for that approval. The
+target also retains unresolved OASIS/TSB, modification-reference, QT2/later-step and
+instruction-grouping dependencies. It is not a complete diagnostic procedure.
+
+That candidate revealed two scope boundaries: fuel-only context can safely narrow
+an already confirmed parent to matching fuel, while rich/negative/unresolved hints
+still abstain; a procedure must match **every** declared configuration, not merely
+return one matching configuration from the table-row narrower. Authored regressions
+cover both. No source applicability event was broadened or automatically approved.
+
+Extractor suite: 260 tests, zero failures, two optional Node skips; Ruff passes.
+App suite: 293 tests pass with the real extractor fixtures; Ruff passes. Final
+real-library HTTP results are recorded in the app B3 handoff after its exact pin
+is updated. B3 remains in progress. Next: obtain original-layout review, represent
+conditional alternatives/repeat paths, resolve required targets and pass a complete
+real-procedure comparison. Recommended model remains GPT-6 Astra / High.

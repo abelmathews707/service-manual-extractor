@@ -17,7 +17,7 @@ from sme.structured_contracts import new_quality_overlay, validate_records
 from sme.structured_extract import _selector, compact
 
 
-def run(b1, output, expected):
+def run(b1, output, expected, *, nested_expected=None):
     vocabulary, review = read(b1 / 'vocabulary.json'), read(b1 / 'review.json')
     generation, index = open_current(str(b1 / 'library'),
                                       current_review_revision=review['revision'])
@@ -64,22 +64,33 @@ def run(b1, output, expected):
         data, binding, vocabulary, [config['id']], decisions,
         list_selectors=[body + f'ol:nth-of-type({number})' for number in range(1, 9)],
         context=context, coverage_reviewed=True, ford_legacy=True,
+        extract_nested=nested_expected is not None,
         missing_context=['Quick Test prerequisite/continuation requires independent review',
                          'Conditional repeat paths and transmission alternatives require review'])
     validate_records(bundle, vocabulary, [source], source_texts={unit['id']: compact(
         parse_html(data, citation['path'], ford_legacy=True)['text'])})
-    steps = [r for r in bundle['records'] if r['type'] == 'procedure_step']
+    all_steps = [r for r in bundle['records'] if r['type'] == 'procedure_step']
+    steps = [r for r in all_steps if 'parent_record_id' not in r['payload']]
     if ([r['original_text'] for r in steps] != expected['steps'] or
             [r['original_text'] for r in context] != expected['context'] or
             [r['payload']['sequence'] for r in steps] != list(range(1, 9)) or
-            any(r['completeness']['state'] != expected['state'] for r in steps) or
-            any(r['payload']['next_record_ids'] for r in steps)):
+            any(r['completeness']['state'] != expected['state'] for r in all_steps) or
+            any(r['payload']['next_record_ids'] for r in all_steps)):
         raise ContractError('ordered instructions/context differ from frozen original comparison')
+    children = [r for r in all_steps if 'parent_record_id' in r['payload']]
+    if nested_expected is not None:
+        parent = next(r for r in steps if r['payload']['sequence'] == 3)
+        if ([{'label': r['payload']['step_label'], 'instruction': r['payload']['instruction']}
+             for r in children] != nested_expected['substeps'] or
+                parent['payload']['instruction'] != nested_expected['parent_instruction'] or
+                any(r['payload']['parent_record_id'] != parent['id'] for r in children)):
+            raise ContractError('nested steps differ from independently recorded source structure')
     folder = output / unit['id']
     folder.mkdir(parents=True, exist_ok=True)
     write_once(folder / 'records.json', bundle)
     write_once(folder / 'quality.json', new_quality_overlay())
     report = {'unit_id': unit['id'], 'records': len(bundle['records']), 'steps': len(steps),
+              'substeps': len(children),
               'context_records': len(context), 'comparison': 'exact original transcription passed',
               'vehicle': 'confirmed Ford diesel, not V10', 'state': 'incomplete',
               'quality_approvals': 0, 'diagnostic_ready': False}
@@ -92,5 +103,8 @@ if __name__ == '__main__':
     parser.add_argument('b1_root', type=Path)
     parser.add_argument('output', type=Path)
     parser.add_argument('expected', type=Path)
+    parser.add_argument('--nested-expected', type=Path)
     args = parser.parse_args()
-    print(json.dumps(run(args.b1_root, args.output, read(args.expected)), indent=2))
+    nested = read(args.nested_expected) if args.nested_expected else None
+    print(json.dumps(run(args.b1_root, args.output, read(args.expected), nested_expected=nested),
+                     indent=2))
