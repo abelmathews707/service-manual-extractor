@@ -52,6 +52,8 @@ def plan_ocr(package, low_text_chars=80):
         inventory = validate_inventory(json.load(stream))
     if inventory['source_id'] != manifest['source']['id']:
         raise SourceError('OCR source inventory does not match manifest')
+    from .source import verify_inventory_binding
+    verify_inventory_binding(inventory, manifest)
     members = {member['path']: member for member in inventory['members']}
     grouped = {}
     for record in content['documents']:

@@ -153,4 +153,35 @@ def interpret_statement(statement, vocabulary, structured=None):
         resolved = False
     if not structured and len(model_mentions) > 1:
         resolved = False
+    # Explicit variants must survive interpretation. Bind only simple, known
+    # qualifier values; more complex expressions remain review proposals.
+    names = {'vin', 'rpo', 'transmission', 'drivetrain', 'body', 'wheelbase'}
+    names.update(name for config in vocabulary['configurations']
+                 for name in config['qualifiers'])
+    for name in sorted(names):
+        mentions = list(re.finditer(r'\b' + re.escape(name) + r'\b', statement, re.I))
+        if not mentions:
+            continue
+        match = re.search(r'\b' + re.escape(name) +
+                          r'\s*(?:code\s*)?[:=]?\s*([A-Za-z0-9-]+)\b',
+                          statement, re.I)
+        raw = match.group(1) if match else None
+        complex_qualifier = bool(re.search(
+            r'\b(?:except|excluding|not|through|thru|before|after|and|or)\b',
+            statement, re.I)) or len(mentions) != 1 or bool(
+                match and re.match(r'\s*[/,&+]', statement[match.end():]))
+        for alternative in alternatives:
+            values = {config['qualifiers'][name]
+                      for config in vocabulary['configurations']
+                      if name in config['qualifiers'] and
+                      all(alternative[field]['state'] == 'exact' and
+                          alternative[field]['value'] == config[key]
+                          for field, key in (('make', 'make_id'), ('model', 'model_id'),
+                                             ('year', 'model_year'), ('engine', 'engine_id')))}
+            matched = [value for value in values if str(value).casefold() == str(raw).casefold()]
+            if len(matched) == 1 and not complex_qualifier:
+                alternative['qualifiers'][name] = {'state': 'exact', 'value': matched[0]}
+            else:
+                alternative['qualifiers'][name] = {'state': 'unknown'}
+                resolved = False
     return alternatives, resolved

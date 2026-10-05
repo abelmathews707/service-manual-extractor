@@ -136,6 +136,8 @@ def capture_evidence(package, vocabulary, verify_originals=True):
     content = validate_content(json.loads(content_bytes), manifest)
     with open(_local_file(root, INVENTORY_NAME), encoding='utf-8') as stream:
         inventory = validate_inventory(json.load(stream))
+    from .source import verify_inventory_binding
+    verify_inventory_binding(inventory, manifest)
     if inventory['source_id'] != manifest['source']['id']:
         raise SourceError('source inventory does not match normalized package')
     if verify_originals:
@@ -267,6 +269,8 @@ def write_evidence(package, vocabulary_path, destination):
             inventory = validate_inventory(json.load(stream))
         if inventory['source_id'] != manifest['source']['id']:
             raise SourceError('cached evidence source inventory does not match manifest')
+        from .source import verify_inventory_binding
+        verify_inventory_binding(inventory, manifest)
         for member in inventory['members']:
             if _file_sha(_local_file(root, member['path'])) != member['sha256']:
                 raise SourceError(f'original package member changed: {member["path"]}')
@@ -275,6 +279,9 @@ def write_evidence(package, vocabulary_path, destination):
         if value.get('content_sha256') != content_sha:
             raise SourceError('cached evidence is stale for this content generation')
         validate_evidence(value, manifest, vocabulary)
+        if value != capture_evidence(package, vocabulary):
+            raise SourceError('cached evidence uses older interpretation rules; '
+                              'regenerate evidence')
         return {'output': os.path.abspath(destination), 'source_id': value['source_id'],
                 'units': len(value['units']), 'assertions': len(value['assertions']),
                 'revision': value['revision'], 'cached': True}

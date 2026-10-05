@@ -149,7 +149,9 @@ def _extractor(value, path):
 def _source(value, path='source'):
     required = ('id', 'format', 'container', 'identity', 'sha256', 'status',
                 'failures', 'extractor')
-    _object(value, path, required)
+    _object(value, path, required, ('inventory_sha256',))
+    if 'inventory_sha256' in value:
+        _sha(value['inventory_sha256'], f'{path}.inventory_sha256')
     _identifier(value['id'], f'{path}.id', 'src')
     if value['format'] not in FORMATS:
         _fail(f'{path}.format', f'unsupported format {value["format"]!r}')

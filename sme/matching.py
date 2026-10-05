@@ -270,6 +270,24 @@ def _match_unit(evidence, manifest, vocabulary, unit_id, selection, *,
         group = by_subject.get(subject, [])
         includes = [item for item in group if item['intent'] == 'include']
         excludes = [item for item in group if item['intent'] == 'exclude']
+        # A broader heading or accepted ancestor cannot erase a narrower
+        # explicit variant restriction on this page or one of its ancestors.
+        for item in includes + excludes:
+            if (item['provenance'] != 'native' or item['derivation'] not in
+                    {'explicit_text', 'explicit_structured'} or
+                    not any(alt['qualifiers'] for alt in item['alternatives'])):
+                continue
+            unknown = {name for alt in item['alternatives']
+                       for name, predicate in alt['qualifiers'].items()
+                       if predicate['state'] == 'unknown'}
+            value = _assertion_match(item, selection)
+            if unknown or (value is not None and value[3]):
+                return _result('possible' if mode == 'include_possible' else 'excluded',
+                               'missing_qualifier', [item['id']], accepted,
+                               missing=unknown or value[3], mode=mode)
+            if item['intent'] == 'include' and value is None:
+                return _result('excluded', 'excluded_by_source', [item['id']], accepted,
+                               conflicts=[item['id']], mode=mode)
         for item in excludes:
             if item['support'] == 'source_supported' and _assertion_match(item, selection):
                 reason = 'conflicting_child' if subject == unit_id or subject in ancestry[:-2] \

@@ -24,10 +24,10 @@ from .source import (
 def _transform_revision(ford=False):
     root = os.path.dirname(os.path.dirname(__file__))
     files = ['sme/normalize.py', 'sme/html_content.py', 'sme/pdf_content.py',
-             'sme/contract.py']
+             'sme/contract.py', 'sme/source.py']
     if ford:
         files += ['sme/ford_adapter.py', 'fsd/arc.py', 'fsd/disc.py',
-                  'fsd/build.py', 'fsd/extract.py']
+                  'fsd/build.py', 'fsd/safe_content.py', 'fsd/extract.py']
     sha = hashlib.sha256()
     for relative in files:
         sha.update(relative.encode() + b'\0')
@@ -42,15 +42,18 @@ def _verify_cached_package(path, expected_source_id):
     if manifest['source']['id'] != expected_source_id:
         raise SourceError(f'cached package has the wrong source ID: {path}')
     with open(_local_file(path, CONTENT_NAME), encoding='utf-8') as stream:
-        validate_content(json.load(stream), manifest)
+        content = validate_content(json.load(stream), manifest)
     with open(_local_file(path, INVENTORY_NAME), encoding='utf-8') as stream:
         inventory = validate_inventory(json.load(stream))
+    from .source import verify_inventory_binding
+    verify_inventory_binding(inventory, manifest)
     if inventory['source_id'] != expected_source_id:
         raise SourceError(f'cached inventory has the wrong source ID: {path}')
     for member in inventory['members']:
         if _sha_file(_local_file(path, member['path'])) != member['sha256']:
             raise SourceError(f'cached original changed: {member["path"]}')
-    return len(manifest['publications'])
+    return {'publications': len(manifest['publications']),
+            'status': content['status'], 'failures': content['failures']}
 
 
 def _ford_source_id(path, identities):
@@ -126,13 +129,14 @@ def process_folder(outer, destination, include_names=None, ford_archives=None):
                 path = os.path.join(packages_root,
                                     identifier + '-' + _transform_revision(ford=True))
                 if os.path.isdir(path):
-                    count = _verify_cached_package(path, identifier)
+                    state = _verify_cached_package(path, identifier)
                     packages.append({'path': path, 'source_id': identifier,
-                                     'publications': count, 'cached': True})
+                                     **state, 'cached': True})
                 else:
                     built = import_ford(item['path'], path, identities)
                     packages.append({'path': path, 'source_id': identifier,
                                      'publications': built['publications'],
+                                     'status': 'partial' if built['failures'] else 'complete',
                                      'cached': False, 'failures': built['failures']})
         else:
             source = inspect_source(item['path'])
@@ -145,9 +149,9 @@ def process_folder(outer, destination, include_names=None, ford_archives=None):
             package = os.path.join(packages_root,
                                    identifier + '-' + _transform_revision())
             if os.path.isdir(package):
-                count = _verify_cached_package(package, identifier)
+                state = _verify_cached_package(package, identifier)
                 packages.append({'path': package, 'source_id': identifier,
-                                 'publications': count, 'cached': True})
+                                 **state, 'cached': True})
             else:
                 if not os.path.isdir(extracted):
                     operation = extract_source(item['path'], extracted)
@@ -156,10 +160,15 @@ def process_folder(outer, destination, include_names=None, ford_archives=None):
                 built = normalize_source(extracted, package)
                 packages.append({'path': package, 'source_id': identifier,
                                  'publications': len(source.publications),
+                                 'status': built['status'],
                                  'cached': False, 'failures': built['failures']})
-        results.append({'name': item['name'], 'status': 'processed',
-                        'reason': None, 'packages': packages})
+        results.append({'name': item['name'], 'status': (
+                            'processed' if all(p['status'] == 'complete' for p in packages)
+                            else 'partial'),
+                        'reason': None, 'packages': packages,
+                        'unsupported_archives': item.get('unsupported_archives', [])})
     return {'contract': 'service-manual-processing/v1', 'root': found['root'],
+            'ok': all(item['status'] == 'processed' for item in results),
             'destination': target, 'results': results,
             'unsupported': [item['name'] for item in found['sources']
                             if item['status'] != 'recognized']}

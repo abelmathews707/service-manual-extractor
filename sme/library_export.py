@@ -23,7 +23,8 @@ def _transform_revision():
     root = os.path.dirname(os.path.dirname(__file__))
     sha = hashlib.sha256()
     for relative in ('sme/library.py', 'sme/library_export.py', 'sme/matching.py',
-                     'sme/applicability_contracts.py'):
+                     'sme/applicability_contracts.py', 'sme/source.py',
+                     'sme/vehicle_interpretation.py', 'sme/evidence.py'):
         sha.update(relative.encode() + b'\0')
         with open(os.path.join(root, relative), 'rb') as stream:
             while block := stream.read(1024 * 1024):

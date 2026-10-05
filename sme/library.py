@@ -31,8 +31,12 @@ def verified_package(path, evidence=None, vocabulary=None):
     manifest = load_manifest(_local_file(root, MANIFEST_NAME))
     with open(_local_file(root, CONTENT_NAME), encoding='utf-8') as stream:
         content = validate_content(json.load(stream), manifest)
+    if content['status'] != 'complete':
+        raise SourceError('incomplete normalized package is for inspection only')
     with open(_local_file(root, INVENTORY_NAME), encoding='utf-8') as stream:
         inventory = validate_inventory(json.load(stream))
+    from .source import verify_inventory_binding
+    verify_inventory_binding(inventory, manifest)
     if inventory['source_id'] != manifest['source']['id']:
         raise SourceError('library package inventory belongs to another source')
     for member in inventory['members']:

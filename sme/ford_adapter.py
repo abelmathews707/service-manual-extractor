@@ -103,9 +103,14 @@ def probe_ford(path):
     """List exact archive identities and declared books without extracting."""
     with open_source(path) as source:
         archives = []
+        unsupported = []
         for ref in source.archives():
             with ref.open() as archive:
                 book = book_of(archive)
+                if book is None:
+                    unsupported.append({'identity': ref.identity,
+                                        'reason': 'No declared Ford publication'})
+                    continue
                 archives.append(
                     {
                         "identity": ref.identity,
@@ -117,7 +122,10 @@ def probe_ford(path):
                         "title": book.title if book else "",
                     }
                 )
-        return {"label": source.label, "container": source.kind, "archives": archives}
+        if not archives:
+            raise SourceError('no archive has a declared Ford publication')
+        return {"label": source.label, "container": source.kind, "archives": archives,
+                "unsupported_archives": unsupported}
 
 
 def _selected(source, identities):
@@ -771,6 +779,9 @@ def import_ford(path, destination, archive_identities):
                 "publications": selections,
             }
             validate_inventory(inventory)
+            from .source import inventory_digest
+            manifest['source']['inventory_sha256'] = inventory_digest(inventory)
+            validate_manifest(manifest)
             _json(os.path.join(staging, MANIFEST_NAME), manifest)
             _json(os.path.join(staging, INVENTORY_NAME), inventory)
             _json(os.path.join(staging, CONTENT_NAME), content)

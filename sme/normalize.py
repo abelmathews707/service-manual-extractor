@@ -383,6 +383,8 @@ def normalize_source(extracted, destination, ocr_manifest=None, source_inventory
         raise SourceError('normalization input must be a regular extracted directory')
     manifest = validate_manifest(_json(_local_file(root, MANIFEST_NAME)))
     inventory = validate_inventory(_json(_local_file(root, INVENTORY_NAME)))
+    from .source import verify_inventory_binding
+    verify_inventory_binding(inventory, manifest)
     if manifest['source']['status'] != 'complete':
         raise SourceError('partial source cannot be normalized as a verified source')
     if manifest['source']['id'] != inventory['source_id']:

@@ -529,9 +529,10 @@ class TestBuildHelpers(unittest.TestCase):
             '&rightside=x">back</a></body>', 'pced')
         self.assertIn('href="#/pced/vl2s01l"', out)
 
-    def test_external_links_open_in_a_new_tab(self):
+    def test_external_links_cannot_navigate_from_manual_content(self):
         out = clean_fragment('<body><a href="http://example.com">x</a></body>', 'wsm')
-        self.assertIn('rel="noopener"', out)
+        self.assertNotIn('href=', out)
+        self.assertIn('>x</a>', out)
 
 
 class TestSafeName(unittest.TestCase):

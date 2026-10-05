@@ -36,16 +36,18 @@ def discover_folder(root):
                 found = probe_ford(path)
                 item.update(status='recognized', route='ford-import',
                             publications=len(found['archives']),
-                            archives=found['archives'])
-            except (OSError, ValueError, ArcError, DiscError, IsoError) as error:
+                            archives=found['archives'],
+                            unsupported_archives=found['unsupported_archives'])
+            except (OSError, ValueError, SourceError, ArcError, DiscError, IsoError) as error:
                 item.update(status='failed', reason=str(error))
         elif os.path.isfile(path) and name.casefold().endswith(_DISC_IMAGES):
             try:
                 found = probe_ford(path)
                 item.update(status='recognized', route='ford-import',
                             publications=len(found['archives']),
-                            archives=found['archives'])
-            except (OSError, ValueError, ArcError, DiscError, IsoError) as error:
+                            archives=found['archives'],
+                            unsupported_archives=found['unsupported_archives'])
+            except (OSError, ValueError, SourceError, ArcError, DiscError, IsoError) as error:
                 item.update(status='failed', reason=str(error))
         elif os.path.isdir(path) or name.casefold().endswith(('.zip', '.pdf')):
             try:

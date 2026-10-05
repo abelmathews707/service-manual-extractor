@@ -269,10 +269,13 @@ def cmd_process_folder(args):
     else:
         for item in value['results']:
             print(f"{item['name']}: {item['status']}, {len(item['packages'])} package(s)")
+            for archive in item.get('unsupported_archives', []):
+                print(f"Skipped archive {archive['identity']}: {archive['reason']}",
+                      file=sys.stderr)
         if value['unsupported']:
             print('Unsupported or partial: ' + ', '.join(value['unsupported']),
                   file=sys.stderr)
-    return 0
+    return 0 if value['ok'] else 1
 
 
 def make_parser():
