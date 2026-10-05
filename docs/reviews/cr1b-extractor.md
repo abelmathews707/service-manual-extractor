@@ -24,7 +24,17 @@ The source reader rejects unsafe ZIP member paths, symlinks, collisions and decl
 
 **Suggested fix:** Parse a recognized VIN/RPO qualifier into a source-bound predicate only when its meaning and vocabulary mapping are unambiguous. Otherwise keep the original wording but downgrade the assertion to a proposal or unknown qualifier so it cannot produce confirmed membership. Apply the same conservative rule to other explicit qualifiers that the interpreter currently drops. Add a full extract → evidence → match regression with two same-engine VIN variants, plus an `except VIN ...` exclusion case and an app pre-search eligibility check.
 
-### CR1B-2 — P1: an incomplete normalized update is reported as processed, and cached failures disappear
+### CR1B-2 — P1: a rewritten inventory can make changed originals pass package verification
+
+**Where:** `sme/source.py:773-868` recomputes `selected_content_sha256` from the inventory's own member hashes but does not bind those hashes to the manifest's original source identity. `sme/library.py:26-49` checks bytes against that mutable inventory and accepts the package without comparing each cited original to its document hash or another immutable source binding. `sme/evidence.py:120-153` uses the same inventory check before emitting evidence. The app reader has a related downstream finding owned by CR1A.
+
+**Impact:** Replacing an original page and updating the adjacent inventory can leave the manifest, normalized text, evidence generation and review bindings unchanged while the package verifier accepts the replacement. A consumer that opens the original now shows different content from the text and citations that were reviewed. This breaks source traceability and can preserve stale approvals after a local package change.
+
+**Evidence:** In a temporary neutral HTML package, I changed `Set to 42` in the copied original to `Set to 99`, then updated only that member's inventory SHA-256 and the inventory's two content digests. `validate_inventory` and `verified_package` both accepted it; the manifest document hash and source ID remained unchanged. This reproduction does not require changing the source folder, manifest or normalized content. It is a local package tampering/update case, not a preimage attack on SHA-256.
+
+**Suggested fix:** Bind every packaged original to immutable source/package identity across container types, and verify cited document/asset hashes against the actual bytes on each read path. Do not let an editable inventory alone redefine which bytes count as the original. Coordinate the app's reader and export binding fix with CR1A so the two repositories enforce the same invariant. Add a regression that changes an original plus inventory digests while leaving manifest/content/evidence/review unchanged; package verification and original viewing must refuse the stale generation.
+
+### CR1B-3 — P1: an incomplete normalized update is reported as processed, and cached failures disappear
 
 **Where:** `sme/normalize.py:214-242, 477-499` deliberately publishes a `partial` content package with exact failures. `sme/orchestrate.py:40-53` verifies cached content but returns only publication count. `sme/orchestrate.py:128-161` labels new and cached packages `processed` regardless of content status; cached package entries omit failures. `sme/cli.py:250-273` returns success for `process-folder` unless an exception occurs.
 
@@ -34,7 +44,7 @@ The source reader rejects unsafe ZIP member paths, symlinks, collisions and decl
 
 **Suggested fix:** Return content status and failures from cached verification and new builds; surface `partial` in each processing row and the top-level summary, and make the command exit unsuccessfully for any selected partial package. Decide explicitly whether a partial package may be published as a readable inspection artifact; never present it as a completed import. Test first-run and cached rerun status, JSON/plain CLI exit, and a failed new generation beside a previously complete one.
 
-### CR1B-3 — P2: generic POD archives are routed through the Ford importer without Ford evidence
+### CR1B-4 — P2: generic POD archives are routed through the Ford importer without Ford evidence
 
 **Where:** `sme/discovery.py:34-49, 67-76` routes any `content/**/*.arc` folder to `ford-import` after the POD parser accepts it. `sme/ford_adapter.py:102-120` lists an archive even when `book_of` returns no Ford EPL book. `fsd/disc.py:381-410` invents a fallback book, and `sme/ford_adapter.py:566-797` publishes a `ford_tsp_disc_v2` package from it.
 
