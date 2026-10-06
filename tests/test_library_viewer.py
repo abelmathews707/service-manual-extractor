@@ -145,10 +145,10 @@ class LibraryViewerTests(unittest.TestCase):
             overlay.write_text(json.dumps(review), encoding='utf-8')
             shard = next(iter(index['shards'].values()))
             path = Path(generation, shard['path'])
-            path.write_text(path.read_text() + ' ', encoding='utf-8')
+            path.write_text(path.read_text(encoding='utf-8') + ' ', encoding='utf-8')
             # A whitespace-only change does not affect the parsed value, but
             # publication is still refused if the parsed shard membership changes.
-            payload = json.loads(path.read_text())
+            payload = json.loads(path.read_text(encoding='utf-8'))
             payload[0]['text'] = 'changed text'
             path.write_text(json.dumps(payload), encoding='utf-8')
             with self.assertRaisesRegex(ContractError, 'search shard changed'):
