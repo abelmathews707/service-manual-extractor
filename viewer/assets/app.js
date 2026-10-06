@@ -57,6 +57,7 @@ async function route() {
   const [a, b, c] = parts;
   const manifest = MANIFEST || await data('manifest');
   MANIFEST = manifest;
+  if (manifest.viewerMode === 'library') return await libraryRoute(parts, q, manifest);
   if (manifest.viewerMode === 'neutral') return await neutralRoute(parts, q, manifest);
   const tab = (a === 'conn') ? 'elb' : a;
   $$('#bookTabs a').forEach(el => el.classList.toggle('on', el.dataset.book === tab));
@@ -108,6 +109,324 @@ const notFound = () => {
     <a class="card" href="#/" style="max-width:280px"><h3>← Back to start</h3></a></div>`;
 };
 
+/* ---------------------------- reviewed multi-manual library snapshot */
+let LIBRARY = null;
+let libraryRequest = 0;
+let libraryAbort = null;
+const libraryKeys = ['make_id', 'model_id', 'model_year', 'engine_id',
+  'transmission', 'drivetrain', 'mode', 'include_reference', 'browse_all', 'q'];
+function libraryParams(query) {
+  const result = new URLSearchParams();
+  for (const key of libraryKeys) if (query.has(key)) result.set(key, query.get(key));
+  return result;
+}
+const ordered = value => Array.isArray(value) ? value.map(ordered)
+  : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort()
+    .map(key => [key, ordered(value[key])])) : value;
+const sameValue = (a, b) => JSON.stringify(ordered(a)) === JSON.stringify(ordered(b));
+async function libraryData() {
+  if (!LIBRARY) {
+    const [index, vocabulary, details] = await Promise.all([
+      data('library-index'), data('vocabulary'), data('unit-details')]);
+    LIBRARY = { index, vocabulary, details };
+  }
+  return LIBRARY;
+}
+function librarySelection(params) {
+  if (params.get('browse_all') === '1') return {};
+  const value = {};
+  for (const key of ['make_id', 'model_id', 'engine_id'])
+    if (params.get(key)) value[key] = params.get(key);
+  if (params.get('model_year')) value.model_year = Number(params.get('model_year'));
+  const qualifiers = {};
+  for (const key of ['drivetrain', 'transmission'])
+    if (params.get(key)) qualifiers[key] = params.get(key);
+  if (Object.keys(qualifiers).length) value.qualifiers = qualifiers;
+  return value;
+}
+function libraryScope(index, params) {
+  const browse = params.get('browse_all') === '1';
+  const mode = browse ? 'include_possible' : params.get('mode') || 'confirmed';
+  const selection = librarySelection(params);
+  return Object.values(index.scopes).find(entry => {
+    const scope = entry.scope;
+    return scope.mode === mode && scope.browse_all === browse &&
+      scope.include_reference === (params.get('include_reference') === '1') &&
+      sameValue(scope.selection, selection);
+  }) || null;
+}
+function libraryChoices(vocabulary, params) {
+  const make = params.get('make_id'), model = params.get('model_id');
+  const year = Number(params.get('model_year'));
+  const configs = vocabulary.configurations.filter(item =>
+    (!make || item.make_id === make) && (!model || item.model_id === model));
+  return {
+    makes: vocabulary.makes,
+    models: vocabulary.models.filter(item => item.make_id === make),
+    years: [...new Set(configs.map(item => item.model_year))].sort(),
+    engines: vocabulary.engines.filter(item => configs.some(config =>
+      config.model_year === year && config.engine_id === item.id)),
+    qualifiers: Object.fromEntries(['drivetrain', 'transmission'].map(key =>
+      [key, [...new Set(configs.filter(item => item.model_year === year &&
+        (!params.get('engine_id') || item.engine_id === params.get('engine_id')))
+        .map(item => (item.qualifiers || {})[key]).filter(Boolean))].sort()])),
+  };
+}
+function libraryFilters(vocabulary, params) {
+  const choices = libraryChoices(vocabulary, params);
+  const field = (key, label, options, placeholder, disabled) => `<label>${label}
+    <select name="${key}" ${disabled ? 'disabled' : ''}>
+      ${key === 'mode' ? '' : `<option value="">${placeholder}</option>`}${options.map(([value, name]) =>
+        `<option value="${esc(value)}"${(key === 'mode' && params.get('browse_all') === '1' ?
+          'include_possible' : (params.get(key) || (key === 'mode' ? 'confirmed' : ''))) ===
+          String(value) ? ' selected' : ''}>${esc(name)}</option>`).join('')}
+    </select></label>`;
+  return `<form class="vehicle-filters" aria-label="Vehicle manual filters">
+    <div class="vehicle-filter-grid">
+      ${field('make_id', 'Make', choices.makes.map(item => [item.id, item.name]),
+        'Choose a make', false)}
+      ${field('model_id', 'Model', choices.models.map(item => [item.id, item.name]),
+        'Any model', !params.get('make_id'))}
+      ${field('model_year', 'Model year', choices.years.map(item => [item, item]),
+        'Any year', !params.get('model_id'))}
+      ${field('engine_id', 'Engine', choices.engines.map(item => [item.id, item.name]),
+        'Any engine', !params.get('model_year'))}
+      ${['transmission', 'drivetrain'].filter(key => choices.qualifiers[key].length)
+        .map(key => field(key, key === 'drivetrain' ? 'Drivetrain' : 'Transmission',
+          choices.qualifiers[key].map(value => [value, value]), 'Any ' + key,
+          !params.get('engine_id'))).join('')}
+      ${field('mode', 'Match mode', [['confirmed', 'Confirmed matches'],
+        ['include_possible', 'Include possible matches']], 'Confirmed matches',
+        params.get('browse_all') === '1')}
+    </div>
+    <label class="check"><input type="checkbox" name="include_reference" value="1"
+      ${params.get('include_reference') === '1' ? 'checked' : ''}> Include reference material</label>
+    <label class="check"><input type="checkbox" name="browse_all" value="1"
+      ${params.get('browse_all') === '1' ? 'checked' : ''}> Browse all manuals (ignores vehicle filters)</label>
+    <p class="subtitle">Changing a filter changes only this view. Review decisions are read-only here;
+      use Repair Buddy to propose or change them.</p>
+  </form>`;
+}
+function libraryCoverage(entry, params, index) {
+  if (!params.get('make_id') && params.get('browse_all') !== '1')
+    return '<div class="note">Choose a make to see reviewed vehicle coverage, or explicitly Browse all.</div>';
+  if (!entry) return '<div class="note">This selection was not published in this snapshot. Choose a known vehicle or rebuild the library; search did not widen.</div>';
+  const counts = entry.counts || {};
+  const possibleEntry = entry.scope.mode === 'confirmed'
+    ? Object.values(index.scopes).find(item => item.scope.mode === 'include_possible' &&
+      item.scope.browse_all === entry.scope.browse_all &&
+      item.scope.include_reference === entry.scope.include_reference &&
+      sameValue(item.scope.selection, entry.scope.selection)) : entry;
+  const selected = entry.scope.eligible.length;
+  return `<div class="note" role="status">${params.get('browse_all') === '1' ?
+    'Browse all is unfiltered.' : 'Selected vehicle scope.'} ${selected} searchable section${selected === 1 ? '' : 's'};
+    ${possibleEntry?.counts?.possible || 0} possible, ${counts.unmapped || 0} unknown.
+    ${entry.no_content ? 'No eligible sections; no other manuals were searched.' : ''}</div>`;
+}
+function librarySnapshot(manifest) {
+  return `<p class="snapshot">Library ${esc(manifest.libraryRevision.slice(0, 12))} ·
+    review ${esc(manifest.reviewRevision.slice(0, 12))} · built ${esc(manifest.builtAt)}.
+    Decisions shown as of this offline snapshot; newer decisions require a rebuilt site.</p>`;
+}
+const libraryRouteOf = (unit, params, returnHash) =>
+  `#/library-unit/${unit}?${libraryParams(params).toString()}${returnHash ?
+    '&return=' + encodeURIComponent(returnHash) : ''}`;
+// Bound simultaneous local HTTP requests even for a large possible/all scope.
+async function libraryShards(ids, load, signal, concurrency = 6) {
+  const results = new Array(ids.length);
+  let cursor = 0, failed = false;
+  async function worker() {
+    while (!failed && cursor < ids.length) {
+      if (signal.aborted) throw new DOMException('Search cancelled', 'AbortError');
+      const position = cursor++;
+      try {
+        results[position] = await load(ids[position], signal);
+      } catch (error) {
+        failed = true;
+        throw error;
+      }
+    }
+  }
+  await Promise.all(Array.from({length: Math.min(concurrency, ids.length)}, worker));
+  if (signal.aborted) throw new DOMException('Search cancelled', 'AbortError');
+  return results;
+}
+async function libraryShard(id, descriptor, signal) {
+  if (!/^[a-f0-9]{32}$/.test(id) || descriptor.path !== `shards/${id}.json`)
+    throw new Error('Invalid search shard path');
+  const response = await fetch('data/' + descriptor.path, {signal});
+  if (!response.ok) throw new Error('Search shard is unavailable');
+  const payload = await response.json();
+  const keys = payload.map(item => item.unit_id).sort();
+  if (!sameValue(keys, [...descriptor.unit_ids].sort()))
+    throw new Error('Search shard membership changed');
+  const bytes = new TextEncoder().encode(JSON.stringify(ordered(payload)));
+  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+    .map(value => value.toString(16).padStart(2, '0')).join('');
+  if (hash.slice(0, 32) !== id) throw new Error('Search shard content changed');
+  return payload;
+}
+function libraryRank(query, documents) {
+  const words = text => (text.toLowerCase().match(/[\p{L}\p{N}_]+/gu) || []);
+  const terms = words(query);
+  if (!terms.length) return [];
+  const tokenized = documents.map(item => ({ item, words: words(item.text) }));
+  const frequency = Object.fromEntries([...new Set(terms)].map(term =>
+    [term, tokenized.filter(row => row.words.includes(term)).length]));
+  return tokenized.filter(row => terms.every(term => row.words.includes(term)))
+    .map(row => ({...row.item, score: terms.reduce((total, term) =>
+      total + row.words.filter(word => word === term).length *
+      Math.log((documents.length + 1) / (frequency[term] + 1)), 0)}))
+    .sort((a, b) => b.score - a.score || a.unit_id.localeCompare(b.unit_id));
+}
+function libraryNavigation(nodes, eligible, params) {
+  return (nodes || []).map(node => {
+    const children = libraryNavigation(node.children, eligible, params);
+    const leaf = eligible.has(node.document_id) ? `<a class="s-link" href="${
+      libraryRouteOf(node.document_id, params, '')}">${esc(node.label)}</a>` : '';
+    return children ? `<details class="library-nav"><summary>${esc(node.label)}</summary>${leaf}${children}</details>`
+      : leaf;
+  }).join('');
+}
+async function libraryRoute(parts, params, manifest) {
+  const token = ++libraryRequest;
+  if (libraryAbort) libraryAbort.abort();
+  libraryAbort = new AbortController();
+  const signal = libraryAbort.signal;
+  $$('#bookTabs a').forEach(item => item.classList.toggle('on', item.dataset.book === 'library'));
+  document.body.classList.remove('nav-open');
+  side.innerHTML = '';
+  main.scrollTop = 0;
+  try {
+    const {index, vocabulary, details} = await libraryData();
+    if (token !== libraryRequest) return;
+    if (index.library_revision !== manifest.libraryRevision ||
+        index.review_revision !== manifest.reviewRevision ||
+        index.vocabulary_revision !== vocabulary.revision)
+      throw new Error('Offline library snapshot revisions disagree');
+    const entry = libraryScope(index, params);
+    const eligible = new Map((entry?.scope.eligible || []).map(item => [item.unit_id, item]));
+    // Originals withheld from search are readable only through explicit unfiltered browsing.
+    // This does not add their text to any search shard or eligibility set.
+    const readable = new Map(eligible);
+    if (entry && params.get('browse_all') === '1' && entry.scope.mode === 'include_possible') {
+      for (const [unit, info] of Object.entries(details)) {
+        if (info.metadata_only) readable.set(unit, {state: 'unsearchable original',
+          reason_codes: [info.mixed_content ? 'mixed_content' : 'no_searchable_text']});
+      }
+    }
+    const source = librarySnapshot(manifest);
+    const filters = libraryFilters(vocabulary, params);
+    const [kind, id] = parts;
+    if (kind === 'library-unit') {
+      if (!safeId(id) || !readable.has(id) || !details[id]) {
+        main.innerHTML = `<div class="wrap"><h1 class="title">Section unavailable for this selection</h1>
+          <p class="subtitle">It may be outside the vehicle scope, missing, or from another snapshot.</p>
+          <a href="#/library-search?${libraryParams(params)}">← Back to search</a></div>`;
+        return;
+      }
+      const info = details[id], state = readable.get(id);
+      const response = await fetch(`content/manual-unit/${id}.html`);
+      if (token !== libraryRequest) return;
+      if (!response.ok) throw new Error('Manual section is unavailable');
+      const body = await response.text();
+      const requestedReturn = params.get('return') || '';
+      const returnHash = requestedReturn.startsWith('#/library-search?') ? requestedReturn :
+        `#/library-search?${libraryParams(params)}`;
+      main.innerHTML = `<div class="wrap"><a class="chip" href="${esc(returnHash)}">← Return to search results</a>
+        <h1 class="title">${esc(info.title)}</h1><p class="subtitle">${esc(info.publication_title)} ·
+        ${esc(info.path)} · ${esc(info.provenance)} text · ${esc(state.state)}</p>
+        ${source}<div class="note">${esc(state.reason_codes.join(', '))}</div>
+        ${info.metadata_only ? '<div class="note">Unfiltered original. This page is withheld from text search and is not a confirmed vehicle match.</div>' : ''}
+        ${info.source_url ? `<p><a class="chip" href="${esc(info.source_url)}" target="_blank"
+          rel="noopener">Open original PDF at page ${esc(info.citation.page)}</a></p>
+          <p class="subtitle">The PDF opens as a whole file; its other pages are not vehicle-filtered.</p>` : ''}
+        ${info.warnings?.length ? `<div class="note">${info.warnings.map(esc).join(' · ')}</div>` : ''}
+        <article class="paper">${body}</article></div>`;
+      $$('.paper a[href^="#/library-unit/"]').forEach(link => {
+        const target = link.getAttribute('href').split('/').pop();
+        link.href = libraryRouteOf(target, params, returnHash);
+        if (!readable.has(target)) {
+          link.replaceWith(document.createTextNode(link.textContent + ' (outside selected scope)'));
+        }
+      });
+      wireImages();
+      return;
+    }
+    if (kind === 'library-publication') {
+      const book = (manifest.books || []).find(item => item.id === id);
+      if (!book) return notFound();
+      const nav = libraryNavigation(book.navigation, readable, params);
+      side.innerHTML = `<div class="s-head">${esc(book.name)}</div>${nav}`;
+      main.innerHTML = `<div class="wrap"><a href="#/library-search?${libraryParams(params)}">← Vehicle manuals</a>
+        <h1 class="title">${esc(book.name)}</h1>${source}${libraryCoverage(entry, params, index)}
+        ${nav || '<p class="empty">No sections from this publication are eligible here.</p>'}</div>`;
+      return;
+    }
+    if (kind && kind !== 'library-search') return notFound();
+    const query = params.get('q') || '';
+    if (document.activeElement !== $('#q')) $('#q').value = query;
+    const visibleBooks = (manifest.books || []).map(book => ({book,
+      count: [...readable.keys()].filter(unit => details[unit]?.books.includes(book.id)).length}))
+      .filter(item => item.count || (!params.get('make_id') &&
+        params.get('browse_all') !== '1'));
+    const publications = `<div class="grid">${visibleBooks.map(({book, count}) =>
+      `<a class="card" href="#/library-publication/${book.id}?${libraryParams(params)}">
+        <h3>${esc(book.name)}</h3><p>${esc(book.kind)} · ${count} readable section(s)</p></a>`).join('')}</div>`;
+    main.innerHTML = `<div class="wrap"><h1 class="title">${esc(manifest.title)}</h1>
+      ${source}${filters}${libraryCoverage(entry, params, index)}
+      ${!query ? `<h2>Publications</h2>${publications}` : '<p class="subtitle">Searching selected scope…</p>'}</div>`;
+    if (!query || !entry || entry.no_content) return;
+    const selectedIds = new Set(eligible.keys());
+    const shards = await libraryShards(entry.shard_ids,
+      (id, signal) => libraryShard(id, index.shards[id], signal), signal);
+    if (token !== libraryRequest) return;
+    const loaded = shards.flat();
+    if (!loaded.every(item => selectedIds.has(item.unit_id)))
+      throw new Error('Search loaded a section outside the selected scope');
+    const ranked = libraryRank(query, loaded).slice(0, 100);
+    const returnHash = `#/library-search?${libraryParams(params)}`;
+    main.innerHTML = `<div class="wrap"><h1 class="title">${esc(manifest.title)}</h1>
+      ${source}${filters}${libraryCoverage(entry, params, index)}
+      <h2>${ranked.length} result${ranked.length === 1 ? '' : 's'} for “${esc(query)}”</h2>
+      ${ranked.map(item => {
+        const info = details[item.unit_id], state = eligible.get(item.unit_id);
+        if (!info) return '';
+        return `<a id="result-${item.unit_id}" class="res" href="${
+          libraryRouteOf(item.unit_id, params, returnHash + '&focus=' + item.unit_id)}">
+          <div class="rt">${esc(info.title)}</div><div class="rb">${esc(info.publication_title)} ·
+          ${esc(state.state)} · ${esc(state.reason_codes.join(', '))}</div></a>`;
+      }).join('') || '<p class="empty">No matching text in eligible sections. Other manuals were not searched.</p>'}</div>`;
+    const focus = params.get('focus');
+    if (focus && safeId(focus)) document.getElementById('result-' + focus)?.scrollIntoView();
+  } catch (error) {
+    if (token !== libraryRequest) return;
+    side.innerHTML = '';
+    main.innerHTML = `<div class="wrap"><h1 class="title">Offline library unavailable</h1>
+      <p class="subtitle">${esc(error.message)}</p></div>`;
+  }
+}
+document.addEventListener('change', event => {
+  const form = event.target.closest('.vehicle-filters');
+  if (!form) return;
+  const field = event.target;
+  $$('.res', main).forEach(item => { item.hidden = true; });
+  const params = libraryParams(parseHash().q);
+  if (field.type === 'checkbox') {
+    if (field.checked) params.set(field.name, '1'); else params.delete(field.name);
+  } else if (field.value) params.set(field.name, field.value);
+  else params.delete(field.name);
+  const order = ['make_id', 'model_id', 'model_year', 'engine_id',
+    'transmission', 'drivetrain'];
+  const position = order.indexOf(field.name);
+  if (position >= 0) for (const later of order.slice(position + 1)) params.delete(later);
+  if (field.name === 'browse_all' && field.checked) {
+    for (const key of order) params.delete(key);
+    params.set('mode', 'include_possible');
+  }
+  location.hash = '#/library-search?' + params.toString();
+});
+
 /* ---------------------------------------- manufacturer-neutral library mode */
 const bookById = (manifest, id) => (manifest.books || []).find(book => book.id === id);
 const neutralRouteOf = (publication, document, returnHash) => {
@@ -147,6 +466,8 @@ function neutralHome(manifest) {
     labeled in the viewer instead of being treated as complete.</div>`;
   main.innerHTML = `<div class="wrap"><div class="hero">
     <h1>${esc(manifest.title)}</h1>
+    <div class="note">This single-package viewer has no reviewed make/model/year/engine
+      filtering. Search is limited to its selected publications, not a verified vehicle match.</div>
     <p>${esc(manifest.sourceLabel || 'Offline service-manual library')} —
       ${counts.books || 0} publication${counts.books === 1 ? '' : 's'},
       ${counts.documents || 0} pages, and ${counts.searchable || 0} searchable records.</p>
@@ -266,6 +587,8 @@ async function home() {
   main.innerHTML = `<div class="wrap">
     <div class="hero">
       <h1>${esc(m.title)}</h1>
+      <div class="note">Legacy Ford viewer: vehicle-specific filtering is unavailable in
+        this build. Use a reviewed multi-manual library build for vehicle-scoped results.</div>
       <p>${esc(m.sourceLabel || 'Service manual source')} —
          ${esc((m.books || []).map(b => b.name.toLowerCase()).join(', '))} — rebuilt as a browsable site.</p>
     </div>
@@ -795,7 +1118,9 @@ async function neutralSearch(q, book, manifest) {
   const chips = [chip('', 'All manuals', ranked.out.length)].concat((manifest.books || [])
     .filter(item => counts[item.id])
     .map(item => chip(item.id, item.name, counts[item.id]))).join('');
-  main.innerHTML = `<div class="wrap"><h1 class="title">${matches.length || 'No'} result${matches.length === 1 ? '' : 's'}</h1>
+  main.innerHTML = `<div class="wrap"><div class="note">This single-package search is
+    publication-filtered, not reviewed for a selected vehicle.</div>
+    <h1 class="title">${matches.length || 'No'} result${matches.length === 1 ? '' : 's'}</h1>
     <div class="subtitle">for “${esc(q)}”${selected ? ' in ' + esc(bookById(manifest, selected).name) : ''}${
       matches.length > list.length ? ` · showing first ${list.length}` : ''}</div>
     <div class="chips">${chips}</div>${list.map(([id]) => {
@@ -860,6 +1185,8 @@ async function search(q, book) {
       .map(([b, n]) => chip(b, LABEL[b] || b, n))).join('');
 
   main.innerHTML = `<div class="wrap">
+    <div class="note">Legacy Ford search is not reviewed for a selected vehicle.
+      Use a reviewed multi-manual library build for make/model/year/engine filtering.</div>
     <h1 class="title">${out.length || 'No'} result${out.length === 1 ? '' : 's'}</h1>
     <div class="subtitle">for “${esc(q)}”</div>
     <div class="chips">${chips}</div>
@@ -1083,15 +1410,25 @@ function wireImages() {
 /* ------------------------------------------------------------------- chrome */
 $('#searchForm').addEventListener('submit', e => {
   e.preventDefault();
-  location.hash = '#/search?q=' + encodeURIComponent($('#q').value.trim());
+  if (MANIFEST && MANIFEST.viewerMode === 'library') {
+    const params = libraryParams(parseHash().q);
+    params.set('q', $('#q').value.trim());
+    location.hash = '#/library-search?' + params.toString();
+  } else location.hash = '#/search?q=' + encodeURIComponent($('#q').value.trim());
 });
 let stimer;
 $('#q').addEventListener('input', e => {
   clearTimeout(stimer);
   const v = e.target.value.trim();
+  if (MANIFEST && MANIFEST.viewerMode === 'library')
+    $$('.res', main).forEach(item => { item.hidden = true; });
   if (v.length < 2) return;
   stimer = setTimeout(() => {
-    location.hash = '#/search?q=' + encodeURIComponent(v);
+    if (MANIFEST && MANIFEST.viewerMode === 'library') {
+      const params = libraryParams(parseHash().q);
+      params.set('q', v);
+      location.hash = '#/library-search?' + params.toString();
+    } else location.hash = '#/search?q=' + encodeURIComponent(v);
   }, 320);
 });
 $('#navToggle').addEventListener('click', () => document.body.classList.toggle('nav-open'));
@@ -1113,7 +1450,9 @@ window.addEventListener('hashchange', route);
 
 async function bootstrap() {
   MANIFEST = await data('manifest');
-  $('#bookTabs').innerHTML = MANIFEST.viewerMode === 'neutral'
+  $('#bookTabs').innerHTML = MANIFEST.viewerMode === 'library'
+    ? '<a href="#/" data-book="library">Vehicle manuals</a>'
+    : MANIFEST.viewerMode === 'neutral'
     ? '<a href="#/" data-book="library">Manual library</a>'
     : BOOKS.filter(([id]) => (MANIFEST.books || []).some(book => book.id === id))
       .map(([id, name]) => `<a href="#/${id}" data-book="${id}">${name}</a>`).join('');

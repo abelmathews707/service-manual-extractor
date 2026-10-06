@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/applicability-evidence-v1.schema.json",
+  "title": "Applicability evidence v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract", "revision", "source_id", "source_sha256", "manifest_sha256", "content_sha256", "generation_sha256", "vocabulary_revision", "units", "assertions"],
+  "properties": {
+    "contract": {"const": "applicability-evidence/v1"},
+    "revision": {"$ref": "#/$defs/sha"}, "source_id": {"type": "string", "pattern": "^src_[0-9a-f]{32}$"},
+    "source_sha256": {"$ref": "#/$defs/sha"}, "manifest_sha256": {"$ref": "#/$defs/sha"},
+    "content_sha256": {"$ref": "#/$defs/sha"}, "generation_sha256": {"$ref": "#/$defs/sha"},
+    "vocabulary_revision": {"$ref": "#/$defs/sha"},
+    "units": {"type": "array", "items": {"$ref": "#/$defs/unit"}},
+    "assertions": {"type": "array", "items": {"$ref": "#/$defs/assertion"}}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "citation": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "path"],
+      "properties": {"kind": {"enum": ["path", "page"]}, "path": {"type": "string", "minLength": 1}, "page": {"type": "integer", "minimum": 1}, "fragment": {"type": "string", "minLength": 1}},
+      "allOf": [{"if": {"properties": {"kind": {"const": "page"}}}, "then": {"required": ["page"]}, "else": {"not": {"required": ["page"]}}}]
+    },
+    "unit": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "document_id", "kind", "selector", "original_sha256", "citation", "mixed_content", "search"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^unit_[0-9a-f]{32}$"},
+        "document_id": {"type": "string", "pattern": "^doc_[0-9a-f]{32}$"},
+        "parent_unit_id": {"type": "string", "pattern": "^unit_[0-9a-f]{32}$"},
+        "kind": {"enum": ["section", "table", "figure", "region"]},
+        "selector": {"type": "string", "minLength": 1}, "original_sha256": {"$ref": "#/$defs/sha"},
+        "citation": {"$ref": "#/$defs/citation"}, "mixed_content": {"type": "boolean"},
+        "search": {"type": "object", "additionalProperties": false, "required": ["state"], "properties": {"state": {"enum": ["whole", "isolated", "metadata_only"]}, "text_sha256": {"$ref": "#/$defs/sha"}}, "allOf": [{"if": {"properties": {"state": {"const": "isolated"}}}, "then": {"required": ["text_sha256"]}, "else": {"not": {"required": ["text_sha256"]}}}]}
+      }
+    },
+    "dimension": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["state"], "properties": {"state": {"enum": ["unknown", "not_applicable", "all_in_scope"]}}},
+        {"type": "object", "additionalProperties": false, "required": ["state", "value"], "properties": {"state": {"const": "exact"}, "value": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "integer", "minimum": 1886, "maximum": 2100}]}}},
+        {"type": "object", "additionalProperties": false, "required": ["state", "start", "end"], "properties": {"state": {"const": "range"}, "start": {"type": "integer", "minimum": 1886, "maximum": 2100}, "end": {"type": "integer", "minimum": 1886, "maximum": 2100}}}
+      ]
+    },
+    "qualifierPredicates": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"transmission": {"$ref": "#/$defs/dimension"}, "drivetrain": {"$ref": "#/$defs/dimension"}, "vin": {"$ref": "#/$defs/dimension"}, "rpo": {"$ref": "#/$defs/dimension"}, "production_date": {"$ref": "#/$defs/dimension"}, "market": {"$ref": "#/$defs/dimension"}, "cab": {"$ref": "#/$defs/dimension"}, "chassis": {"$ref": "#/$defs/dimension"}, "fuel": {"$ref": "#/$defs/dimension"}}
+    },
+    "alternative": {
+      "type": "object", "additionalProperties": false,
+      "required": ["make", "model", "year", "engine", "qualifiers"],
+      "properties": {"make": {"$ref": "#/$defs/dimension"}, "model": {"$ref": "#/$defs/dimension"}, "year": {"$ref": "#/$defs/dimension"}, "engine": {"$ref": "#/$defs/dimension"}, "qualifiers": {"$ref": "#/$defs/qualifierPredicates"}}
+    },
+    "assertion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "digest", "subject_id", "statement", "citation", "intent", "applies_to_descendants", "derivation", "provenance", "support", "alternatives"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^ev_[0-9a-f]{32}$"}, "digest": {"$ref": "#/$defs/sha"},
+        "subject_id": {"type": "string", "pattern": "^(pub|doc|unit)_[0-9a-f]{32}$"},
+        "statement": {"type": "string", "minLength": 1}, "citation": {"$ref": "#/$defs/citation"},
+        "selector": {"type": "string", "minLength": 1}, "intent": {"enum": ["include", "exclude"]},
+        "applies_to_descendants": {"type": "boolean"},
+        "derivation": {"enum": ["explicit_structured", "explicit_text", "title_hint", "filename_hint", "heuristic"]},
+        "provenance": {"enum": ["native", "ocr", "catalog"]},
+        "support": {"enum": ["source_supported", "proposal"]},
+        "alternatives": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/alternative"}}
+      }
+    }
+  }
+}

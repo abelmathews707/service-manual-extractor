@@ -259,7 +259,10 @@ def _pdf_publication(publication, member, staging, records, ocr, ocr_base):
         derived, derived_warnings = load_ocr_entry(ocr, member, ocr_base)
         warnings.extend(derived_warnings)
     first = native[0] or (derived[0] if derived else '')
-    publication['title'], publication['kind'] = title_and_kind(first)
+    # A PDF can switch vehicles or engines partway through. Its first-page
+    # heading is not a safe title to inherit onto every later page.
+    _, publication['kind'] = title_and_kind(first)
+    publication['title'] = 'Source PDF: ' + path
     for number, native_text in enumerate(native, 1):
         text = native_text or (derived[number - 1] if derived else '')
         provenance = 'native' if native_text else ('ocr' if text else 'none')
@@ -380,6 +383,8 @@ def normalize_source(extracted, destination, ocr_manifest=None, source_inventory
         raise SourceError('normalization input must be a regular extracted directory')
     manifest = validate_manifest(_json(_local_file(root, MANIFEST_NAME)))
     inventory = validate_inventory(_json(_local_file(root, INVENTORY_NAME)))
+    from .source import verify_inventory_binding
+    verify_inventory_binding(inventory, manifest)
     if manifest['source']['status'] != 'complete':
         raise SourceError('partial source cannot be normalized as a verified source')
     if manifest['source']['id'] != inventory['source_id']:

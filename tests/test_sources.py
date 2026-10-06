@@ -84,7 +84,13 @@ def make_zip(path, files, directories=(), compression=zipfile.ZIP_DEFLATED):
         for directory in directories:
             archive.writestr(directory.rstrip('/') + '/', b'')
         for name, data in files.items():
-            archive.writestr(name, data)
+            # ZipInfo rewrites Windows separators in its constructor. Preserve
+            # the authored raw member name so safety tests exercise that input
+            # on Windows too, rather than testing a silently normalized fixture.
+            info = zipfile.ZipInfo('authored-member')
+            info.filename = name
+            info.compress_type = compression
+            archive.writestr(info, data)
 
 
 def set_zip_encrypted_flag(path):
@@ -160,6 +166,7 @@ class TestArchiveSafety(unittest.TestCase):
     def test_unsafe_archive_paths_are_reported_and_not_extracted(self):
         for member in ('../escape.txt', '/absolute.txt', 'C:/drive.txt',
                        'folder\\windows.txt', 'pages/control\x01.html',
+                       'pages/truncated\x00.html',
                        '__MACOSX/../hidden-escape'):
             with self.subTest(member=member):
                 source = self._inspect_bad_member(member)

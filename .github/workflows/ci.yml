@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/procedure-structure-b3]
   pull_request:
   workflow_dispatch:
 
@@ -21,6 +21,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+      - name: Install PDF tools on Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Install PDF tools on macOS
+        if: runner.os == 'macOS'
+        run: brew install poppler
+      - name: Install PDF tools on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install poppler --no-progress -y
+          $tool = Get-ChildItem "$env:ChocolateyInstall\lib\poppler" -Recurse -Filter pdfinfo.exe | Select-Object -First 1
+          if (-not $tool) { throw 'Poppler pdfinfo.exe was not installed' }
+          $tool.Directory.FullName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Confirm PDF tools
+        run: python -c "import shutil; assert shutil.which('pdfinfo') and shutil.which('pdftotext')"
       - name: Run tests
         run: python -m unittest discover -s tests -v
       - name: Check the CLI starts
@@ -50,6 +66,39 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - run: pip install jsonschema
       - run: python -m unittest discover -s tests -v
+
+  full-optional-gate:
+    # Required before a release: unlike the portability matrix, this job
+    # installs every optional tool and fails if any test is skipped.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: abelmathews707/workshop-manual-toolkit
+          ref: d150e7d889eb55ebba85065da264ab2bc414755d
+          path: toolkit
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install PDF, OCR, schema and browser tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils tesseract-ocr ocrmypdf
+          python -m pip install -r acceptance/requirements-a10.txt
+          npm install --prefix "$RUNNER_TEMP/browser" playwright
+          "$RUNNER_TEMP/browser/node_modules/.bin/playwright" install --with-deps chromium
+          echo "NODE_PATH=$RUNNER_TEMP/browser/node_modules" >> "$GITHUB_ENV"
+          CHROME_PATH=$(NODE_PATH="$RUNNER_TEMP/browser/node_modules" node -p "require('playwright').chromium.executablePath()")
+          echo "REPAIR_BUDDY_TEST_CHROME=$CHROME_PATH" >> "$GITHUB_ENV"
+          echo "TOOLKIT_ROOT=$GITHUB_WORKSPACE/toolkit" >> "$GITHUB_ENV"
+          echo "RUN_REAL_OCR=1" >> "$GITHUB_ENV"
+      - name: Run all extractor tests with no skips
+        run: python scripts/run_ci_suite.py
 
   no-content:
     # A standing guard: this repository must never gain manufacturer manual content.

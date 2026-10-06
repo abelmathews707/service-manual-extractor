@@ -442,7 +442,9 @@ def _scan_zip(path, limits):
         raise SourceError(f'cannot open ZIP: {ex}') from None
     with archive:
         for info in archive.infolist():
-            raw_name = info.filename
+            # ZipInfo may normalize Windows separators or truncate at NUL.
+            # Validate the raw central-directory name before either conversion.
+            raw_name = info.orig_filename
             try:
                 safe = _safe_path(raw_name, directory=info.is_dir())
             except SourceError as ex:
@@ -768,6 +770,18 @@ def _inventory_record(source, publications, members, empty_directories):
     }
 
 
+def inventory_digest(value):
+    """Canonical binding for all originals, including non-document assets."""
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'),
+                                     ensure_ascii=False).encode('utf-8')).hexdigest()
+
+
+def verify_inventory_binding(inventory, manifest):
+    if (inventory['source_id'] != manifest['source']['id'] or
+            manifest['source'].get('inventory_sha256') != inventory_digest(inventory)):
+        raise SourceError('original inventory is unbound or changed; re-extract the source')
+
+
 def validate_inventory(value):
     """Validate the raw-file inventory consumed by later normalization."""
     required = {
@@ -910,6 +924,8 @@ def extract_source(path, destination, publication_ids=None, limits=None, on_memb
         validate_manifest(manifest)
         inventory = _inventory_record(source, publications, members, empty_directories)
         validate_inventory(inventory)
+        manifest['source']['inventory_sha256'] = inventory_digest(inventory)
+        validate_manifest(manifest)
         with open(os.path.join(staging, MANIFEST_NAME), 'w', encoding='utf-8') as file:
             json.dump(manifest, file, indent=2, ensure_ascii=False)
             file.write('\n')

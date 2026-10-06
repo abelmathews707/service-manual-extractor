@@ -33,6 +33,13 @@ class PdfClassificationTests(unittest.TestCase):
         )
         self.assertEqual(kind, "owner")
 
+    def test_plural_owners_guide_inside_first_page_is_owner_material(self):
+        _, kind = title_and_kind(
+            "Table of Contents\nIntroduction 4\n2003 F250/350/450/550 (f23)\n"
+            "Owners Guide (post-2002-fmt)\nUSA English (fus)"
+        )
+        self.assertEqual(kind, "owner")
+
     def test_service_warning_and_manual_system_reference_are_not_owner_information(self):
         _, kind = title_and_kind(
             """2002 Chevrolet Silverado 1500
@@ -345,6 +352,18 @@ class PdfPageTests(unittest.TestCase):
                          {'provenance': 'none'})
         self.assertFalse(content['documents'][1]['search_eligible'])
         self.assertEqual(content['documents'][1]['figures'][0]['page'], 2)
+
+    def test_pdf_opening_engine_heading_does_not_label_later_pages(self):
+        _, manifest, _ = self.normalize_pdf([
+            '2006 Chevrolet Silverado 1500\n4.3L VIN X',
+            '2006 Chevrolet Silverado 1500\n4.8L VIN V',
+        ])
+        publication = manifest['publications'][0]
+        self.assertEqual(publication['title'], 'Source PDF: manual.pdf')
+        self.assertTrue(all('4.3L' not in doc['title'] and '4.8L' not in doc['title']
+                            for doc in publication['documents']))
+        self.assertEqual([doc['citations'][0]['page']
+                          for doc in publication['documents']], [1, 2])
 
     def test_wrong_ocr_hash_cannot_publish_searchable_pages(self):
         result, _, content = self.normalize_pdf(['native', ''], ['native', 'scan'], bad_hash=True)

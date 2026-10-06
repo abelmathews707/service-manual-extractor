@@ -1,25 +1,93 @@
 """Static HTML interpretation. Source markup is data and is never executed."""
+
+import base64
+import binascii
 import hashlib
 import re
+import struct
 import xml.etree.ElementTree as ET
+import zlib
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from urllib.parse import unquote, urlsplit
 
 from .source import SourceError
 
-VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta',
-        'param', 'source', 'track', 'wbr'}
-EXCLUDED = {'script', 'style', 'noscript', 'template', 'iframe', 'object', 'embed',
-            'form', 'head', 'svg'}
+VOID = {
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
+}
+EXCLUDED = {
+    'script',
+    'style',
+    'noscript',
+    'template',
+    'iframe',
+    'object',
+    'embed',
+    'form',
+    'head',
+    'svg',
+}
 SHELL = {'footer', 'branding', 'header'}
-BLOCKS = {'p', 'div', 'section', 'article', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          'ul', 'ol', 'li', 'table', 'tr', 'th', 'td', 'br', 'hr', 'pre', 'blockquote'}
-SAFE_TAGS = BLOCKS | {'thead', 'tbody', 'tfoot', 'caption', 'strong', 'b', 'em', 'i',
-                      'span', 'sub', 'sup', 'code', 'dl', 'dt', 'dd', 'a', 'img'}
+BLOCKS = {
+    'p',
+    'div',
+    'section',
+    'article',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'ul',
+    'ol',
+    'li',
+    'table',
+    'tr',
+    'th',
+    'td',
+    'br',
+    'hr',
+    'pre',
+    'blockquote',
+}
+SAFE_TAGS = BLOCKS | {
+    'thead',
+    'tbody',
+    'tfoot',
+    'caption',
+    'strong',
+    'b',
+    'em',
+    'i',
+    'span',
+    'sub',
+    'sup',
+    'code',
+    'dl',
+    'dt',
+    'dd',
+    'a',
+    'img',
+}
 EVIDENCE = re.compile(
     r'\b(?:19|20)\d{2}\b|\b\d\.\d\s*(?:L\b|liter)|\bonly\b|\bexcept\b|'
-    r'\b(?:diesel|gasoline|VIN|RPO|Silverado|Sierra|Chevrolet|GMC)\b', re.I,
+    r'\b(?:diesel|gasoline|VIN|RPO|Silverado|Sierra|Chevrolet|GMC)\b',
+    re.I,
 )
 
 
@@ -92,8 +160,11 @@ class TreeParser(HTMLParser):
 
 
 def excluded(node):
-    return node.tag in EXCLUDED or node.tag in {'nav', 'footer', 'header'} or bool(
-        node.classes & SHELL)
+    return (
+        node.tag in EXCLUDED
+        or node.tag in {'nav', 'footer', 'header'}
+        or bool(node.classes & SHELL)
+    )
 
 
 def visible_nodes(root):
@@ -127,11 +198,13 @@ def text_of(node, shell=True):
     return '\n'.join(line for line in lines if line)
 
 
-def decode_html(data):
+def decode_html(data, ford_legacy=False):
     if len(data) > 32 * 1024 * 1024:
         raise SourceError('HTML exceeds the 32 MiB limit')
+    if ford_legacy and data.startswith(b'\xff\xfe'):
+        return data.decode('utf-16-le'), 'utf-16-le'
     encoding = 'utf-8-sig'
-    declaration = re.search(br'charset\s*=\s*["\']?([a-zA-Z0-9_-]+)', data[:4096], re.I)
+    declaration = re.search(rb'charset\s*=\s*["\']?([a-zA-Z0-9_-]+)', data[:4096], re.I)
     if declaration:
         encoding = declaration[1].decode('ascii').lower()
     if encoding not in {'utf-8', 'utf-8-sig', 'windows-1252', 'cp1252', 'iso-8859-1'}:
@@ -139,6 +212,8 @@ def decode_html(data):
     try:
         return data.decode(encoding), encoding
     except UnicodeError as ex:
+        if ford_legacy and encoding in {'utf-8', 'utf-8-sig'}:
+            return data.decode('cp1252', errors='replace'), 'cp1252-fallback'
         raise SourceError(f'HTML cannot be decoded as {encoding}: {ex}') from None
 
 
@@ -182,8 +257,8 @@ def evidence(statement, path, level='document', selector=None):
     return value
 
 
-def parse_html(data, path):
-    decoded, encoding = decode_html(data)
+def parse_html(data, path, ford_legacy=False):
+    decoded, encoding = decode_html(data, ford_legacy=ford_legacy)
     parser = TreeParser()
     parser.feed(decoded)
     parser.close()
@@ -193,12 +268,25 @@ def parse_html(data, path):
     main = next((node for node in all_nodes if 'main' in node.classes), body)
     nodes = list(visible_nodes(main))
     headings = [text_of(node) for node in nodes if node.tag == 'h1' and text_of(node)]
-    title = headings[0] if headings else next(
-        (text_of(node) for node in all_nodes if node.tag == 'title' and text_of(node)), path)
-    breadcrumbs = [text_of(node, shell=False) for node in all_nodes
-                   if 'breadcrumb-part' in node.classes and text_of(node, shell=False)]
-    anchors = sorted({node.attrs.get('id') or node.attrs.get('name') for node in all_nodes
-                      if node.attrs.get('id') or (node.tag == 'a' and node.attrs.get('name'))})
+    title = (
+        headings[0]
+        if headings
+        else next(
+            (text_of(node) for node in all_nodes if node.tag == 'title' and text_of(node)), path
+        )
+    )
+    breadcrumbs = [
+        text_of(node, shell=False)
+        for node in all_nodes
+        if 'breadcrumb-part' in node.classes and text_of(node, shell=False)
+    ]
+    anchors = sorted(
+        {
+            node.attrs.get('id') or node.attrs.get('name')
+            for node in all_nodes
+            if node.attrs.get('id') or (node.tag == 'a' and node.attrs.get('name'))
+        }
+    )
     filename = path.rsplit('/', 1)[-1].casefold()
     role = 'procedure'
     if filename == 'external-car.html':
@@ -208,7 +296,8 @@ def parse_html(data, path):
     elif any('li-folder' in node.classes for node in nodes):
         role = 'navigation'
     elif any(node.tag in {'ul', 'ol'} for node in nodes) and not any(
-            node.tag in {'p', 'table', 'img'} for node in nodes):
+        node.tag in {'p', 'table', 'img'} for node in nodes
+    ):
         role = 'navigation'
     warnings = []
     if body is root:
@@ -222,12 +311,18 @@ def parse_html(data, path):
     if EVIDENCE.search(title):
         applicability.append(evidence(title, path, selector='heading'))
     for index, node in enumerate(nodes):
-        explicit = node.classes & {'vehicle', 'warning', 'qualifier', 'other-warning',
-                                   'other-variant'}
+        explicit = node.classes & {
+            'vehicle',
+            'warning',
+            'qualifier',
+            'other-warning',
+            'other-variant',
+        }
         if not explicit and node.tag not in {'p', 'td', 'th', 'li'}:
             continue
-        if node.tag == 'li' and any(isinstance(c, Node) and c.tag in {'ul', 'ol'}
-                                   for c in node.children):
+        if node.tag == 'li' and any(
+            isinstance(c, Node) and c.tag in {'ul', 'ol'} for c in node.children
+        ):
             continue
         statement = text_of(node)
         if not statement:
@@ -256,10 +351,18 @@ def parse_html(data, path):
                 break
             ancestor = ancestor.parent
         link_indices[id(node)] = len(links)
-        links.append({'href': node.attrs['href'], 'label': text_of(node, shell=False),
-                      'path': target, 'fragment': fragment, 'context': context,
-                      'source_fragment': node.attrs['href'].partition('#')[2],
-                      'status': 'blocked' if reason else 'pending', 'reason': reason})
+        links.append(
+            {
+                'href': node.attrs['href'],
+                'label': text_of(node, shell=False),
+                'path': target,
+                'fragment': fragment,
+                'context': context,
+                'source_fragment': node.attrs['href'].partition('#')[2],
+                'status': 'blocked' if reason else 'pending',
+                'reason': reason,
+            }
+        )
     figures = []
     image_indices = {}
     caption = ''
@@ -270,29 +373,58 @@ def parse_html(data, path):
             continue
         holder = node.parent
         if holder and holder.tag == 'figure':
-            local_caption = next((text_of(n) for n in holder.walk()
-                                  if n.tag == 'figcaption'), '')
+            local_caption = next((text_of(n) for n in holder.walk() if n.tag == 'figcaption'), '')
         else:
             local_caption = ''
         label = local_caption or caption or node.attrs.get('alt', '')
         href = node.attrs.get('src', '')
-        target, fragment, reason = local_url(path, href) if href else (
-            None, '', 'image has no source')
+        target, fragment, reason = (
+            local_url(path, href) if href else (None, '', 'image has no source')
+        )
         image_indices[id(node)] = len(figures)
-        figures.append({'href': href, 'path': target, 'caption': label,
-                        'status': 'blocked' if reason else 'pending', 'reason': reason})
+        figures.append(
+            {
+                'href': href,
+                'path': target,
+                'caption': label,
+                'status': 'blocked' if reason else 'pending',
+                'reason': reason,
+            }
+        )
         if label and EVIDENCE.search(label):
-            applicability.append(evidence(label, path, 'figure', f'figure:{len(figures)-1}'))
+            applicability.append(evidence(label, path, 'figure', f'figure:{len(figures) - 1}'))
         caption = ''
 
     def structure(node, parent_tag=''):
         if isinstance(node, str):
             if node.strip():
                 return [node]
-            return [' '] if node and parent_tag in {
-                'p', 'span', 'a', 'b', 'strong', 'em', 'i', 'td', 'th', 'li', 'div',
-                'section', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-            } else []
+            return (
+                [' ']
+                if node
+                and parent_tag
+                in {
+                    'p',
+                    'span',
+                    'a',
+                    'b',
+                    'strong',
+                    'em',
+                    'i',
+                    'td',
+                    'th',
+                    'li',
+                    'div',
+                    'section',
+                    'h1',
+                    'h2',
+                    'h3',
+                    'h4',
+                    'h5',
+                    'h6',
+                }
+                else []
+            )
         if excluded(node):
             return []
         children = [item for child in node.children for item in structure(child, node.tag)]
@@ -318,35 +450,124 @@ def parse_html(data, path):
         parent = node.parent
         while parent:
             if parent.tag == 'li':
-                label = next((text_of(child, shell=False) for child in parent.children
-                              if isinstance(child, Node) and child.tag == 'a'), '')
+                label = next(
+                    (
+                        text_of(child, shell=False)
+                        for child in parent.children
+                        if isinstance(child, Node) and child.tag == 'a'
+                    ),
+                    '',
+                )
                 if label:
                     ancestors.append(label)
             parent = parent.parent
         if ancestors:
-            navigation.append({'labels': list(reversed(ancestors)),
-                               'reference': link_indices.get(id(node)),
-                               'anchor': node.attrs.get('name') or node.attrs.get('id')})
+            navigation.append(
+                {
+                    'labels': list(reversed(ancestors)),
+                    'reference': link_indices.get(id(node)),
+                    'anchor': node.attrs.get('name') or node.attrs.get('id'),
+                }
+            )
     text = text_of(main)
-    return {'title': title, 'breadcrumbs': breadcrumbs, 'role': role,
-            'anchors': anchors, 'text': text if role == 'procedure' else '',
-            'visible_text_sha256': hashlib.sha256(text.encode()).hexdigest(),
-            'structure': structure(main), 'references': links, 'figures': figures,
-            'applicability': applicability, 'navigation': navigation,
-            'encoding': encoding, 'warnings': warnings}
+    return {
+        'title': title,
+        'breadcrumbs': breadcrumbs,
+        'role': role,
+        'anchors': anchors,
+        'text': text if role == 'procedure' else '',
+        'visible_text_sha256': hashlib.sha256(text.encode()).hexdigest(),
+        'structure': structure(main),
+        'references': links,
+        'figures': figures,
+        'applicability': applicability,
+        'navigation': navigation,
+        'encoding': encoding,
+        'warnings': warnings,
+    }
 
 
-SVG_TAGS = {'svg', 'g', 'defs', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline',
-            'polygon', 'text', 'tspan', 'title', 'desc', 'clipPath', 'linearGradient',
-            'radialGradient', 'stop', 'view'}
-SVG_ATTRS = set(('id x y x1 x2 y1 y2 dx dy width height viewBox preserveAspectRatio '
-                 'd points cx cy r rx ry fill stroke stroke-width stroke-linecap '
-                 'stroke-linejoin stroke-miterlimit stroke-dasharray stroke-dashoffset '
-                 'fill-rule clip-rule opacity fill-opacity stroke-opacity transform '
-                 'font-family font-size font-weight font-style text-anchor '
-                 'dominant-baseline clip-path offset stop-color stop-opacity '
-                 'gradientUnits gradientTransform version color text-decoration').split())
+SVG_TAGS = {
+    'svg',
+    'g',
+    'defs',
+    'path',
+    'rect',
+    'circle',
+    'ellipse',
+    'line',
+    'polyline',
+    'polygon',
+    'text',
+    'tspan',
+    'title',
+    'desc',
+    'clipPath',
+    'linearGradient',
+    'radialGradient',
+    'stop',
+    'view',
+    'marker',
+    'image',
+}
+SVG_ATTRS = set(
+    (
+        'id x y x1 x2 y1 y2 dx dy width height viewBox preserveAspectRatio '
+        'd points cx cy r rx ry fill stroke stroke-width stroke-linecap '
+        'stroke-linejoin stroke-miterlimit stroke-dasharray stroke-dashoffset '
+        'fill-rule clip-rule opacity fill-opacity stroke-opacity transform '
+        'font-family font-size font-weight font-style font-stretch text-anchor '
+        'dominant-baseline clip-path offset stop-color stop-opacity '
+        'gradientUnits gradientTransform version color text-decoration '
+        'marker-end marker-start marker-mid refX refY markerUnits markerWidth '
+        'markerHeight orient visibility href'
+    ).split()
+)
 SVG_NS = 'http://www.w3.org/2000/svg'
+
+
+def _static_png(value):
+    """Accept only bounded, structurally valid inline PNG bytes in SVG images."""
+    prefix = 'data:image/png;base64,'
+    if not value.startswith(prefix):
+        raise SourceError('SVG image must be an inline PNG, not a network resource')
+    encoded = value[len(prefix) :]
+    if len(encoded) > 8 * 1024 * 1024:
+        raise SourceError('inline PNG exceeds the size limit')
+    try:
+        data = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error):
+        raise SourceError('invalid inline PNG base64') from None
+    if not data.startswith(b'\x89PNG\r\n\x1a\n'):
+        raise SourceError('inline image is not a PNG')
+    position = 8
+    seen_header = False
+    seen_end = False
+    while position + 12 <= len(data):
+        size = int.from_bytes(data[position : position + 4], 'big')
+        kind = data[position + 4 : position + 8]
+        end = position + 12 + size
+        if end > len(data):
+            raise SourceError('truncated inline PNG chunk')
+        body = data[position + 8 : position + 8 + size]
+        crc = int.from_bytes(data[end - 4 : end], 'big')
+        if zlib.crc32(kind + body) & 0xFFFFFFFF != crc:
+            raise SourceError('inline PNG CRC mismatch')
+        if not seen_header:
+            if kind != b'IHDR' or size != 13:
+                raise SourceError('inline PNG lacks an IHDR chunk')
+            width, height = struct.unpack('>II', body[:8])
+            if not width or not height or width * height > 40_000_000:
+                raise SourceError('inline PNG dimensions exceed the limit')
+            seen_header = True
+        if kind == b'IEND':
+            if size or end != len(data):
+                raise SourceError('inline PNG has trailing bytes')
+            seen_end = True
+            break
+        position = end
+    if not seen_end:
+        raise SourceError('inline PNG lacks an IEND chunk')
 
 
 def safe_svg(data):
@@ -401,8 +622,15 @@ def safe_svg(data):
                 continue
             if key not in SVG_ATTRS:
                 raise SourceError(f'unsupported SVG attribute: {key}')
-            if any(token in value.casefold() for token in ('javascript:', 'data:',
-                                                         'http:', 'https:', '\\', '@')):
+            if key == 'href':
+                if tag != 'image':
+                    raise SourceError('SVG href is only supported on an image')
+                _static_png(value)
+                continue
+            if any(
+                token in value.casefold()
+                for token in ('javascript:', 'data:', 'http:', 'https:', '\\', '@')
+            ):
                 raise SourceError('external or active SVG value')
             if 'url' in value.casefold():
                 match = re.fullmatch(r'url\(#([A-Za-z_][\w.-]*)\)', value)

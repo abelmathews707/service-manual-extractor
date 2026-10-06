@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/structured-quality-review-v1.schema.json",
+  "title": "Independent intended-use content quality review v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "revision",
+    "policy_version",
+    "events"
+  ],
+  "properties": {
+    "contract": {
+      "const": "structured-quality-review/v1"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policy_version": {
+      "const": "structured-quality-policy/v1"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    }
+  },
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "rid": {
+      "type": "string",
+      "pattern": "^record_[0-9a-f]{32}$"
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "record_id",
+        "record_sha256",
+        "dependencies_sha256",
+        "dependency_bindings",
+        "action",
+        "intended_use",
+        "purpose",
+        "reviewer",
+        "timestamp",
+        "reason",
+        "checks"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^quality_[0-9a-f]{32}$"
+        },
+        "record_id": {
+          "type": "string",
+          "pattern": "^record_[0-9a-f]{32}$"
+        },
+        "record_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "dependencies_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "dependency_bindings": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["record_id", "record_sha256"],
+            "properties": {
+              "record_id": {"$ref": "#/$defs/rid"},
+              "record_sha256": {"$ref": "#/$defs/sha"}
+            }
+          }
+        },
+        "action": {
+          "enum": [
+            "propose",
+            "approve",
+            "reject",
+            "revoke"
+          ]
+        },
+        "intended_use": {
+          "enum": [
+            "readable_reference",
+            "structured_reference",
+            "diagnostic_instruction"
+          ]
+        },
+        "purpose": {
+          "enum": [
+            "engineering",
+            "production"
+          ]
+        },
+        "reviewer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            }
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "original_compared",
+            "values_and_units",
+            "qualifiers",
+            "context_complete",
+            "branches_complete",
+            "source_resolves"
+          ],
+          "properties": {
+            "original_compared": {
+              "type": "boolean"
+            },
+            "values_and_units": {
+              "type": "boolean"
+            },
+            "qualifiers": {
+              "type": "boolean"
+            },
+            "context_complete": {
+              "type": "boolean"
+            },
+            "branches_complete": {
+              "type": "boolean"
+            },
+            "source_resolves": {
+              "type": "boolean"
+            }
+          }
+        },
+        "prior_event_id": {
+          "type": "string",
+          "pattern": "^quality_[0-9a-f]{32}$"
+        }
+      }
+    }
+  }
+}

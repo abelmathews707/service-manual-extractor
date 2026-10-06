@@ -24,7 +24,11 @@ import time
 import xml.etree.ElementTree as ET
 from collections import OrderedDict, defaultdict
 
+from sme.html_content import safe_svg
+from sme.source import SourceError
+
 from .disc import KNOWN_TYPES, books_in_dir
+from .safe_content import safe_fragment
 
 VIEWER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                       'viewer')
@@ -36,7 +40,8 @@ MEDIA_EXT = ('.jpg', '.jpeg', '.gif', '.png', '.svg', '.pdf', '.bmp')
 # ------------------------------------------------------------------- helpers
 def rd_text(p):
     """Pages claim UTF-8 but a good number of them are really Windows-1252."""
-    d = open(p, 'rb').read()
+    with open(p, 'rb') as stream:
+        d = stream.read()
     if d[:2] == b'\xff\xfe':
         return d.decode('utf-16-le')
     if d[:3] == b'\xef\xbb\xbf':
@@ -143,6 +148,7 @@ def clean_fragment(raw, role):
     s = strip_shell(s)
     s = FRAMES.sub('', s)
     s = re.sub(r'(?is)</?(?:html|head|meta|title|body)\b[^>]*>', '', s)
+    s = safe_fragment(s)
 
     def fix_src(m):
         q, v = m.group(1), m.group(2)
@@ -299,7 +305,14 @@ def parse_wiring(d, P, warn=print):
             title = ptype = ''
             conns, grounds, splices, fuses = [], [], [], []
             if meta:
-                pe = xml_of(meta).find('page')
+                try:
+                    pe = xml_of(meta).find('page')
+                except ET.ParseError as error:
+                    # Keep the circuit sheet and its SVG available even when
+                    # one optional page-metadata file is malformed. Callers
+                    # can report the exact lost metadata as a partial import.
+                    warn(f'malformed wiring XML {os.path.basename(meta)}: {error}')
+                    pe = None
                 if pe is not None:
                     title, ptype = txt(pe, 'title'), txt(pe, 'type')
                     for c in pe.iter('conn'):
@@ -556,7 +569,15 @@ def build(src, out, title=None, log=print, clean=True):
                 if not re.search(r'<svg[^>]*\sxmlns\s*=', s, re.I):
                     s = re.sub(r'<svg\b', '<svg xmlns="http://www.w3.org/2000/svg"',
                                s, count=1, flags=re.I)
-                open(dest, 'w', encoding='utf-8').write(s)
+                try:
+                    rendered = safe_svg(s.encode('utf-8'))
+                except SourceError as error:
+                    log(f'   diagram unavailable: {os.path.basename(p)}: {error}')
+                    rendered = (b'<svg xmlns="http://www.w3.org/2000/svg" '
+                                b'viewBox="0 0 600 40"><text x="5" y="25">'
+                                b'Diagram unavailable: unsupported SVG content</text></svg>')
+                with open(dest, 'wb') as stream:
+                    stream.write(rendered)
             else:
                 shutil.copyfile(p, dest)
             nmedia += 1

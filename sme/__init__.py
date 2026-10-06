@@ -5,4 +5,4 @@ package defines neutral records, safely inventories/stages supported HTML and
 PDF sources, and normalizes their content into structured, cited records.
 """
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abelmathews707/service-manual-extractor/blob/main/schemas/vehicle-vocabulary-v1.schema.json",
+  "title": "Vehicle vocabulary v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "revision", "makes", "models", "engines", "configurations", "aliases"],
+  "properties": {
+    "contract": {"const": "vehicle-vocabulary/v1"},
+    "revision": {"$ref": "#/$defs/sha"},
+    "makes": {"type": "array", "items": {"$ref": "#/$defs/make"}},
+    "models": {"type": "array", "items": {"$ref": "#/$defs/model"}},
+    "engines": {"type": "array", "items": {"$ref": "#/$defs/engine"}},
+    "configurations": {"type": "array", "items": {"$ref": "#/$defs/configuration"}},
+    "aliases": {"type": "array", "items": {"$ref": "#/$defs/alias"}}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "key": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "year": {"type": "integer", "minimum": 1886, "maximum": 2100},
+    "makeId": {"type": "string", "pattern": "^make_[0-9a-f]{32}$"},
+    "modelId": {"type": "string", "pattern": "^model_[0-9a-f]{32}$"},
+    "engineId": {"type": "string", "pattern": "^engine_[0-9a-f]{32}$"},
+    "make": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "key", "name"],
+      "properties": {"id": {"$ref": "#/$defs/makeId"}, "key": {"$ref": "#/$defs/key"}, "name": {"type": "string", "minLength": 1}}
+    },
+    "model": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "key", "name", "make_id"],
+      "properties": {"id": {"$ref": "#/$defs/modelId"}, "key": {"$ref": "#/$defs/key"}, "name": {"type": "string", "minLength": 1}, "make_id": {"$ref": "#/$defs/makeId"}, "family": {"type": "string", "minLength": 1}}
+    },
+    "engine": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "key", "name", "manufacturer", "fuel", "displacement_l"],
+      "properties": {"id": {"$ref": "#/$defs/engineId"}, "key": {"$ref": "#/$defs/key"}, "name": {"type": "string", "minLength": 1}, "manufacturer": {"$ref": "#/$defs/key"}, "fuel": {"type": "string", "minLength": 1}, "displacement_l": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 30}, "code": {"type": "string", "minLength": 1}}
+    },
+    "configuration": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "make_id", "model_id", "model_year", "engine_id", "qualifiers"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^cfg_[0-9a-f]{32}$"},
+        "make_id": {"$ref": "#/$defs/makeId"}, "model_id": {"$ref": "#/$defs/modelId"},
+        "model_year": {"$ref": "#/$defs/year"}, "engine_id": {"$ref": "#/$defs/engineId"},
+        "qualifiers": {"$ref": "#/$defs/qualifiers"}
+      }
+    },
+    "qualifiers": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "transmission": {"type": "string", "minLength": 1}, "drivetrain": {"type": "string", "minLength": 1},
+        "vin": {"type": "string", "minLength": 1}, "rpo": {"type": "string", "minLength": 1},
+        "production_date": {"type": "string", "minLength": 1}, "market": {"type": "string", "minLength": 1},
+        "cab": {"type": "string", "minLength": 1}, "chassis": {"type": "string", "minLength": 1},
+        "fuel": {"type": "string", "minLength": 1}
+      }
+    },
+    "citation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "path"],
+      "properties": {"kind": {"enum": ["path", "page"]}, "path": {"type": "string", "minLength": 1}, "page": {"type": "integer", "minimum": 1}, "fragment": {"type": "string", "minLength": 1}},
+      "allOf": [{"if": {"properties": {"kind": {"const": "page"}}}, "then": {"required": ["page"]}, "else": {"not": {"required": ["page"]}}}]
+    },
+    "alias": {
+      "type": "object", "additionalProperties": false,
+      "required": ["literal", "target_id", "evidence"],
+      "properties": {
+        "literal": {"type": "string", "minLength": 1},
+        "target_id": {"type": "string", "pattern": "^(make|model|engine)_[0-9a-f]{32}$"},
+        "make_id": {"$ref": "#/$defs/makeId"}, "year_start": {"$ref": "#/$defs/year"}, "year_end": {"$ref": "#/$defs/year"},
+        "evidence": {"type": "object", "additionalProperties": false, "required": ["source_id", "citation"], "properties": {"source_id": {"type": "string", "pattern": "^src_[0-9a-f]{32}$"}, "citation": {"$ref": "#/$defs/citation"}}}
+      },
+      "dependentRequired": {"year_start": ["year_end"], "year_end": ["year_start"]}
+    }
+  }
+}

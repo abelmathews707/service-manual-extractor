@@ -10,6 +10,7 @@ its type and the vehicles it covers. That manifest is what makes this tool
 work on discs nobody has tested it against: we ask the disc what is on it
 instead of hardcoding the codes from one title.
 """
+
 import io
 import os
 import re
@@ -22,9 +23,9 @@ IMAGE_EXT = ('.iso', '.img', '.bin', '.mdf', '.nrg')
 
 #: Book types seen in the wild, mapped to the role the viewer gives them.
 KNOWN_TYPES = {
-    'SERVICE': 'wsm',    # workshop manual
-    'EVTM':    'elb',    # electrical & vacuum troubleshooting (wiring)
-    'PCED':    'pced',   # powertrain control / emissions diagnosis
+    'SERVICE': 'wsm',  # workshop manual
+    'EVTM': 'elb',  # electrical & vacuum troubleshooting (wiring)
+    'PCED': 'pced',  # powertrain control / emissions diagnosis
 }
 
 
@@ -41,9 +42,9 @@ class Book:
         self.type = type_
         self.title = title
         self.vehicles = list(vehicles)
-        self.archive = archive          # archive filename this came from
-        self.dir = None                 # set by books_in_dir()
-        self.prefix = code              # filename prefix, usually == code
+        self.archive = archive  # archive filename this came from
+        self.dir = None  # set by books_in_dir()
+        self.prefix = code  # filename prefix, usually == code
 
     @property
     def role(self):
@@ -87,9 +88,10 @@ def _epl_by_regex(data, archive):
     code, type_ = one('code'), one('type')
     if not code and not type_:
         return None
-    vehicles = [{'year': y.strip(), 'name': n.strip(), 'engine': ''}
-                for y, n in re.findall(
-                    r'<year>(.*?)</year>\s*<name>(.*?)</name>', data, re.S | re.I)]
+    vehicles = [
+        {'year': y.strip(), 'name': n.strip(), 'engine': ''}
+        for y, n in re.findall(r'<year>(.*?)</year>\s*<name>(.*?)</name>', data, re.S | re.I)
+    ]
     return Book(code, type_, one('title'), vehicles, archive)
 
 
@@ -112,9 +114,10 @@ def parse_epl(data, archive=None):
         e = node.find(tag)
         return (e.text or '').strip() if e is not None and e.text else ''
 
-    vehicles = [{'year': txt(v, 'year'), 'name': txt(v, 'name'),
-                 'engine': txt(v, 'engine')}
-                for v in root.iter('vehicle')]
+    vehicles = [
+        {'year': txt(v, 'year'), 'name': txt(v, 'name'), 'engine': txt(v, 'engine')}
+        for v in root.iter('vehicle')
+    ]
     code, type_ = txt(root, 'code'), txt(root, 'type')
     if not code and not type_:
         return None
@@ -171,7 +174,7 @@ class _ExtentFile(io.RawIOBase):
         nsec = (need + SECTOR - 1) // SECTOR
         buf = self.src.read(self.lba + first, nsec * SECTOR)
         self.pos += n
-        return buf[skip:skip + n]
+        return buf[skip : skip + n]
 
     def readall(self):
         return self.read(-1)
@@ -264,11 +267,15 @@ class DirSource(Source):
             for fn in files:
                 if fn.lower().endswith('.arc'):
                     p = os.path.join(dirpath, fn)
-                    found.append(ArchiveRef(
-                        os.path.splitext(fn)[0].upper(),
-                        os.path.relpath(p, self.root), p,
-                        os.path.getsize(p),
-                        lambda p=p: open(p, 'rb')))
+                    found.append(
+                        ArchiveRef(
+                            os.path.splitext(fn)[0].upper(),
+                            os.path.relpath(p, self.root),
+                            p,
+                            os.path.getsize(p),
+                            lambda p=p: open(p, 'rb'),
+                        )
+                    )
         return _with_output_dirs(found)
 
 
@@ -308,9 +315,15 @@ class ImageSource(Source):
         for e in self._scan():
             if not e.is_dir and e.path.lower().endswith('.arc'):
                 code = os.path.basename(e.path).rsplit('.', 1)[0].upper()
-                out.append(ArchiveRef(
-                    code, e.path, e.path, e.size,
-                    lambda e=e: _ExtentFile(self.src, e.lba, e.size)))
+                out.append(
+                    ArchiveRef(
+                        code,
+                        e.path,
+                        e.path,
+                        e.size,
+                        lambda e=e: _ExtentFile(self.src, e.lba, e.size),
+                    )
+                )
         return _with_output_dirs(out)
 
     def close(self):
@@ -352,8 +365,7 @@ def guess_type(d, prefix):
     P = prefix.upper()
     if any(f.startswith(f'{P}CEL_') and f.endswith('.XML') for f in up):
         return 'EVTM'
-    if f'{P}LEFT.HTM' in up and any(
-            re.fullmatch(rf'{re.escape(P)}G\d+L\.HTM', f) for f in up):
+    if f'{P}LEFT.HTM' in up and any(re.fullmatch(rf'{re.escape(P)}G\d+L\.HTM', f) for f in up):
         return 'SERVICE'
     for f in files:
         if f.upper().endswith('.HTM'):
@@ -381,7 +393,8 @@ def books_in_dir(root):
         for f in sorted(os.listdir(d)):
             if f.lower().endswith('.epl'):
                 try:
-                    book = parse_epl(open(os.path.join(d, f), 'rb').read(), name)
+                    with open(os.path.join(d, f), 'rb') as stream:
+                        book = parse_epl(stream.read(), name)
                 except OSError:
                     book = None
                 if book:

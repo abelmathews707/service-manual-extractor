@@ -1,31 +1,107 @@
 # Service Manual Extractor — current handoff
 
-Updated: 2026-09-25
-Current checkpoint: Steps 0–8 are implemented. The seller PDF set produced
+Updated: 2026-10-03
+Current B3 implementation: the owner selected B3. Read [B3_PROGRESS.md](B3_PROGRESS.md)
+first. Worktree `/Users/asokmathews/Documents/service-manual-extractor-b3`, branch
+`codex/procedure-structure-b3`. Native decision extraction and a tested continuation
+boundary are implemented; full B3 acceptance is pending. The separate app worktree
+is `/Users/asokmathews/Documents/repair-buddy-b3`. Accepted B2 worktrees remain
+unchanged. Monitor both usage limits. The B2 completion record below is the accepted
+implementation baseline; the current B3 checkpoint does not complete that step.
+
+Latest B3 continuation (2026-10-04): all three Quick Test sections now share one
+local candidate bundle, with 21 records, six branches and nine inventoried hyperlink
+destinations. Both saved PDF pages were visually compared. Two same-page targets are
+source-anchor candidates only; seven other pages have independently confirmed diesel
+scope but unreviewed content. No new approvals or destination reads. Next: review those
+dependencies and full graph coverage; do not restart QT2/QT3 extraction. Local output
+is `b3-acceptance-2026-10-03/quick-test-records-v1`. B3 remains incomplete.
+
+Latest dependency audit: the seven direct target originals have now been structurally
+inspected after independent scope/hash checks. `quick-test-dependencies-v1` records
+176 further href occurrences without following them. The symptom charts themselves
+are outside the current selected eligibility set; one DTC ASP link is unsupported.
+Visual approval needs seven saved target PDFs (direct links in the app B3 progress
+document). Preserve these blockers; do not grant approval from text inspection alone.
+
+Latest work: B1 is complete within bounded engineering acceptance; read
+[B1_PROGRESS.md](B1_PROGRESS.md) and
+[STRUCTURED_EVIDENCE_CONTRACT.md](STRUCTURED_EVIDENCE_CONTRACT.md). Its reviewed
+gasoline V10 / 4R100 / 4WD reference scope binds the saved pilot; no production
+diagnostic approval was issued. B2 is complete within bounded engineering
+acceptance on `codex/structured-specifications-b2`, with separate worktrees
+`/Users/asokmathews/Documents/service-manual-extractor-b2` and
+`/Users/asokmathews/Documents/repair-buddy-b2`. Read [B2_PROGRESS.md](B2_PROGRESS.md)
+for extraction, independent quality integration, verification and limits.
+Both branches are pushed, not merged. B3 is next only when selected; recommended
+development model: GPT-6 Astra / High. Current packets are not diagnostic-ready.
+Monitor both usage windows: stop around 10% five-hour remaining or at 5% weekly
+remaining. Earlier accepted worktrees, live data and the independent toolkit
+remain intact. No merge, release, live activation or B3 implementation is implied.
+
+Current checkpoint: Steps 0–8 and applicability steps A1–A10 are implemented
+and the first local engineering delivery is accepted with the explicit limits
+in [A10_ACCEPTANCE.md](A10_ACCEPTANCE.md). Worktrees are
+`/Users/asokmathews/Documents/service-manual-extractor-a10` and
+`/Users/asokmathews/Documents/repair-buddy-a10`, both on
+`codex/real-manual-acceptance-a10`; these branches are pushed, not merged.
+The runtime pin is Repair Buddy's `config/service-manual-extractor.lock.json`.
+The toolkit remains independently versioned and unchanged. The A9
+vehicle-scoped offline viewer is on `codex/offline-viewer-parity-a9`;
+see [its acceptance record](A9_OFFLINE_VIEWER.md). The seller PDF set produced
 12,324 cited searchable pages, Repair Buddy imports and labels GM evidence, and
 the extractor now builds the shared offline viewer directly from neutral
 records. The user reports that replacement GM HTML files have been obtained;
 their integrity and coverage have not yet been checked in this repository.
-Step 8 is a reviewable engineering release checkpoint, not a merge or public
-release. See [the release record](STEP8_RELEASE_CHECKPOINT.md). The next
-feature request is make/model/year/engine pre-search filtering and matching
-modes; it is not part of the completed eight-step plan.
+The earlier Steps 0–8 code was merged into extractor `main` at `9341637` and Repair
+Buddy `main` at `310ce81`; no public release was created. See
+[the release record](STEP8_RELEASE_CHECKPOINT.md).
+
+The new [vehicle manual applicability plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
+covers all available formats, shared vehicle mapping/review, pre-search filters,
+Repair Buddy and the offline viewer. Phase A delivers searchable/manual content;
+Phase B adds structured extraction. **B1 and bounded B2 are complete; B3 is next**; the
+completed A10 checkpoint above and reconciliation below are historical, not
+the current execution gate.
+
+Historical plan reconciliation (2026-09-28): the owner approved updating the existing plan,
+not starting Phase B. Read the plan's current-delivery/RAG analysis and revised
+B gates. Primary validation returns to the 2003 F-250 6.8L V10 (4WD, automatic);
+the accepted four-configuration library currently contains the 6.0L diesel and
+three Chevrolet configurations, not the V10. B1 must establish evidence-backed
+V10 eligibility; diesel and GM remain regression cases. Readable-reference
+mode never bypasses selected-vehicle scope. Quality/completeness approval is a
+separate planned B contract from existing applicability approval. B4 extends
+the already scoped web evidence path and connects the legacy CLI to the same
+rules; the CLI currently refuses an active reviewed library. B1–B4 advance RAG
+M2, with M3 provider/case integration and M4 semantic evaluation still separate.
+Keep model recommendations and pass criteria in the plan rather than creating
+another competing roadmap. No code, manual data or live database is changed
+by this reconciliation.
 
 ## Start here
 
-1. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
-2. Read the [GM HTML USB inspection](GM_HTML_INSPECTION.md), especially the
-   unresolved source-integrity findings.
+1. Read the [current vehicle mapping plan](VEHICLE_MANUAL_APPLICABILITY_PLAN.md)
+   and [B2 progress](B2_PROGRESS.md), then the historical final
+   [A10 acceptance report](A10_ACCEPTANCE.md). A10 and B1 are complete;
+   B2 is complete within its limits; later B steps still require selection.
+2. Read the [seller PDF inspection record](GM_PDF_SELLER_COLLECTION.md).
+   The [GM HTML USB inspection](GM_HTML_INSPECTION.md) is historical; the user
+   has obtained replacements and the old damage is not a project blocker.
 3. Read the frozen [shared extraction contract](SERVICE_MANUAL_CONTRACT_V1.md).
    Read the [Step 4 behavior and limitations](CONTENT_NORMALIZATION_V1.md).
 4. Read the [shared viewer behavior](SHARED_VIEWER_V1.md).
-5. Select one remaining step from the [GM manual-input implementation plan](GM_HTML_PLAN.md).
-6. Read that step's [test gate](GM_HTML_TEST_PLAN.md).
+5. Use the completed [GM manual-input implementation plan](GM_HTML_PLAN.md)
+   for background only.
+6. Read the selected A/B step's pass gate and shared acceptance matrix in the
+   new plan; retain existing [regression gates](GM_HTML_TEST_PLAN.md).
 7. Verify branches, working-tree changes and exact input identities before acting.
 
 The user wants the same Repair Buddy experience across makes, with the manuals
 providing the content. Work is intentionally split into small sequential tasks
-to manage Codex usage. Do not implement all steps on a generic “continue.”
+to manage Codex usage. The user authorized continuous A-step work until complete
+or five-hour remaining usage dropped below about 10%. That does not authorize
+Phase B, live activation, merging or public release.
 
 User preference recorded 2026-09-23: push new commits to the corresponding
 remote branch after committing. Report any push failure; this does not authorize
@@ -38,12 +114,17 @@ force-pushing, merging, tagging or releasing.
 | GitHub fork | `https://github.com/abelmathews707/service-manual-extractor` |
 | Previous fork name | `abelmathews707/ford-service-disc` |
 | Existing local checkout | `/Users/asokmathews/Documents/ford-service-disc` |
-| Feature branch | `codex/gm-html-manuals` |
-| Branch baseline | `f1bdc8d`, main and `v0.1.0` foundation |
+| Planning branch | `codex/vehicle-manual-library-plan` |
+| A2 contract branch | `codex/vehicle-applicability-a2`, based on the planning branch |
+| A3 Ford bridge branch | `codex/ford-neutral-bridge-a3`, based on A2 |
+| A4 evidence branch | `codex/applicability-evidence-a4`, based on A3 |
+| A5 matching branch | `codex/applicability-matching-a5`, based on A4 |
+| A6 library branch | `codex/applicability-library-a6`, based on A5 |
+| Planning baseline | merged main `9341637306af6595ab4233b39db7f80693d7069b` |
 | Upstream | `https://github.com/shad0wca7/ford-service-disc.git` |
 | Compatible existing command | `python -m fsd` |
 | Neutral source command | `python -m sme` (`probe`, staged `extract`, `normalize`, `build-viewer`, contract validation) |
-| Repair Buddy integration checkout | `/Users/asokmathews/Documents/repair-buddy-step5`, `codex/gm-applicability-parity` at `f062b90` |
+| Repair Buddy integration checkout | `/Users/asokmathews/Documents/repair-buddy-step5`, merged feature tip `4076bec`; remote main `310ce81` |
 | Workshop toolkit | `/Users/asokmathews/Documents/workshop-manual-toolkit-main`, main `d150e7d` |
 
 GitHub was renamed with the user's chosen name. The local `origin` URL was
@@ -63,10 +144,15 @@ this repository.
 
 All source files and detailed reports are outside Git.
 
+A1 metadata summary is in [A1_INVENTORY_SUMMARY.md](A1_INVENTORY_SUMMARY.md).
+Detailed local inventory and citation cases are under
+`/Users/asokmathews/Documents/service-manual-data/a1-inventory-2026-09-25/`.
+The replacement GM HTML source path remains to be recorded when available.
+
 | Input | Local root | State |
 | --- | --- | --- |
 | Original GM USB HTML exports | `/Users/asokmathews/Documents/service-manual-data/gm-usb-2026-09-15` | Earlier copies were damaged; user reports replacement files are now available, but their path and integrity have not yet been recorded here |
-| Seller GM PDFs | `/Users/asokmathews/Documents/service-manual-data/gm-seller-download-2026-09-17` | Original folder and ZIP preserved; independent archive extraction and file parity verified |
+| Seller GM PDFs | `/Users/asokmathews/Documents/service-manual-data/gm-seller-download-2026-09-17` | Original folder and ZIP preserved; the 113-PDF folder moved from Downloads is under `from-downloads/` and matches `from-archive/` exactly; it contains no HTML/HTM |
 
 No data was added to Repair Buddy's live database. Tests must synthesize small
 inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
@@ -205,11 +291,71 @@ inputs; vendor manuals, PDFs, ZIPs and large derived output stay out of Git.
 - The Step 7 generated-site audit found no missing local PDF/diagram targets,
   hash mismatches, external fragment links or remote runtime assets.
 
-## Next task
+## Completed A-step history
 
-Step 8 passed its fresh-checkout tests and release checks. The user has now
-authorized merging the current feature branches into `main`. The next feature
-request is make/model/year/engine filtering and matching modes before search.
+Step 8 passed its fresh-checkout tests and release checks, and both feature
+branches were merged. **A1 inventory reconciliation and acceptance-case
+selection are complete**; see [the summary](A1_INVENTORY_SUMMARY.md) and
+local-only evidence folder above. **A2 vehicle/applicability contracts are
+complete** in [the sidecar contract](VEHICLE_APPLICABILITY_CONTRACT_V1.md):
+five separately versioned JSON Schemas, dependency-free semantic validators,
+immutable sidecar IDs and 25 synthetic matching decisions. The full extractor
+suite passed 150 tests with `jsonschema` enabled, and Ruff passed. The
+replacement GM HTML path is still pending.
+
+**A3 is complete** in [the Ford adapter and acceptance record](FORD_NEUTRAL_ADAPTER_A3.md).
+The `sme ford-import` path preserves exact archive occurrences, originals,
+navigation, diagrams, PDF pages and an old-citation identity bridge. It leaves
+legacy `fsd` commands and non-Ford readers intact. Synthetic v1/v2 gates and
+five representative real books passed; the full suite passed 154 tests and
+Ruff passed. MDB wiring remains preserved but not interpreted, with an explicit
+capability report. No Repair Buddy database or toolkit files were changed.
+
+**A4 is complete** in [the discovery and evidence record](A4_EVIDENCE_DISCOVERY.md).
+Mixed inputs route to Ford or neutral adapters; evidence is cited to original
+members/pages with conservative vehicle proposals. Page-selective OCR uses the
+separately versioned toolkit, with low-text/mixed-image pages flagged for review.
+The full suite passed 165 tests (one opt-in real-OCR test skipped); the real-OCR
+integration test passed separately. Ruff passed. No Repair Buddy database or
+toolkit files were changed.
+
+**A5 is complete** in [the matching and review record](A5_MATCHING_REVIEW.md).
+The pure per-unit matcher passes all 25 frozen A2 decision cases, preserves
+child conflict precedence and keeps metadata-only units out of text search.
+The portable review log is append-only and source-bound; stale/revoked links
+cannot grant fitment. Bounded shared-content leads remain unapproved. The
+full extractor suite passed 173 tests (one opt-in OCR test skipped), and Ruff
+passed. No Repair Buddy database or toolkit files were changed.
+
+**A6 is complete** in [the combined-library and export record](A6_LIBRARY_SEARCH_EXPORT.md).
+Multiple validated packages retain distinct occurrences and citations. A
+versioned Python scope result controls membership-homogeneous offline text
+shards, with search rejecting old review revisions. The combined Ford/HTML/GM
+fixture loaded no GM text for a Ford-only query; a simulated failed rebuild
+kept old content readable but rejected its stale search index. All generated
+full, partial and qualifier-state scopes agreed with Python membership. The
+full suite passed 177 tests (one opt-in OCR test skipped), and Ruff passed.
+
+**A7 and A8 are complete** on their respective pushed Repair Buddy branches.
+A7 introduced the eligibility gate across search paths; A8 added the
+vehicle-filter/review UI and safe legacy export backfill. Their acceptance
+records and current branches are in the Repair Buddy checkout. **A9 is
+complete** on this repository's `codex/offline-viewer-parity-a9` branch;
+see [A9_OFFLINE_VIEWER.md](A9_OFFLINE_VIEWER.md) for the build command,
+checks, and limitations.
+
+**A10 is complete for the bounded first local engineering delivery.** See
+[the acceptance report](A10_ACCEPTANCE.md) for the 155-publication final
+generation, four-config pilot, hashes, tested reader boundaries, exact revisions,
+local paths and documented performance exceptions. All originals and live data
+remain intact. The separate owner guide is included, not pending.
+
+Next, if explicitly selected, **B1: typed records and reviewed ground truth**.
+Define source-bound procedure/specification/part/diagnostic/tool/warning/diagram
+schemas and an independent benchmark covering native HTML, Ford tables, native
+PDF and OCR, including negatives and abstention. Each type must validate and
+open its source; held-out quality gates and no Phase A regression are required.
+Recommended model: GPT-6 Sol / High. No B step has started.
 
 The old USB failure record remains historical evidence, not a blocker to this
 code merge: the user reports that replacement GM HTML files are available.
@@ -221,5 +367,4 @@ The completed local OCR output remains derived, not source truth. Retain
 per-page source identity and native-text/OCR provenance; generic source qpdf
 warnings are review metadata, not automatic source rejection.
 
-The next search/filter feature spans metadata, querying and UI. GPT-6 Sol High
-is an appropriate starting point for its implementation and tests.
+Each step and its model rationale are in the plan.

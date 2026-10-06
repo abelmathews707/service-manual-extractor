@@ -4,6 +4,7 @@ The neutral builder deliberately consumes only the versioned manifest and
 content sidecar.  It never invokes the Ford ``.EPL`` parser and never executes
 source HTML or source scripts.
 """
+
 import hashlib
 import html
 import json
@@ -62,8 +63,15 @@ def _safe_title(title):
 
 
 def _copy_shell(staging, title):
-    version = str(int(max(os.path.getmtime(os.path.join(root, name))
-                          for root, _, names in os.walk(VIEWER) for name in names)))
+    version = str(
+        int(
+            max(
+                os.path.getmtime(os.path.join(root, name))
+                for root, _, names in os.walk(VIEWER)
+                for name in names
+            )
+        )
+    )
     substitutions = {
         '__V__': version,
         '__TITLE__': html.escape(title),
@@ -106,15 +114,20 @@ def _nav_insert(nodes, labels, document_id):
 
 def _navigation(publication, records, documents):
     tree = []
-    publication_records = [record for record in records
-                           if record['publication_id'] == publication['id']]
+    publication_records = [
+        record for record in records if record['publication_id'] == publication['id']
+    ]
     for record in publication_records:
         document = documents[record['id']]
         if record['role'] == 'pdf_page':
             number = record['page']
             first = ((number - 1) // 100) * 100 + 1
             last = first + 99
-            labels = [f'Pages {first}–{last}', f'Page {number}']
+            labels = [
+                os.path.basename(record['original_path']),
+                f'Pages {first}–{last}',
+                f'Page {number}',
+            ]
             _nav_insert(tree, labels, record['id'])
             continue
         routes = [route.get('labels', []) for route in record.get('navigation_routes', [])]
@@ -132,13 +145,15 @@ def _navigation(publication, records, documents):
     return tree
 
 
-def _render_node(node, record, document_publications, asset_urls):
+def _render_node(node, record, document_publications, asset_urls, unit_routes=None):
     if isinstance(node, str):
         return html.escape(node)
     tag = node['tag']
     attrs = node['attrs']
-    children = ''.join(_render_node(child, record, document_publications, asset_urls)
-                       for child in node['children'])
+    children = ''.join(
+        _render_node(child, record, document_publications, asset_urls, unit_routes)
+        for child in node['children']
+    )
     values = []
     for key in ('rowspan', 'colspan'):
         if key in attrs:
@@ -150,31 +165,47 @@ def _render_node(node, record, document_publications, asset_urls):
         )
         if reference['status'] == 'resolved':
             target = reference['target_id']
+            if unit_routes is not None and target not in unit_routes:
+                return (f'<span class="unavailable-link">{label} '
+                        '<span class="pill">No searchable section</span></span>')
             publication = document_publications[target]
             fragment = reference.get('target_fragment') or reference.get('fragment') or ''
             anchor = '#' + fragment if fragment else ''
-            return (f'<a href="#/manual/{publication}/{target}" data-source-anchor="'
-                    f'{html.escape(anchor, quote=True)}">{label}</a>')
+            if unit_routes is not None:
+                return (f'<a href="#/library-unit/{unit_routes[target]}" '
+                        f'data-source-anchor="{html.escape(anchor, quote=True)}">'
+                        f'{label}</a>')
+            return (
+                f'<a href="#/manual/{publication}/{target}" data-source-anchor="'
+                f'{html.escape(anchor, quote=True)}">{label}</a>'
+            )
         reason = reference.get('reason') or 'target unavailable'
-        return (f'<span class="unavailable-link" title="{html.escape(reason, quote=True)}">'
-                f'{label} <span class="pill">{html.escape(reference["status"])}</span></span>')
+        return (
+            f'<span class="unavailable-link" title="{html.escape(reason, quote=True)}">'
+            f'{label} <span class="pill">{html.escape(reference["status"])}</span></span>'
+        )
     if 'figure' in attrs:
         figure = record['figures'][attrs['figure']]
         caption = figure.get('caption') or 'Diagram'
         url = asset_urls.get((record['id'], attrs['figure']))
         if url:
-            return (f'<figure class="manual-figure"><img src="{html.escape(url, quote=True)}" '
-                    f'alt="{html.escape(caption, quote=True)}" loading="lazy" decoding="async">'
-                    f'<figcaption>{html.escape(caption)}</figcaption></figure>')
+            return (
+                f'<figure class="manual-figure"><img src="{html.escape(url, quote=True)}" '
+                f'alt="{html.escape(caption, quote=True)}" loading="lazy" decoding="async">'
+                f'<figcaption>{html.escape(caption)}</figcaption></figure>'
+            )
         reason = figure.get('reason') or figure.get('status') or 'unavailable'
-        return (f'<span class="missing-content"><b>Diagram unavailable.</b> '
-                f'{html.escape(reason)}</span>')
+        return (
+            f'<span class="missing-content"><b>Diagram unavailable.</b> '
+            f'{html.escape(reason)}</span>'
+        )
     return f'<{tag}{"".join(values)}>{children}</{tag}>'
 
 
-def _prepare_assets(root, staging, records):
+def _prepare_assets(root, staging, records, copied=None):
     urls = {}
-    copied = {}
+    if copied is None:
+        copied = {}
     asset_root = os.path.join(staging, 'content', 'assets')
     source_root = os.path.join(staging, 'content', 'sources')
     for record in records:
@@ -186,9 +217,10 @@ def _prepare_assets(root, staging, records):
             extension = os.path.splitext(relative)[1].lower()
             name = expected + extension
             target = os.path.join(asset_root, name)
-            if expected not in copied:
+            key = (expected, extension)
+            if key not in copied:
                 _copy_hashed(_local_file(root, relative), target, expected)
-                copied[expected] = target
+                copied[key] = target
             urls[(record['id'], index)] = f'content/assets/{name}'
         if record['role'] != 'pdf_page':
             continue
@@ -196,9 +228,10 @@ def _prepare_assets(root, staging, records):
         expected = figure['sha256']
         name = expected + '.pdf'
         target = os.path.join(source_root, name)
-        if expected not in copied:
+        key = (expected, '.pdf')
+        if key not in copied:
             _copy_hashed(_local_file(root, record['original_path']), target, expected)
-            copied[expected] = target
+            copied[key] = target
         record['source_url'] = f'content/sources/{name}#page={record["page"]}'
     return urls
 
@@ -218,26 +251,33 @@ def build_viewer(package, destination, title=None):
         raise SourceError('viewer output must be fresh with an existing regular parent directory')
     try:
         inside = os.path.commonpath((os.path.realpath(root), os.path.realpath(destination))) == (
-            os.path.realpath(root))
+            os.path.realpath(root)
+        )
     except ValueError:
         inside = False
     if inside:
         raise SourceError('viewer output may not be inside the normalized package')
 
     publications = manifest['publications']
-    site_title = _safe_title(title or (publications[0]['title'] if len(publications) == 1
-                                       else 'Service Manual Library'))
+    site_title = _safe_title(
+        title or (publications[0]['title'] if len(publications) == 1 else 'Service Manual Library')
+    )
     staging = tempfile.mkdtemp(prefix=f'.{os.path.basename(destination)}.sme-viewer-', dir=parent)
     try:
         _copy_shell(staging, site_title)
         os.makedirs(os.path.join(staging, 'data'), exist_ok=True)
         os.makedirs(os.path.join(staging, 'content', 'manual'), exist_ok=True)
         records = json.loads(json.dumps(content['documents']))
-        documents = {document['id']: document for publication in publications
-                     for document in publication['documents']}
-        document_publications = {document['id']: publication['id']
-                                 for publication in publications
-                                 for document in publication['documents']}
+        documents = {
+            document['id']: document
+            for publication in publications
+            for document in publication['documents']
+        }
+        document_publications = {
+            document['id']: publication['id']
+            for publication in publications
+            for document in publication['documents']
+        }
         asset_urls = _prepare_assets(root, staging, records)
         record_map = {record['id']: record for record in records}
         docs = []
@@ -246,76 +286,121 @@ def build_viewer(package, destination, title=None):
         for publication in publications:
             for document in publication['documents']:
                 record = record_map[document['id']]
-                fragment = ''.join(_render_node(node, record, document_publications, asset_urls)
-                                   for node in record['structure'])
-                with open(os.path.join(staging, 'content', 'manual', document['id'] + '.html'),
-                          'w', encoding='utf-8') as stream:
+                fragment = ''.join(
+                    _render_node(node, record, document_publications, asset_urls)
+                    for node in record['structure']
+                )
+                with open(
+                    os.path.join(staging, 'content', 'manual', document['id'] + '.html'),
+                    'w',
+                    encoding='utf-8',
+                ) as stream:
                     stream.write(fragment)
                 for reference in record['references']:
                     if reference['status'] == 'resolved':
                         backlinks[reference['target_id']].append(document['id'])
                 client_documents[document['id']] = {
-                    'id': document['id'], 'publication_id': publication['id'],
-                    'title': document['title'], 'role': record['role'],
+                    'id': document['id'],
+                    'publication_id': publication['id'],
+                    'title': document['title'],
+                    'role': record['role'],
                     'breadcrumbs': document.get('breadcrumbs', []),
-                    'path': record['original_path'], 'page': record.get('page'),
+                    'path': record['original_path'],
+                    'page': record.get('page'),
                     'source_url': record.get('source_url'),
                     'text_provenance': document['text']['provenance'],
                     'applicability': document['applicability'],
                     'warnings': record['warnings'],
-                    'unavailable_references': sum(reference['status'] != 'resolved'
-                                                  for reference in record['references']),
-                    'unavailable_figures': sum(figure['status'] in {
-                        'missing', 'unsupported', 'blocked'} for figure in record['figures']),
+                    'unavailable_references': sum(
+                        reference['status'] != 'resolved' for reference in record['references']
+                    ),
+                    'unavailable_figures': sum(
+                        figure['status'] in {'missing', 'unsupported', 'blocked'}
+                        for figure in record['figures']
+                    ),
                 }
                 if record['search_eligible']:
-                    docs.append(('manual', document['id'], document['title'], record['text'],
-                                 publication['id']))
+                    docs.append(
+                        (
+                            'manual',
+                            document['id'],
+                            document['title'],
+                            record['text'],
+                            publication['id'],
+                        )
+                    )
 
         books = []
         for publication in publications:
             ids = [document['id'] for document in publication['documents']]
             searchable = sum(record_map[identifier]['search_eligible'] for identifier in ids)
-            books.append({
-                'id': publication['id'], 'name': publication['title'], 'kind': publication['kind'],
-                'source_path': publication['source_path'],
-                'applicability': publication['applicability'], 'documents': len(ids),
-                'searchable': searchable,
-                'navigation': _navigation(publication, records, documents),
-                'landing_id': next(
-                    (identifier for identifier in ids
-                     if record_map[identifier]['role'] == 'landing'),
-                    ids[0] if ids else None,
-                ),
-            })
-        inverted, lengths = build_search([(role, identifier, name, text)
-                                          for role, identifier, name, text, _ in docs])
-        search_docs = [[row[0], row[1], row[2], lengths[index], row[4]]
-                       for index, row in enumerate(docs)]
+            books.append(
+                {
+                    'id': publication['id'],
+                    'name': publication['title'],
+                    'kind': publication['kind'],
+                    'source_path': publication['source_path'],
+                    'applicability': publication['applicability'],
+                    'documents': len(ids),
+                    'searchable': searchable,
+                    'navigation': _navigation(publication, records, documents),
+                    'landing_id': next(
+                        (
+                            identifier
+                            for identifier in ids
+                            if record_map[identifier]['role'] == 'landing'
+                        ),
+                        ids[0] if ids else None,
+                    ),
+                }
+            )
+        inverted, lengths = build_search(
+            [(role, identifier, name, text) for role, identifier, name, text, _ in docs]
+        )
+        search_docs = [
+            [row[0], row[1], row[2], lengths[index], row[4]] for index, row in enumerate(docs)
+        ]
         viewer_manifest = {
-            'viewerMode': 'neutral', 'title': site_title,
+            'viewerMode': 'neutral',
+            'title': site_title,
             'sourceLabel': 'Normalized service-manual package',
             'sourceStatus': manifest['source']['status'],
-            'contentStatus': content['status'], 'failures': content['failures'],
+            'contentStatus': content['status'],
+            'failures': content['failures'],
             'books': books,
-            'counts': {'books': len(books), 'documents': len(client_documents),
-                       'searchable': len(search_docs)},
+            'counts': {
+                'books': len(books),
+                'documents': len(client_documents),
+                'searchable': len(search_docs),
+            },
         }
         _write_json(os.path.join(staging, 'data', 'manifest.json'), viewer_manifest)
-        _write_json(os.path.join(staging, 'data', 'library.json'), {
-            'documents': client_documents,
-        })
-        _write_json(os.path.join(staging, 'data', 'backlinks.json'), {
-            'pages': {key: sorted(set(value)) for key, value in backlinks.items()},
-            'connSheets': {},
-        })
+        _write_json(
+            os.path.join(staging, 'data', 'library.json'),
+            {
+                'documents': client_documents,
+            },
+        )
+        _write_json(
+            os.path.join(staging, 'data', 'backlinks.json'),
+            {
+                'pages': {key: sorted(set(value)) for key, value in backlinks.items()},
+                'connSheets': {},
+            },
+        )
         _write_json(os.path.join(staging, 'data', 'search-docs.json'), search_docs)
         _write_json(os.path.join(staging, 'data', 'search-index.json'), inverted)
         os.replace(staging, destination)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)
         raise
-    return {'ok': True, 'output': destination, 'title': site_title,
-            'publications': len(books), 'documents': len(client_documents),
-            'searchable_documents': len(search_docs), 'content_status': content['status'],
-            'failures': content['failures']}
+    return {
+        'ok': True,
+        'output': destination,
+        'title': site_title,
+        'publications': len(books),
+        'documents': len(client_documents),
+        'searchable_documents': len(search_docs),
+        'content_status': content['status'],
+        'failures': content['failures'],
+    }
