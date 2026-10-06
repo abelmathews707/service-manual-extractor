@@ -42,6 +42,28 @@ That reads the disc, unpacks it, builds the site and opens it on
 
 ---
 
+## Release notes — 0.2.0 Vehicle-aware manuals
+
+This release adds a shared, offline way to prepare and read Ford and GM
+manuals. The neutral source reader accepts supported Ford disc archives, HTML
+folders or ZIPs, and PDFs without routing GM pages through Ford's EPL parser.
+It preserves original pages and diagrams, builds a searchable library, and
+limits results to confirmed matches for the selected make, model, year and
+engine. Possible matches remain separate for review.
+
+Structured records now retain cited specifications and ordered procedure
+steps with unresolved links marked incomplete. Source identity and original
+file checks guard reviewed material against silent replacement. The offline
+viewer supports multiple manuals, nested navigation, search and return links.
+
+No manuals are included. Existing libraries made under older source-identity
+or vehicle rules need to be rebuilt and reviewed from the owned originals;
+this release does not upgrade them automatically. Real-world procedure and
+diagnostic accuracy still need independent human review. The separate Repair
+Buddy app records the exact extractor commit it works with.
+
+---
+
 ## Release notes — 0.1.0 Foundation (2026-09-14)
 
 This fork builds on [shad0wca7/ford-service-disc](https://github.com/shad0wca7/ford-service-disc).
